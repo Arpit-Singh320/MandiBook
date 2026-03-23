@@ -1,0 +1,339 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ═══════════════════════════════════════════════════════════════
+   MandiBook — Earthy Agriculture Theme
+   Palette: Forest Green + Warm Amber + Sage + Earth tones
+   One cohesive theme across all portals
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Core surfaces */
+  --background: #FAFAF5;
+  --foreground: #1A2E1A;
+  --card: #FFFFFF;
+  --card-foreground: #1A2E1A;
+  --popover: #FFFFFF;
+  --popover-foreground: #1A2E1A;
+
+  /* Brand: Forest Green primary */
+  --primary: #1B5E20;
+  --primary-foreground: #FAFAF5;
+
+  /* Secondary: Soft sage */
+  --secondary: #E8F0E4;
+  --secondary-foreground: #1B5E20;
+
+  /* Accent: Warm amber */
+  --accent: #F59E0B;
+  --accent-foreground: #1A2E1A;
+
+  /* Muted: Sage green tones */
+  --muted: #F0F4ED;
+  --muted-foreground: #5C7A5C;
+
+  /* Destructive: Earthy red */
+  --destructive: #C62828;
+
+  /* Borders & inputs */
+  --border: #D5DFD0;
+  --input: #D5DFD0;
+  --ring: #2E7D32;
+
+  /* Frame (decorative border) */
+  --frame: #FFFFFF;
+
+  /* MandiBook-specific tokens */
+  --card-primary: #2E7D32;
+  --card-secondary: #E8F0E4;
+  --card-foreground-muted: #5C7A5C;
+  --phone-screen: #FAFAF5;
+
+  /* Charts — green to amber gradient, single family */
+  --chart-1: #1B5E20;
+  --chart-2: #2E7D32;
+  --chart-3: #4CAF50;
+  --chart-4: #F59E0B;
+  --chart-5: #D97706;
+
+  /* Radius */
+  --radius: 0.625rem;
+
+  /* Sidebar */
+  --sidebar: #F5F8F3;
+  --sidebar-foreground: #1A2E1A;
+  --sidebar-primary: #1B5E20;
+  --sidebar-primary-foreground: #FAFAF5;
+  --sidebar-accent: #E8F0E4;
+  --sidebar-accent-foreground: #1B5E20;
+  --sidebar-border: #D5DFD0;
+  --sidebar-ring: #2E7D32;
+
+  /* Fonts */
+  --font-sans: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+.dark {
+  /* Core surfaces */
+  --background: #0F1A0F;
+  --foreground: #E8F0E4;
+  --card: #1A2E1A;
+  --card-foreground: #E8F0E4;
+  --popover: #1A2E1A;
+  --popover-foreground: #E8F0E4;
+
+  /* Brand: Lighter green for dark bg */
+  --primary: #4CAF50;
+  --primary-foreground: #0F1A0F;
+
+  /* Secondary */
+  --secondary: #1A2E1A;
+  --secondary-foreground: #E8F0E4;
+
+  /* Accent: Amber stays warm */
+  --accent: #F59E0B;
+  --accent-foreground: #0F1A0F;
+
+  /* Muted */
+  --muted: #1A2E1A;
+  --muted-foreground: #8FA88F;
+
+  /* Destructive */
+  --destructive: #EF5350;
+
+  /* Borders & inputs */
+  --border: #2E4A2E;
+  --input: #2E4A2E;
+  --ring: #4CAF50;
+
+  /* Frame */
+  --frame: #0A120A;
+
+  /* MandiBook-specific */
+  --card-primary: #4CAF50;
+  --card-secondary: #1A2E1A;
+  --card-foreground-muted: #8FA88F;
+  --phone-screen: #F5F8F3;
+
+  /* Charts */
+  --chart-1: #4CAF50;
+  --chart-2: #66BB6A;
+  --chart-3: #81C784;
+  --chart-4: #FBBF24;
+  --chart-5: #F59E0B;
+
+  /* Sidebar */
+  --sidebar: #0F1A0F;
+  --sidebar-foreground: #E8F0E4;
+  --sidebar-primary: #4CAF50;
+  --sidebar-primary-foreground: #0F1A0F;
+  --sidebar-accent: #1A2E1A;
+  --sidebar-accent-foreground: #E8F0E4;
+  --sidebar-border: #2E4A2E;
+  --sidebar-ring: #4CAF50;
+}
+
+@theme inline {
+  --color-frame: var(--frame);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --color-accent: var(--accent);
+  --color-card-primary: var(--card-primary);
+  --color-card-secondary: var(--card-secondary);
+  --color-card-foreground: var(--card-foreground);
+  --color-card-foreground-muted: var(--card-foreground-muted);
+  --color-phone-screen: var(--phone-screen);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-input: var(--input);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+html {
+  color-scheme: light;
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+html,
+body {
+  overscroll-behavior-x: none;
+}
+
+/* Custom text selection */
+::selection {
+  background-color: var(--accent);
+  color: white;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  overflow-x: hidden;
+  background-color: var(--background);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.skip-to-content {
+  position: absolute;
+  left: -9999px;
+  top: 1rem;
+  z-index: 9999;
+  padding: 0.75rem 1rem;
+  background: var(--background);
+  border: 2px solid var(--ring);
+  border-radius: 0.375rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--foreground);
+}
+
+.skip-to-content:focus {
+  left: 1rem;
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.focus-ring:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.site-frame {
+  display: block;
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  background-color: var(--frame);
+}
+
+.site-frame--top {
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 10px;
+}
+
+.site-frame--bottom {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 10px;
+}
+
+.site-frame--left {
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 10px;
+}
+
+.site-frame--right {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 10px;
+}
+
+/* Corner decorations */
+.site-corner {
+  display: block;
+  position: fixed;
+  z-index: 9998;
+  pointer-events: none;
+  color: var(--frame);
+}
+
+.site-corner--top-left {
+  transform: rotate(90deg);
+  top: 10px;
+  left: 10px;
+}
+
+.site-corner--top-right {
+  top: 10px;
+  right: 10px;
+  transform: rotate(180deg);
+}
+
+.site-corner--bottom-left {
+  bottom: 10px;
+  left: 10px;
+  transform: rotate(0deg);
+}
+
+.site-corner--bottom-right {
+  bottom: 10px;
+  right: 10px;
+  transform: rotate(270deg);
+}
+
+/* Hide frame and corners on mobile */
+@media (max-width: 850px) {
+  .site-frame,
+  .site-corner {
+    display: none;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
