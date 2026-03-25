@@ -25,8 +25,8 @@ const adminBootstrapRoutes = require('./routes/admin-bootstrap');
 
 const app = express();
 
-// Trust proxy for Railway deployment (specific to Railway's proxy)
-app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
+// Trust the first upstream proxy in production deployments like Railway
+app.set('trust proxy', process.env.NODE_ENV === 'production' ? 1 : false);
 
 const allowedOrigins = [
   'http://localhost:3200',
@@ -94,7 +94,9 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/issues', issueRoutes);
 app.use('/api/audit-logs', auditLogRoutes);
 app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/admin-bootstrap', adminBootstrapRoutes);
+if (process.env.NODE_ENV !== 'production') {
+  app.use('/api/admin-bootstrap', adminBootstrapRoutes);
+}
 
 // ─── 404 handler ────────────────────────────────────────────────────────────────
 app.use((req, res) => {
