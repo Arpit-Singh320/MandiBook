@@ -1,0 +1,8 @@
+MandiBook_Frontend
+MandiBook_Backend/node_modules
+MandiBook_Backend/.env
+MandiBook_Backend/.env.*
+.git
+.gitignore
+.DS_Store
+docs

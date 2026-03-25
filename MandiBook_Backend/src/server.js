@@ -24,6 +24,11 @@ const dashboardRoutes = require('./routes/dashboard');
 
 const app = express();
 
+const allowedOrigins = [
+  'https://mandi-book-seven.vercel.app',
+  ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map((origin) => origin.trim()).filter(Boolean) : []),
+];
+
 // ─── Security ───────────────────────────────────────────────────────────────────
 app.use(helmet());
 
@@ -38,7 +43,14 @@ app.use('/api/', limiter);
 // ─── CORS ───────────────────────────────────────────────────────────────────────
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3200',
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error(`Origin ${origin} is not allowed by CORS`));
+    },
     credentials: true,
   })
 );
@@ -51,6 +63,15 @@ app.use(express.urlencoded({ extended: true }));
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
+
+// ─── Platform health checks ─────────────────────────────────────────────────────
+app.get('/', (req, res) => {
+  res.json({ success: true, message: 'MandiBook API is running', timestamp: new Date().toISOString() });
+});
+
+app.get('/health', (req, res) => {
+  res.json({ success: true, message: 'MandiBook API is healthy', timestamp: new Date().toISOString() });
+});
 
 // ─── Health check ───────────────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
