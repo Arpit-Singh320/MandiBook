@@ -1,0 +1,78 @@
+{
+  "label": "manager-dashboard",
+  "endpoint": "/dashboard/manager",
+  "method": "GET",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ***"
+    },
+    "body": null
+  },
+  "response": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "data": {
+        "stats": {
+          "todayBookings": 0,
+          "activeFarmers": 0,
+          "avgWheatPrice": 0,
+          "avgCropPrice": 0,
+          "availableSlots": 0,
+          "managerCount": 2,
+          "openIssues": 0
+        },
+        "mandiInfo": {
+          "id": "1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+          "name": "Test Geo Mandi TST-642189",
+          "city": "Delhi",
+          "district": "North Delhi",
+          "state": "Delhi",
+          "crops": [
+            "Wheat"
+          ],
+          "operatingHoursOpen": "05:00",
+          "operatingHoursClose": "18:00",
+          "workingDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday"
+          ],
+          "workingToday": true,
+          "managerCount": 2
+        },
+        "todayBreakdown": {
+          "checkedIn": 0,
+          "confirmed": 0,
+          "pending": 0,
+          "completed": 0,
+          "cancelled": 0
+        },
+        "slotSummary": {
+          "totalSlots": 0,
+          "totalCapacity": 0,
+          "totalBooked": 0,
+          "availableSlots": 0,
+          "utilization": 0
+        },
+        "priceSummary": {
+          "totalCrops": 0,
+          "avgPrice": 0,
+          "outOfRangeCount": 0,
+          "missingCatalogCount": 0
+        },
+        "topCrops": [],
+        "recentBookings": [],
+        "alerts": []
+      }
+    }
+  },
+  "durationMs": 49,
+  "recordedAt": "2026-03-25T15:30:45.654Z"
+}

@@ -1,0 +1,39 @@
+{
+  "label": "secondaryManager-login",
+  "endpoint": "/auth/manager/login",
+  "method": "POST",
+  "attempt": 2,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "email": "deependrasastiya17@gmail.com",
+      "password": "deependra123"
+    }
+  },
+  "response": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "message": "Login successful",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjAzNmE4ZTU2LTA2MjgtNDJjNi1iZGMyLTYwNWQ0MGRlYWU3YiIsInJvbGUiOiJtYW5hZ2VyIiwidG9rZW5WZXJzaW9uIjowLCJpYXQiOjE3NzQ0NTE4NjIsImV4cCI6MTc3NzA0Mzg2Mn0.z1yRVMbT05ZSWOe4_uGc_Phjm_GvKE_40B1Vy3dNq60",
+      "user": {
+        "id": "036a8e56-0628-42c6-bdc2-605d40deae7b",
+        "name": "Deependra Sastiya",
+        "role": "manager",
+        "email": "deependrasastiya17@gmail.com",
+        "phone": "9555000002",
+        "language": "en",
+        "mandiId": "fc719ce4-c987-4352-a9d6-19f1eb2725a1",
+        "designation": "Assistant Mandi Manager",
+        "managingSince": "2026-03-25T15:12:11.125Z",
+        "profileComplete": true,
+        "createdAt": "2026-03-25T15:12:10.856Z"
+      }
+    }
+  },
+  "durationMs": 1195,
+  "recordedAt": "2026-03-25T15:17:42.258Z"
+}

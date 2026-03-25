@@ -1,0 +1,39 @@
+{
+  "label": "primaryManager-login",
+  "endpoint": "/auth/manager/login",
+  "method": "POST",
+  "attempt": 2,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "email": "arpit2005singh@gmail.com",
+      "password": "arpit123"
+    }
+  },
+  "response": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "message": "Login successful",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjFmZTAxYTAxLTE4NWYtNGVjZS05YWE2LTkwMTIwNjU0MzU5NSIsInJvbGUiOiJtYW5hZ2VyIiwidG9rZW5WZXJzaW9uIjowLCJpYXQiOjE3NzQ0NTE4NjEsImV4cCI6MTc3NzA0Mzg2MX0.WdPKMGmdFErjxilq3LgnNr1cFf3OQr8R8cwi0bxb-6g",
+      "user": {
+        "id": "1fe01a01-185f-4ece-9aa6-901206543595",
+        "name": "Arpit Singh",
+        "role": "manager",
+        "email": "arpit2005singh@gmail.com",
+        "phone": "9555000001",
+        "language": "en",
+        "mandiId": "fc719ce4-c987-4352-a9d6-19f1eb2725a1",
+        "designation": "Mandi Manager",
+        "managingSince": "2026-03-25T15:12:10.847Z",
+        "profileComplete": true,
+        "createdAt": "2026-03-25T15:12:10.467Z"
+      }
+    }
+  },
+  "durationMs": 1178,
+  "recordedAt": "2026-03-25T15:17:41.063Z"
+}

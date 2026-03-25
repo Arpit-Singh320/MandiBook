@@ -1,0 +1,68 @@
+{
+  "label": "farmer-profile-update",
+  "endpoint": "/users/profile",
+  "method": "PUT",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ***"
+    },
+    "body": {
+      "crops": [
+        "Wheat",
+        "Rice",
+        "Test Millet TST-642189"
+      ],
+      "language": "en"
+    }
+  },
+  "response": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "data": {
+        "id": "070facc5-e7ab-4ca9-977d-376a3b1fb244",
+        "name": "Arpit Farmer",
+        "role": "farmer",
+        "phone": "9444444444",
+        "email": "arpit@compliledger.com",
+        "avatar": "",
+        "language": "en",
+        "status": "active",
+        "profileComplete": true,
+        "lastLoginIp": "::1",
+        "lastLoginAt": "2026-03-25T15:17:44.445Z",
+        "aadhaarLast4": null,
+        "village": "Test Village",
+        "district": "Indore",
+        "state": "Madhya Pradesh",
+        "pincode": "452001",
+        "landHolding": 3.5,
+        "farmSize": "Medium (2-10 acres)",
+        "preferredMandis": [
+          "1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+          "fc719ce4-c987-4352-a9d6-19f1eb2725a1"
+        ],
+        "crops": [
+          "Wheat",
+          "Rice",
+          "Test Millet TST-642189"
+        ],
+        "priceAlertCrops": [],
+        "mandiId": null,
+        "designation": null,
+        "managingSince": null,
+        "department": null,
+        "twoFactorEnabled": false,
+        "tokenVersion": 0,
+        "createdAt": "2026-03-25T15:05:27.546Z",
+        "updatedAt": "2026-03-25T15:30:46.684Z"
+      },
+      "message": "Profile updated"
+    }
+  },
+  "durationMs": 5,
+  "recordedAt": "2026-03-25T15:30:46.687Z"
+}

@@ -38,12 +38,17 @@ export interface MandiData {
   crops: string[];
   operatingHoursOpen: string;
   operatingHoursClose: string;
+  workingDays?: string[];
+  holidays?: string[];
   isActive: boolean;
   rating: number;
   managerId?: string;
+  managerIds?: string[];
+  managerCount?: number;
   distance?: number | null;
   slotsToday?: number;
   manager?: { id: string; name: string; email?: string; phone?: string };
+  managers?: Array<{ id: string; name: string; email?: string; phone?: string; designation?: string; status?: string }>;
 }
 
 export interface SlotData {
@@ -94,12 +99,63 @@ export interface CropPriceData {
   currentPrice: number;
   prevPrice: number;
   minPrice?: number;
-  maxPrice?: number;
+  maxPrice?: number | null;
   updatedBy?: string;
   createdAt: string;
   updatedAt: string;
   mandi?: { id: string; name: string };
   Mandi?: { id: string; name: string };
+}
+
+export interface CropCatalogData {
+  id: string;
+  crop: string;
+  cropHi?: string;
+  category?: string;
+  unit: string;
+  minPrice: number;
+  maxPrice?: number | null;
+  isActive: boolean;
+  createdBy?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PriceOverviewData {
+  crop: string;
+  cropHi?: string;
+  category?: string;
+  unit: string;
+  minPrice?: number | null;
+  maxPrice?: number | null;
+  isActive: boolean;
+  prices: Array<{
+    mandiId?: string;
+    mandi: string;
+    price: number;
+    prevPrice: number;
+    minPrice?: number | null;
+    maxPrice?: number | null;
+    changePercent: number;
+    trend: "up" | "down" | "stable";
+  }>;
+}
+
+export interface MandiStatsResponse {
+  success: boolean;
+  data: {
+    todayBookings: number;
+    todayCheckedIn: number;
+    totalFarmers: number;
+    managerCount: number;
+    slotUtilization: number;
+    availableSlots: number;
+    workingToday: boolean;
+    operatingHoursOpen: string;
+    operatingHoursClose: string;
+    workingDays: string[];
+    crops: string[];
+  };
 }
 
 export interface NotificationData {
@@ -113,6 +169,15 @@ export interface NotificationData {
   isRead: boolean;
   actionUrl?: string;
   createdAt: string;
+}
+
+export interface NotificationListResponse {
+  success: boolean;
+  data: NotificationData[];
+  unreadCount: number;
+  total: number;
+  page: number;
+  limit: number;
 }
 
 export interface IssueData {
@@ -131,6 +196,15 @@ export interface IssueData {
   createdAt: string;
 }
 
+export interface IssueListResponse {
+  success: boolean;
+  data: IssueData[];
+  counts: Record<string, number>;
+  total: number;
+  page: number;
+  limit: number;
+}
+
 export interface AuditLogData {
   id: string;
   userId: string;
@@ -143,6 +217,14 @@ export interface AuditLogData {
   type: string;
   ipAddress: string;
   createdAt: string;
+}
+
+export interface AuditLogListResponse {
+  success: boolean;
+  data: AuditLogData[];
+  total: number;
+  page: number;
+  limit: number;
 }
 
 export interface UserData {
@@ -171,6 +253,15 @@ export interface UserData {
   createdAt: string;
 }
 
+export interface UserListResponse {
+  success: boolean;
+  data: UserData[];
+  total: number;
+  counts: Record<string, number>;
+  page: number;
+  limit: number;
+}
+
 export interface DashboardFarmerData {
   success: boolean;
   data: {
@@ -191,30 +282,100 @@ export interface DashboardFarmerData {
   };
 }
 
+export interface ManagerReportData {
+  success: boolean;
+  data: {
+    summary: {
+      totalBookings: number;
+      uniqueFarmers: number;
+      checkinRate: number;
+      openIssues: number;
+    };
+    mandiInfo: MandiData;
+    slotSummary: {
+      totalSlots: number;
+      totalCapacity: number;
+      totalBooked: number;
+      availableSlots: number;
+      utilization: number;
+    };
+    priceSummary: {
+      totalCrops: number;
+      avgPrice: number;
+    };
+    weeklyData: Array<{ day: string; date: string; bookings: number; checkins: number }>;
+    topCrops: Array<{ crop: string; count: number; totalQty: number; share: number }>;
+  };
+}
+
+export interface AdminReportData {
+  success: boolean;
+  data: {
+    platformSummary: {
+      platformBookings: number;
+      totalFarmers: number;
+      activeMandis: number;
+      totalManagers: number;
+      openIssues: number;
+      totalCatalogCrops: number;
+    };
+    totalFarmers: number;
+    activeMandis: number;
+    totalManagers: number;
+    openIssues: number;
+    bookingStatusBreakdown: Array<{ status: string; count: number }>;
+    managerDistribution: Array<{ mandiId: string; managerCount: number }>;
+    cropCoverage: Array<{ id: string; name: string; city?: string; state?: string; priceCount: number; managerCount: number }>;
+    recentActivity: Array<{ id: string; action: string; entity: string; details?: string; type: string; createdAt: string; userName?: string; userRole?: string }>;
+  };
+}
+
 export interface DashboardManagerData {
   success: boolean;
   data: {
-    stats?: {
+    stats: {
       todayBookings: number;
       activeFarmers: number;
       avgWheatPrice: number;
+      avgCropPrice: number;
       availableSlots: number;
+      managerCount: number;
+      openIssues: number;
     };
-    todayBookings: number;
-    checkedIn: number;
-    pendingBookings: number;
-    totalFarmers: number;
-    availableSlots: number;
-    todayRevenue: number;
+    mandiInfo: MandiData & {
+      workingToday?: boolean;
+      managerCount?: number;
+    };
+    todayBreakdown: {
+      checkedIn: number;
+      confirmed: number;
+      pending: number;
+      completed: number;
+      cancelled: number;
+    };
+    slotSummary: {
+      totalSlots: number;
+      totalCapacity: number;
+      totalBooked: number;
+      availableSlots: number;
+      utilization: number;
+    };
+    priceSummary: {
+      totalCrops: number;
+      avgPrice: number;
+      outOfRangeCount: number;
+      missingCatalogCount: number;
+    };
+    topCrops: Array<{ crop: string; count: number; totalQty: number }>;
     recentBookings: BookingData[];
-    mandiInfo: MandiData;
+    alerts: Array<{ type: string; message: string }>;
   };
 }
 
 export interface DashboardAdminData {
   success: boolean;
   data: {
-    stats?: {
+    stats: {
       totalMandis: number;
       activeMandis: number;
       totalFarmers: number;
@@ -222,17 +383,28 @@ export interface DashboardAdminData {
       totalBookingsToday: number;
       openIssues: number;
       avgCropPrice: number;
+      totalCatalogCrops: number;
     };
-    totalUsers: number;
-    totalFarmers: number;
-    totalManagers: number;
-    totalMandis: number;
-    totalBookings: number;
-    todayBookings: number;
-    openIssues: number;
-    activeUsers: number;
-    recentBookings: BookingData[];
-    recentIssues: IssueData[];
+    monthlyBookings: Array<{ month: string; bookings: number; farmers: number }>;
+    topMandis: Array<{ name: string; city?: string; state?: string; bookings: number; farmers: number }>;
+    recentActivity: Array<{ id: string; action: string; entity: string; details?: string; type: string; createdAt: string; userName?: string; userRole?: string }>;
+    mandiHealth: Array<{
+      id: string;
+      name: string;
+      city?: string;
+      state?: string;
+      isActive: boolean;
+      managerCount: number;
+      configuredCrops: number;
+      workingDays?: string[];
+      outOfRangePrices: number;
+    }>;
+    compliance: {
+      mandisWithoutManagers: number;
+      mandisAtManagerLimit: number;
+      mandisMissingPrices: number;
+      mandisWithOutOfRangePrices: number;
+    };
   };
 }
 
@@ -272,6 +444,18 @@ function normalizeFarmerDashboardData(response: DashboardFarmerData): DashboardF
   };
 }
 
+function normalizeManagerDashboardData(response: DashboardManagerData): DashboardManagerData {
+  return {
+    ...response,
+    data: {
+      ...response.data,
+      recentBookings: (response.data.recentBookings || []).map(normalizeBookingData),
+      alerts: response.data.alerts || [],
+      topCrops: response.data.topCrops || [],
+    },
+  };
+}
+
 // ── API methods ──────────────────────────────────────────────────────────────
 
 export const mandiApi = {
@@ -290,7 +474,12 @@ export const mandiApi = {
     return apiRequest<{ success: boolean; data: MandiData }>(`/mandis/${id}`);
   },
   stats(id: string, token: string) {
-    return apiRequest<{ success: boolean; data: Record<string, unknown> }>(`/mandis/${id}/stats`, { token });
+    return apiRequest<MandiStatsResponse>(`/mandis/${id}/stats`, { token });
+  },
+  toggle(token: string, id: string) {
+    return apiRequest<{ success: boolean; data: MandiData; message?: string }>(`/mandis/${id}/toggle`, {
+      method: "PUT", token,
+    });
   },
 };
 
@@ -376,16 +565,44 @@ export const priceApi = {
       data: response.data.map(normalizeCropPriceData),
     }));
   },
+  overview() {
+    return apiRequest<{ success: boolean; data: PriceOverviewData[] }>("/prices/overview");
+  },
+  create(token: string, data: { crop: string; mandiId: string; currentPrice: number }) {
+    return apiRequest<{ success: boolean; data: CropPriceData }>('/prices', {
+      method: "POST", token, body: JSON.stringify(data),
+    }).then((response) => ({ ...response, data: normalizeCropPriceData(response.data) }));
+  },
   update(token: string, id: string, data: { currentPrice: number }) {
     return apiRequest<{ success: boolean; data: CropPriceData }>(`/prices/${id}`, {
       method: "PUT", token, body: JSON.stringify(data),
     }).then((response) => ({ ...response, data: normalizeCropPriceData(response.data) }));
   },
+  catalog(params?: { active?: boolean }) {
+    const qs = new URLSearchParams();
+    if (params?.active !== undefined) qs.set("active", String(params.active));
+    const query = qs.toString();
+    return apiRequest<{ success: boolean; data: CropCatalogData[] }>(`/prices/catalog${query ? `?${query}` : ""}`);
+  },
+  createCatalog(token: string, data: { crop: string; cropHi?: string; category?: string; unit?: string; minPrice: number; maxPrice?: number | null; isActive?: boolean }) {
+    return apiRequest<{ success: boolean; data: CropCatalogData }>("/prices/catalog", {
+      method: "POST", token, body: JSON.stringify(data),
+    });
+  },
+  updateCatalog(token: string, id: string, data: Partial<CropCatalogData>) {
+    return apiRequest<{ success: boolean; data: CropCatalogData }>(`/prices/catalog/${id}`, {
+      method: "PUT", token, body: JSON.stringify(data),
+    });
+  },
 };
 
 export const notificationApi = {
-  list(token: string) {
-    return apiRequest<{ success: boolean; data: NotificationData[] }>("/notifications", { token });
+  list(token: string, params?: { page?: number; limit?: number }) {
+    const qs = new URLSearchParams();
+    if (params?.page) qs.set("page", params.page.toString());
+    if (params?.limit) qs.set("limit", params.limit.toString());
+    const query = qs.toString();
+    return apiRequest<NotificationListResponse>(`/notifications${query ? `?${query}` : ""}`, { token });
   },
   markRead(token: string, id: string) {
     return apiRequest<{ success: boolean }>(`/notifications/${id}/read`, {
@@ -397,6 +614,11 @@ export const notificationApi = {
       method: "PUT", token,
     });
   },
+  broadcast(token: string, data: { title: string; message: string; target?: "all" | "farmers" | "managers" }) {
+    return apiRequest<{ success: boolean; message: string }>("/notifications/broadcast", {
+      method: "POST", token, body: JSON.stringify(data),
+    });
+  },
 };
 
 export const dashboardApi = {
@@ -404,16 +626,16 @@ export const dashboardApi = {
     return apiRequest<DashboardFarmerData>("/dashboard/farmer", { token }).then(normalizeFarmerDashboardData);
   },
   manager(token: string) {
-    return apiRequest<DashboardManagerData>("/dashboard/manager", { token });
+    return apiRequest<DashboardManagerData>("/dashboard/manager", { token }).then(normalizeManagerDashboardData);
   },
   admin(token: string) {
     return apiRequest<DashboardAdminData>("/dashboard/admin", { token });
   },
   managerReports(token: string) {
-    return apiRequest<{ success: boolean; data: Record<string, unknown> }>("/dashboard/manager/reports", { token });
+    return apiRequest<ManagerReportData>("/dashboard/manager/reports", { token });
   },
   adminReports(token: string) {
-    return apiRequest<{ success: boolean; data: Record<string, unknown> }>("/dashboard/admin/reports", { token });
+    return apiRequest<AdminReportData>("/dashboard/admin/reports", { token });
   },
   analytics(token: string) {
     return apiRequest<{ success: boolean; data: Record<string, unknown> }>("/dashboard/analytics", { token });
@@ -421,8 +643,15 @@ export const dashboardApi = {
 };
 
 export const issueApi = {
-  list(token: string) {
-    return apiRequest<{ success: boolean; data: IssueData[] }>("/issues", { token });
+  list(token: string, params?: { status?: string; priority?: string; search?: string; page?: number; limit?: number }) {
+    const qs = new URLSearchParams();
+    if (params?.status) qs.set("status", params.status);
+    if (params?.priority) qs.set("priority", params.priority);
+    if (params?.search) qs.set("search", params.search);
+    if (params?.page) qs.set("page", params.page.toString());
+    if (params?.limit) qs.set("limit", params.limit.toString());
+    const query = qs.toString();
+    return apiRequest<IssueListResponse>(`/issues${query ? `?${query}` : ""}`, { token });
   },
   create(token: string, data: { mandiId: string; mandiName: string; title: string; description: string; priority: string }) {
     return apiRequest<{ success: boolean; data: IssueData }>("/issues", {
@@ -437,15 +666,26 @@ export const issueApi = {
 };
 
 export const userApi = {
-  list(token: string, params?: { role?: string }) {
-    const qs = params?.role ? `?role=${params.role}` : "";
-    return apiRequest<{ success: boolean; data: UserData[] }>(`/users${qs}`, { token });
+  list(token: string, params?: { role?: string; search?: string; status?: string; page?: number; limit?: number }) {
+    const qs = new URLSearchParams();
+    if (params?.role) qs.set("role", params.role);
+    if (params?.search) qs.set("search", params.search);
+    if (params?.status) qs.set("status", params.status);
+    if (params?.page) qs.set("page", params.page.toString());
+    if (params?.limit) qs.set("limit", params.limit.toString());
+    const query = qs.toString();
+    return apiRequest<UserListResponse>(`/users${query ? `?${query}` : ""}`, { token });
   },
   get(token: string, id: string) {
     return apiRequest<{ success: boolean; data: UserData }>(`/users/${id}`, { token });
   },
+  updateStatus(token: string, id: string, status: "active" | "suspended") {
+    return apiRequest<{ success: boolean; data: UserData; message: string }>(`/users/${id}/status`, {
+      method: "PUT", token, body: JSON.stringify({ status }),
+    });
+  },
   updateProfile(token: string, data: Record<string, unknown>) {
-    return apiRequest<{ success: boolean; data: UserData }>("/users/profile", {
+    return apiRequest<{ success: boolean; data: UserData }>('/users/profile', {
       method: "PUT", token, body: JSON.stringify(data),
     });
   },
@@ -457,11 +697,13 @@ export const userApi = {
 };
 
 export const auditLogApi = {
-  list(token: string, params?: { type?: string; limit?: number }) {
+  list(token: string, params?: { type?: string; search?: string; page?: number; limit?: number }) {
     const qs = new URLSearchParams();
     if (params?.type) qs.set("type", params.type);
+    if (params?.search) qs.set("search", params.search);
+    if (params?.page) qs.set("page", params.page.toString());
     if (params?.limit) qs.set("limit", params.limit.toString());
     const q = qs.toString();
-    return apiRequest<{ success: boolean; data: AuditLogData[] }>(`/audit-logs${q ? `?${q}` : ""}`, { token });
+    return apiRequest<AuditLogListResponse>(`/audit-logs${q ? `?${q}` : ""}`, { token });
   },
 };

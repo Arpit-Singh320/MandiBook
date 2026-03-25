@@ -15,11 +15,12 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { mandiApi, slotApi, bookingApi, type MandiData, type SlotData, type BookingData } from "@/lib/data-api";
+import { BookingPassCard } from "@/components/booking-pass-card";
 
 type Step = 1 | 2 | 3 | 4;
 
 export default function BookSlotPage() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const searchParams = useSearchParams();
   const [step, setStep] = useState<Step>(1);
   const [mandis, setMandis] = useState<MandiData[]>([]);
@@ -86,7 +87,15 @@ export default function BookSlotPage() {
         ...(vehicleNumber ? { vehicleNumber } : {}),
       };
       const res = await bookingApi.create(token, payload);
-      setCreatedBooking(res.data);
+      setCreatedBooking({
+        ...res.data,
+        ...(selectedMandiData
+          ? {
+              mandi: selectedMandiData,
+              Mandi: selectedMandiData,
+            }
+          : {}),
+      });
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Booking failed");
     } finally {
@@ -112,12 +121,11 @@ export default function BookSlotPage() {
           <p className="text-neutral-600 dark:text-neutral-400 mb-2">Your slot has been booked successfully.</p>
           <p className="text-xs text-neutral-500 font-mono mb-6">{createdBooking.bookingNumber}</p>
 
-          {createdBooking.qrCodeData && createdBooking.qrCodeData !== "data:image/png;base64,placeholder" && (
-            <div className="bg-white dark:bg-neutral-900 rounded-xl border border-[var(--border)] p-6 mb-6 inline-block">
-              <img src={createdBooking.qrCodeData} alt="Booking QR Code" className="w-48 h-48 mx-auto rounded-lg mb-2" />
-              <p className="text-[10px] text-neutral-500">Show this QR code at the mandi gate</p>
+          {createdBooking.qrCodeData && createdBooking.qrCodeData !== "data:image/png;base64,placeholder" ? (
+            <div className="mb-6 text-left">
+              <BookingPassCard booking={createdBooking} language={user?.language || "en"} compact />
             </div>
-          )}
+          ) : null}
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a href="/farmer/bookings" className="px-6 py-2.5 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] text-sm font-medium hover:opacity-90 no-underline">View My Bookings</a>

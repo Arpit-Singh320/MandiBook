@@ -1,0 +1,42 @@
+{
+  "label": "manager-update-issue",
+  "endpoint": "/issues/c2b67ed7-7ab1-4636-a068-2d9b858314e9",
+  "method": "PUT",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ***"
+    },
+    "body": {
+      "status": "resolved",
+      "resolution": "Resolved during automated manager flow."
+    }
+  },
+  "response": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "data": {
+        "id": "c2b67ed7-7ab1-4636-a068-2d9b858314e9",
+        "reporterId": "070facc5-e7ab-4ca9-977d-376a3b1fb244",
+        "reporterName": "Arpit Farmer (Farmer)",
+        "mandiId": "1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+        "mandiName": "Test Geo Mandi TST-642189",
+        "title": "Automated farmer issue",
+        "description": "Testing farmer issue creation flow.",
+        "status": "resolved",
+        "priority": "medium",
+        "assignedTo": null,
+        "resolution": "Resolved during automated manager flow.",
+        "comments": 0,
+        "createdAt": "2026-03-25T15:30:47.704Z",
+        "updatedAt": "2026-03-25T15:30:48.582Z"
+      },
+      "message": "Issue updated"
+    }
+  },
+  "durationMs": 7,
+  "recordedAt": "2026-03-25T15:30:48.584Z"
+}

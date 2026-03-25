@@ -44,6 +44,10 @@ const Mandi = sequelize.define('Mandi', {
     type: DataTypes.UUID,
     allowNull: true,
   },
+  managerIds: {
+    type: DataTypes.ARRAY(DataTypes.UUID),
+    defaultValue: [],
+  },
   crops: {
     type: DataTypes.ARRAY(DataTypes.STRING),
     defaultValue: [],
@@ -59,6 +63,10 @@ const Mandi = sequelize.define('Mandi', {
   holidays: {
     type: DataTypes.ARRAY(DataTypes.STRING),
     defaultValue: [],
+  },
+  workingDays: {
+    type: DataTypes.ARRAY(DataTypes.STRING),
+    defaultValue: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
   },
   isActive: {
     type: DataTypes.BOOLEAN,

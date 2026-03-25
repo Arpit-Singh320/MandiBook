@@ -1,0 +1,46 @@
+{
+  "label": "admin-create-mandi-address-geocode",
+  "endpoint": "/mandis",
+  "method": "POST",
+  "attempt": 2,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ***"
+    },
+    "body": {
+      "name": "Test Geo Mandi TST-865420",
+      "code": "TST-865420",
+      "address": "Azadpur, North Delhi",
+      "city": "Delhi",
+      "district": "North Delhi",
+      "state": "Delhi",
+      "pincode": "110033",
+      "contactPhone": "01100000000",
+      "crops": [
+        "Wheat"
+      ],
+      "operatingHoursOpen": "05:00",
+      "operatingHoursClose": "18:00",
+      "workingDays": [
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday"
+      ]
+    }
+  },
+  "response": {
+    "ok": false,
+    "status": 400,
+    "data": {
+      "success": false,
+      "message": "Unable to resolve mandi coordinates from the provided address. Please provide valid latitude and longitude.",
+      "stack": "Error: Unable to resolve mandi coordinates from the provided address. Please provide valid latitude and longitude.\n    at withResolvedCoordinates (/Users/arpitsingh/Desktop/College_Work/MandiBook/MandiBook_Backend/src/routes/mandis.js:92:19)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async /Users/arpitsingh/Desktop/College_Work/MandiBook/MandiBook_Backend/src/routes/mandis.js:241:26"
+    }
+  },
+  "durationMs": 10769,
+  "recordedAt": "2026-03-25T15:17:56.189Z"
+}

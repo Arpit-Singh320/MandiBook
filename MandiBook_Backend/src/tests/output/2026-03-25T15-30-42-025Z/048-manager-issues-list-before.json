@@ -1,0 +1,32 @@
+{
+  "label": "manager-issues-list-before",
+  "endpoint": "/issues?status=all&limit=20",
+  "method": "GET",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ***"
+    },
+    "body": null
+  },
+  "response": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "data": [],
+      "counts": {
+        "open": 0,
+        "in-progress": 0,
+        "resolved": 0,
+        "closed": 0
+      },
+      "total": 0,
+      "page": 1,
+      "limit": 20
+    }
+  },
+  "durationMs": 8,
+  "recordedAt": "2026-03-25T15:30:46.648Z"
+}

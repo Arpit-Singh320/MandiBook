@@ -1,0 +1,43 @@
+{
+  "label": "manager-create-deletable-slot",
+  "endpoint": "/slots",
+  "method": "POST",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ***"
+    },
+    "body": {
+      "mandiId": "1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+      "date": "2026-03-27",
+      "startTime": "19:00",
+      "endTime": "20:00",
+      "label": "07:00 PM - 08:00 PM",
+      "capacity": 8
+    }
+  },
+  "response": {
+    "ok": true,
+    "status": 201,
+    "data": {
+      "success": true,
+      "data": {
+        "id": "8b88f3ef-3a4c-4f90-b224-6f82f4dce222",
+        "bookedCount": 0,
+        "isActive": true,
+        "mandiId": "1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+        "date": "2026-03-27",
+        "startTime": "19:00",
+        "endTime": "20:00",
+        "label": "07:00 PM - 08:00 PM",
+        "capacity": 8,
+        "updatedAt": "2026-03-25T15:30:46.583Z",
+        "createdAt": "2026-03-25T15:30:46.583Z"
+      },
+      "message": "Slot created"
+    }
+  },
+  "durationMs": 10,
+  "recordedAt": "2026-03-25T15:30:46.589Z"
+}

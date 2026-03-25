@@ -1,0 +1,208 @@
+{
+  "label": "admin-dashboard-reports-final",
+  "endpoint": "/dashboard/admin/reports",
+  "method": "GET",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ***"
+    },
+    "body": null
+  },
+  "response": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "data": {
+        "platformSummary": {
+          "platformBookings": 5,
+          "totalFarmers": 5,
+          "activeMandis": 4,
+          "totalManagers": 5,
+          "openIssues": 2,
+          "totalCatalogCrops": 1
+        },
+        "totalFarmers": 5,
+        "activeMandis": 4,
+        "totalManagers": 5,
+        "openIssues": 2,
+        "bookingStatusBreakdown": [
+          {
+            "status": "cancelled",
+            "count": 1
+          },
+          {
+            "status": "checked-in",
+            "count": 1
+          },
+          {
+            "status": "completed",
+            "count": 1
+          },
+          {
+            "status": "confirmed",
+            "count": 2
+          }
+        ],
+        "managerDistribution": [
+          {
+            "mandiId": "1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+            "managerCount": 2
+          },
+          {
+            "mandiId": "a5e410f9-4d51-4e4f-be2f-97f6f4eee609",
+            "managerCount": 1
+          },
+          {
+            "mandiId": "d38bc18a-183b-4eb4-b520-68cc4cc699a7",
+            "managerCount": 1
+          },
+          {
+            "mandiId": "fc719ce4-c987-4352-a9d6-19f1eb2725a1",
+            "managerCount": 1
+          }
+        ],
+        "cropCoverage": [
+          {
+            "id": "fc719ce4-c987-4352-a9d6-19f1eb2725a1",
+            "name": "Azadpur Mandi",
+            "city": "Delhi",
+            "state": "Delhi",
+            "priceCount": 5,
+            "managerCount": 1
+          },
+          {
+            "id": "d38bc18a-183b-4eb4-b520-68cc4cc699a7",
+            "name": "Koyambedu Market",
+            "city": "Chennai",
+            "state": "Tamil Nadu",
+            "priceCount": 3,
+            "managerCount": 1
+          },
+          {
+            "id": "1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+            "name": "Test Geo Mandi TST-642189",
+            "city": "Delhi",
+            "state": "Delhi",
+            "priceCount": 2,
+            "managerCount": 2
+          },
+          {
+            "id": "a5e410f9-4d51-4e4f-be2f-97f6f4eee609",
+            "name": "Vashi APMC Market",
+            "city": "Navi Mumbai",
+            "state": "Maharashtra",
+            "priceCount": 4,
+            "managerCount": 1
+          }
+        ],
+        "recentActivity": [
+          {
+            "id": "b657c874-c1ae-4458-b129-eed5f17c73d2",
+            "action": "Checked in farmer",
+            "entity": "Booking",
+            "details": "BK-2026-03-25-6724 Arpit Farmer",
+            "type": "booking",
+            "createdAt": "2026-03-25T15:30:48.563Z",
+            "userName": "Arpit Singh",
+            "userRole": "manager"
+          },
+          {
+            "id": "95588e47-f3ec-4e01-a7f2-fe81df063aed",
+            "action": "Issue reported",
+            "entity": "Issue",
+            "details": "Automated farmer issue",
+            "type": "system",
+            "createdAt": "2026-03-25T15:30:47.705Z",
+            "userName": "Arpit Farmer",
+            "userRole": "farmer"
+          },
+          {
+            "id": "04b49fd0-c6b1-44d8-adc8-cd35ae7d5412",
+            "action": "Cancelled booking",
+            "entity": "Booking",
+            "details": "BK-2026-03-25-7768 @ Test Geo Mandi TST-642189",
+            "type": "booking",
+            "createdAt": "2026-03-25T15:30:47.698Z",
+            "userName": "Arpit Farmer",
+            "userRole": "farmer"
+          },
+          {
+            "id": "664ef472-93ad-4f4b-acc8-c296d367ac82",
+            "action": "Booking created",
+            "entity": "Booking",
+            "details": "BK-2026-03-25-7768 @ Test Geo Mandi TST-642189",
+            "type": "booking",
+            "createdAt": "2026-03-25T15:30:47.664Z",
+            "userName": "Arpit Farmer",
+            "userRole": "farmer"
+          },
+          {
+            "id": "940024d6-23a5-40bf-a4c9-4c3d7f8573e7",
+            "action": "Booking created",
+            "entity": "Booking",
+            "details": "BK-2026-03-25-6724 @ Test Geo Mandi TST-642189",
+            "type": "booking",
+            "createdAt": "2026-03-25T15:30:47.619Z",
+            "userName": "Arpit Farmer",
+            "userRole": "farmer"
+          },
+          {
+            "id": "fc4f64fa-fbb5-49d0-9746-ccd8c51355b2",
+            "action": "Updated Test Millet TST-642189 price to ₹2200",
+            "entity": "CropPrice",
+            "details": "Test Millet TST-642189 @ mandiId 1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+            "type": "price",
+            "createdAt": "2026-03-25T15:30:46.625Z",
+            "userName": "Arpit Singh",
+            "userRole": "manager"
+          },
+          {
+            "id": "8b8db0d1-55b2-40fe-a968-9e74c57195b7",
+            "action": "Created Test Millet TST-642189 mandi price",
+            "entity": "CropPrice",
+            "details": "Test Millet TST-642189 @ mandiId 1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+            "type": "price",
+            "createdAt": "2026-03-25T15:30:46.616Z",
+            "userName": "Arpit Singh",
+            "userRole": "manager"
+          },
+          {
+            "id": "9d76e77f-f518-4a70-a3b2-2edca2cd93db",
+            "action": "Created time slot",
+            "entity": "TimeSlot",
+            "details": "07:00 PM - 08:00 PM on 2026-03-27",
+            "type": "mandi",
+            "createdAt": "2026-03-25T15:30:46.586Z",
+            "userName": "Arpit Singh",
+            "userRole": "manager"
+          },
+          {
+            "id": "0f3d9182-f3c5-4b59-88bb-5a0658147fea",
+            "action": "Created time slot",
+            "entity": "TimeSlot",
+            "details": "06:00 PM - 07:00 PM Cancel on 2026-03-27",
+            "type": "mandi",
+            "createdAt": "2026-03-25T15:30:46.574Z",
+            "userName": "Arpit Singh",
+            "userRole": "manager"
+          },
+          {
+            "id": "a119f8be-0f6d-406c-ab55-d1cc30c9cfc5",
+            "action": "Activated slot",
+            "entity": "TimeSlot",
+            "details": "05:00 PM - 06:00 PM Test @ mandiId 1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+            "type": "mandi",
+            "createdAt": "2026-03-25T15:30:45.730Z",
+            "userName": "Arpit Singh",
+            "userRole": "manager"
+          }
+        ]
+      }
+    }
+  },
+  "durationMs": 18,
+  "recordedAt": "2026-03-25T15:30:48.646Z"
+}

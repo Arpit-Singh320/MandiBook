@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { motion } from "motion/react";
 import {
@@ -29,7 +29,7 @@ export default function NearbyMandisPage() {
   const [locationError, setLocationError] = useState("");
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
 
-  const loadMandis = async (coords?: { lat: number; lng: number }) => {
+  const loadMandis = useCallback(async (coords?: { lat: number; lng: number }) => {
     setLoading(true);
     setLocationError("");
     try {
@@ -42,9 +42,9 @@ export default function NearbyMandisPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const detectLocation = () => {
+  const detectLocation = useCallback(() => {
     if (typeof window === "undefined" || !navigator.geolocation) {
       setLocationError("Geolocation is not supported on this device.");
       void loadMandis();
@@ -70,11 +70,11 @@ export default function NearbyMandisPage() {
       },
       { enableHighAccuracy: true, timeout: 8000, maximumAge: 5 * 60 * 1000 }
     );
-  };
+  }, [loadMandis]);
 
   useEffect(() => {
     detectLocation();
-  }, []);
+  }, [detectLocation]);
 
   const selectedMandiData = mandis.find((mandi) => mandi.id === selectedMandi) || null;
 

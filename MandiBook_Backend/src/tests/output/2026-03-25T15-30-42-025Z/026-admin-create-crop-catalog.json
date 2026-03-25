@@ -1,0 +1,43 @@
+{
+  "label": "admin-create-crop-catalog",
+  "endpoint": "/prices/catalog",
+  "method": "POST",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ***"
+    },
+    "body": {
+      "crop": "Test Millet TST-642189",
+      "category": "test",
+      "unit": "quintal",
+      "minPrice": 1500,
+      "maxPrice": 2500,
+      "isActive": true
+    }
+  },
+  "response": {
+    "ok": true,
+    "status": 201,
+    "data": {
+      "success": true,
+      "data": {
+        "id": "cbd44780-f15b-47e4-ab15-53e0f09ce7fd",
+        "crop": "Test Millet TST-642189",
+        "cropHi": "",
+        "category": "test",
+        "unit": "quintal",
+        "minPrice": 1500,
+        "maxPrice": 2500,
+        "isActive": true,
+        "createdBy": "63c98d60-d1e6-4f61-86ac-d2423e83f66c",
+        "updatedAt": "2026-03-25T15:30:44.641Z",
+        "createdAt": "2026-03-25T15:30:44.641Z"
+      },
+      "message": "Crop catalog entry created"
+    }
+  },
+  "durationMs": 30,
+  "recordedAt": "2026-03-25T15:30:44.654Z"
+}

@@ -1,0 +1,20 @@
+{
+  "sessions": {
+    "admin": {
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzYzk4ZDYwLWQxZTYtNGY2MS04NmFjLWQyNDIzZTgzZjY2YyIsInJvbGUiOiJhZG1pbiIsInRva2VuVmVyc2lvbiI6MCwiaWF0IjoxNzc0NDUxODU5LCJleHAiOjE3NzcwNDM4NTl9.SrGmY2doamalVDlO2IjHU0IMch8tYLadR3ACRIqQX3s",
+      "email": "mandibook.admin@gmail.com"
+    },
+    "primaryManager": {
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjFmZTAxYTAxLTE4NWYtNGVjZS05YWE2LTkwMTIwNjU0MzU5NSIsInJvbGUiOiJtYW5hZ2VyIiwidG9rZW5WZXJzaW9uIjowLCJpYXQiOjE3NzQ0NTE4NjEsImV4cCI6MTc3NzA0Mzg2MX0.WdPKMGmdFErjxilq3LgnNr1cFf3OQr8R8cwi0bxb-6g",
+      "email": "arpit2005singh@gmail.com"
+    },
+    "secondaryManager": {
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjAzNmE4ZTU2LTA2MjgtNDJjNi1iZGMyLTYwNWQ0MGRlYWU3YiIsInJvbGUiOiJtYW5hZ2VyIiwidG9rZW5WZXJzaW9uIjowLCJpYXQiOjE3NzQ0NTE4NjIsImV4cCI6MTc3NzA0Mzg2Mn0.z1yRVMbT05ZSWOe4_uGc_Phjm_GvKE_40B1Vy3dNq60",
+      "email": "deependrasastiya17@gmail.com"
+    },
+    "farmer": {
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjA3MGZhY2M1LWU3YWItNGNhOS05NzdkLTM3NmEzYjFmYjI0NCIsInJvbGUiOiJmYXJtZXIiLCJ0b2tlblZlcnNpb24iOjAsImlhdCI6MTc3NDQ1MTg2NCwiZXhwIjoxNzc3MDQzODY0fQ.JPRkeo4mrK88o22ef8pOkxXbOAFRSt9_fA1VwedVfbw",
+      "email": "arpit@compliledger.com"
+    }
+  }
+}

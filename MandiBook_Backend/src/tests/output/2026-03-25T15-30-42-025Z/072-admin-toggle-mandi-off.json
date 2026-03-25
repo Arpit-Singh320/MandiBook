@@ -1,0 +1,61 @@
+{
+  "label": "admin-toggle-mandi-off",
+  "endpoint": "/mandis/1640cfbc-3e8e-412e-8fa9-965e7d8bcaca/toggle",
+  "method": "PUT",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ***"
+    },
+    "body": null
+  },
+  "response": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "data": {
+        "id": "1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+        "name": "Test Geo Mandi TST-642189",
+        "nameHi": "",
+        "code": "TST-642189",
+        "address": "Azadpur Mandi, GT Karnal Road",
+        "city": "Delhi",
+        "district": "North Delhi",
+        "state": "Delhi",
+        "pincode": "110033",
+        "lat": 28.7183,
+        "lng": 77.181,
+        "contactPhone": "01111111111",
+        "managerId": "1fe01a01-185f-4ece-9aa6-901206543595",
+        "managerIds": [
+          "1fe01a01-185f-4ece-9aa6-901206543595",
+          "036a8e56-0628-42c6-bdc2-605d40deae7b"
+        ],
+        "crops": [
+          "Wheat",
+          "Test Millet TST-642189"
+        ],
+        "operatingHoursOpen": "05:00",
+        "operatingHoursClose": "18:00",
+        "holidays": [],
+        "workingDays": [
+          "monday",
+          "tuesday",
+          "wednesday",
+          "thursday",
+          "friday",
+          "saturday"
+        ],
+        "isActive": false,
+        "rating": 0,
+        "createdAt": "2026-03-25T15:30:42.192Z",
+        "updatedAt": "2026-03-25T15:30:48.620Z"
+      },
+      "message": "Mandi deactivated"
+    }
+  },
+  "durationMs": 7,
+  "recordedAt": "2026-03-25T15:30:48.622Z"
+}

@@ -1,0 +1,775 @@
+{
+  "baseUrl": "http://localhost:5001/api",
+  "runId": "2026-03-25T15-12-51-600Z",
+  "failed": true,
+  "error": {
+    "message": "fetch failed",
+    "stack": "TypeError: fetch failed\n    at node:internal/deps/undici/undici:13510:13\n    at async request (/Users/arpitsingh/Desktop/College_Work/MandiBook/MandiBook_Backend/src/tests/test-complete-flow.js:90:20)\n    at async ensureAdminSession (/Users/arpitsingh/Desktop/College_Work/MandiBook/MandiBook_Backend/src/tests/test-complete-flow.js:164:17)\n    at async /Users/arpitsingh/Desktop/College_Work/MandiBook/MandiBook_Backend/src/tests/test-complete-flow.js:315:26"
+  },
+  "assertions": [
+    {
+      "name": "GET /health",
+      "passed": true,
+      "details": {
+        "success": true,
+        "message": "MandiBook API is running",
+        "timestamp": "2026-03-25T15:12:51.643Z"
+      }
+    },
+    {
+      "name": "GET /mandis",
+      "passed": true,
+      "details": {
+        "success": true,
+        "data": [
+          {
+            "id": "fc719ce4-c987-4352-a9d6-19f1eb2725a1",
+            "name": "Azadpur Mandi",
+            "nameHi": "आज़ादपुर मंडी",
+            "code": "AZD-001",
+            "address": "Azadpur, North Delhi",
+            "city": "Delhi",
+            "district": "North Delhi",
+            "state": "Delhi",
+            "pincode": "110033",
+            "lat": 28.7041,
+            "lng": 77.1775,
+            "contactPhone": "011-27654321",
+            "managerId": "2be7bdec-bfb1-4363-8523-55f11d363f57",
+            "managerIds": [
+              "2be7bdec-bfb1-4363-8523-55f11d363f57",
+              "1fe01a01-185f-4ece-9aa6-901206543595",
+              "036a8e56-0628-42c6-bdc2-605d40deae7b"
+            ],
+            "crops": [
+              "Wheat",
+              "Rice",
+              "Tomato",
+              "Onion",
+              "Potato"
+            ],
+            "operatingHoursOpen": "05:00",
+            "operatingHoursClose": "18:00",
+            "holidays": [],
+            "workingDays": [
+              "monday",
+              "tuesday",
+              "wednesday",
+              "thursday",
+              "friday",
+              "saturday"
+            ],
+            "isActive": true,
+            "rating": 4.5,
+            "createdAt": "2026-03-25T06:34:35.356Z",
+            "updatedAt": "2026-03-25T15:12:11.130Z",
+            "manager": {
+              "id": "2be7bdec-bfb1-4363-8523-55f11d363f57",
+              "name": "Suresh Yadav",
+              "email": "suresh@mandibook.in",
+              "phone": "9876543210",
+              "designation": "Mandi Secretary",
+              "status": "active",
+              "mandiId": "fc719ce4-c987-4352-a9d6-19f1eb2725a1"
+            },
+            "managers": [
+              {
+                "id": "2be7bdec-bfb1-4363-8523-55f11d363f57",
+                "name": "Suresh Yadav",
+                "email": "suresh@mandibook.in",
+                "phone": "9876543210",
+                "designation": "Mandi Secretary",
+                "status": "active",
+                "mandiId": "fc719ce4-c987-4352-a9d6-19f1eb2725a1"
+              },
+              {
+                "id": "1fe01a01-185f-4ece-9aa6-901206543595",
+                "name": "Arpit Singh",
+                "email": "arpit2005singh@gmail.com",
+                "phone": "9555000001",
+                "designation": "Mandi Manager",
+                "status": "active",
+                "mandiId": "fc719ce4-c987-4352-a9d6-19f1eb2725a1"
+              },
+              {
+                "id": "036a8e56-0628-42c6-bdc2-605d40deae7b",
+                "name": "Deependra Sastiya",
+                "email": "deependrasastiya17@gmail.com",
+                "phone": "9555000002",
+                "designation": "Assistant Mandi Manager",
+                "status": "active",
+                "mandiId": "fc719ce4-c987-4352-a9d6-19f1eb2725a1"
+              }
+            ],
+            "managerCount": 3
+          },
+          {
+            "id": "d38bc18a-183b-4eb4-b520-68cc4cc699a7",
+            "name": "Koyambedu Market",
+            "nameHi": "कोयम्बेडु मार्केट",
+            "code": "KYM-003",
+            "address": "Koyambedu, Chennai",
+            "city": "Chennai",
+            "district": "Chennai",
+            "state": "Tamil Nadu",
+            "pincode": "600107",
+            "lat": 13.0693,
+            "lng": 80.1944,
+            "contactPhone": "044-27654321",
+            "managerId": "1db025ff-b1f5-4a23-ad4c-cf94f5c177a3",
+            "managerIds": [
+              "1db025ff-b1f5-4a23-ad4c-cf94f5c177a3"
+            ],
+            "crops": [
+              "Rice",
+              "Banana",
+              "Coconut",
+              "Turmeric",
+              "Chilli"
+            ],
+            "operatingHoursOpen": "03:00",
+            "operatingHoursClose": "15:00",
+            "holidays": [],
+            "workingDays": [
+              "monday",
+              "tuesday",
+              "wednesday",
+              "thursday",
+              "friday",
+              "saturday"
+            ],
+            "isActive": true,
+            "rating": 4,
+            "createdAt": "2026-03-25T06:34:35.361Z",
+            "updatedAt": "2026-03-25T06:34:36.164Z",
+            "manager": {
+              "id": "1db025ff-b1f5-4a23-ad4c-cf94f5c177a3",
+              "name": "Ravi Selvam",
+              "email": "ravi@mandibook.in",
+              "phone": "9876543212",
+              "designation": "Market Inspector",
+              "status": "active",
+              "mandiId": "d38bc18a-183b-4eb4-b520-68cc4cc699a7"
+            },
+            "managers": [
+              {
+                "id": "1db025ff-b1f5-4a23-ad4c-cf94f5c177a3",
+                "name": "Ravi Selvam",
+                "email": "ravi@mandibook.in",
+                "phone": "9876543212",
+                "designation": "Market Inspector",
+                "status": "active",
+                "mandiId": "d38bc18a-183b-4eb4-b520-68cc4cc699a7"
+              }
+            ],
+            "managerCount": 1
+          },
+          {
+            "id": "a5e410f9-4d51-4e4f-be2f-97f6f4eee609",
+            "name": "Vashi APMC Market",
+            "nameHi": "वाशी एपीएमसी मार्केट",
+            "code": "VSH-002",
+            "address": "Sector 19, Vashi",
+            "city": "Navi Mumbai",
+            "district": "Thane",
+            "state": "Maharashtra",
+            "pincode": "400705",
+            "lat": 19.076,
+            "lng": 72.9981,
+            "contactPhone": "022-27654321",
+            "managerId": "0cf8c28d-df74-4105-8fba-74a84414d6c8",
+            "managerIds": [
+              "0cf8c28d-df74-4105-8fba-74a84414d6c8"
+            ],
+            "crops": [
+              "Onion",
+              "Potato",
+              "Tomato",
+              "Banana",
+              "Mango"
+            ],
+            "operatingHoursOpen": "04:00",
+            "operatingHoursClose": "16:00",
+            "holidays": [],
+            "workingDays": [
+              "monday",
+              "tuesday",
+              "wednesday",
+              "thursday",
+              "friday",
+              "saturday"
+            ],
+            "isActive": true,
+            "rating": 4.2,
+            "createdAt": "2026-03-25T06:34:35.359Z",
+            "updatedAt": "2026-03-25T06:34:36.162Z",
+            "manager": {
+              "id": "0cf8c28d-df74-4105-8fba-74a84414d6c8",
+              "name": "Priya Sharma",
+              "email": "priya@mandibook.in",
+              "phone": "9876543211",
+              "designation": "Market Supervisor",
+              "status": "active",
+              "mandiId": "a5e410f9-4d51-4e4f-be2f-97f6f4eee609"
+            },
+            "managers": [
+              {
+                "id": "0cf8c28d-df74-4105-8fba-74a84414d6c8",
+                "name": "Priya Sharma",
+                "email": "priya@mandibook.in",
+                "phone": "9876543211",
+                "designation": "Market Supervisor",
+                "status": "active",
+                "mandiId": "a5e410f9-4d51-4e4f-be2f-97f6f4eee609"
+              }
+            ],
+            "managerCount": 1
+          }
+        ],
+        "total": 3,
+        "page": 1,
+        "limit": 20
+      }
+    },
+    {
+      "name": "GET /mandis/nearby",
+      "passed": true,
+      "details": {
+        "success": true,
+        "data": [
+          {
+            "id": "fc719ce4-c987-4352-a9d6-19f1eb2725a1",
+            "name": "Azadpur Mandi",
+            "nameHi": "आज़ादपुर मंडी",
+            "code": "AZD-001",
+            "address": "Azadpur, North Delhi",
+            "city": "Delhi",
+            "district": "North Delhi",
+            "state": "Delhi",
+            "pincode": "110033",
+            "lat": 28.7041,
+            "lng": 77.1775,
+            "contactPhone": "011-27654321",
+            "managerId": "2be7bdec-bfb1-4363-8523-55f11d363f57",
+            "managerIds": [
+              "2be7bdec-bfb1-4363-8523-55f11d363f57",
+              "1fe01a01-185f-4ece-9aa6-901206543595",
+              "036a8e56-0628-42c6-bdc2-605d40deae7b"
+            ],
+            "crops": [
+              "Wheat",
+              "Rice",
+              "Tomato",
+              "Onion",
+              "Potato"
+            ],
+            "operatingHoursOpen": "05:00",
+            "operatingHoursClose": "18:00",
+            "holidays": [],
+            "workingDays": [
+              "monday",
+              "tuesday",
+              "wednesday",
+              "thursday",
+              "friday",
+              "saturday"
+            ],
+            "isActive": true,
+            "rating": 4.5,
+            "createdAt": "2026-03-25T06:34:35.356Z",
+            "updatedAt": "2026-03-25T15:12:11.130Z",
+            "distance": 7.3,
+            "slotsToday": 89
+          }
+        ]
+      }
+    },
+    {
+      "name": "GET /prices",
+      "passed": true,
+      "details": {
+        "success": true,
+        "data": [
+          {
+            "id": "02129025-b45e-4ea8-b02a-3cc5a5b6c7d0",
+            "crop": "Banana",
+            "cropHi": "केला",
+            "category": "general",
+            "unit": "quintal",
+            "mandiId": "a5e410f9-4d51-4e4f-be2f-97f6f4eee609",
+            "currentPrice": 800,
+            "prevPrice": 750,
+            "minPrice": null,
+            "maxPrice": null,
+            "updatedBy": "63c98d60-d1e6-4f61-86ac-d2423e83f66c",
+            "createdAt": "2026-03-25T06:34:36.191Z",
+            "updatedAt": "2026-03-25T06:34:36.191Z",
+            "mandi": {
+              "id": "a5e410f9-4d51-4e4f-be2f-97f6f4eee609",
+              "name": "Vashi APMC Market",
+              "city": "Navi Mumbai"
+            },
+            "changePercent": 6.7,
+            "trend": "up"
+          },
+          {
+            "id": "c77f1239-e3e5-4af0-8d27-4f9650405137",
+            "crop": "Banana",
+            "cropHi": "केला",
+            "category": "general",
+            "unit": "quintal",
+            "mandiId": "d38bc18a-183b-4eb4-b520-68cc4cc699a7",
+            "currentPrice": 850,
+            "prevPrice": 900,
+            "minPrice": null,
+            "maxPrice": null,
+            "updatedBy": "63c98d60-d1e6-4f61-86ac-d2423e83f66c",
+            "createdAt": "2026-03-25T06:34:36.191Z",
+            "updatedAt": "2026-03-25T06:34:36.191Z",
+            "mandi": {
+              "id": "d38bc18a-183b-4eb4-b520-68cc4cc699a7",
+              "name": "Koyambedu Market",
+              "city": "Chennai"
+            },
+            "changePercent": -5.6,
+            "trend": "down"
+          },
+          {
+            "id": "737d35ec-9a7d-465b-84ae-49350639ef4c",
+            "crop": "Coconut",
+            "cropHi": "नारियल",
+            "category": "general",
+            "unit": "quintal",
+            "mandiId": "d38bc18a-183b-4eb4-b520-68cc4cc699a7",
+            "currentPrice": 1500,
+            "prevPrice": 1400,
+            "minPrice": null,
+            "maxPrice": null,
+            "updatedBy": "63c98d60-d1e6-4f61-86ac-d2423e83f66c",
+            "createdAt": "2026-03-25T06:34:36.191Z",
+            "updatedAt": "2026-03-25T06:34:36.191Z",
+            "mandi": {
+              "id": "d38bc18a-183b-4eb4-b520-68cc4cc699a7",
+              "name": "Koyambedu Market",
+              "city": "Chennai"
+            },
+            "changePercent": 7.1,
+            "trend": "up"
+          },
+          {
+            "id": "44531070-6dbe-4cdd-a238-4e0e6f9f9779",
+            "crop": "Onion",
+            "cropHi": "प्याज़",
+            "category": "general",
+            "unit": "quintal",
+            "mandiId": "a5e410f9-4d51-4e4f-be2f-97f6f4eee609",
+            "currentPrice": 1900,
+            "prevPrice": 1700,
+            "minPrice": null,
+            "maxPrice": null,
+            "updatedBy": "63c98d60-d1e6-4f61-86ac-d2423e83f66c",
+            "createdAt": "2026-03-25T06:34:36.191Z",
+            "updatedAt": "2026-03-25T06:34:36.191Z",
+            "mandi": {
+              "id": "a5e410f9-4d51-4e4f-be2f-97f6f4eee609",
+              "name": "Vashi APMC Market",
+              "city": "Navi Mumbai"
+            },
+            "changePercent": 11.8,
+            "trend": "up"
+          },
+          {
+            "id": "1380f937-b3a1-400b-b23c-886c14b00686",
+            "crop": "Onion",
+            "cropHi": "प्याज़",
+            "category": "general",
+            "unit": "quintal",
+            "mandiId": "fc719ce4-c987-4352-a9d6-19f1eb2725a1",
+            "currentPrice": 1800,
+            "prevPrice": 1600,
+            "minPrice": null,
+            "maxPrice": null,
+            "updatedBy": "63c98d60-d1e6-4f61-86ac-d2423e83f66c",
+            "createdAt": "2026-03-25T06:34:36.191Z",
+            "updatedAt": "2026-03-25T06:34:36.191Z",
+            "mandi": {
+              "id": "fc719ce4-c987-4352-a9d6-19f1eb2725a1",
+              "name": "Azadpur Mandi",
+              "city": "Delhi"
+            },
+            "changePercent": 12.5,
+            "trend": "up"
+          },
+          {
+            "id": "d44a4f31-7831-4aa2-9743-6d2916062a1b",
+            "crop": "Potato",
+            "cropHi": "आलू",
+            "category": "general",
+            "unit": "quintal",
+            "mandiId": "a5e410f9-4d51-4e4f-be2f-97f6f4eee609",
+            "currentPrice": 1100,
+            "prevPrice": 1200,
+            "minPrice": null,
+            "maxPrice": null,
+            "updatedBy": "63c98d60-d1e6-4f61-86ac-d2423e83f66c",
+            "createdAt": "2026-03-25T06:34:36.191Z",
+            "updatedAt": "2026-03-25T06:34:36.191Z",
+            "mandi": {
+              "id": "a5e410f9-4d51-4e4f-be2f-97f6f4eee609",
+              "name": "Vashi APMC Market",
+              "city": "Navi Mumbai"
+            },
+            "changePercent": -8.3,
+            "trend": "down"
+          },
+          {
+            "id": "4befe360-27ac-421c-b3d0-dc12b531322e",
+            "crop": "Potato",
+            "cropHi": "आलू",
+            "category": "general",
+            "unit": "quintal",
+            "mandiId": "fc719ce4-c987-4352-a9d6-19f1eb2725a1",
+            "currentPrice": 1200,
+            "prevPrice": 1300,
+            "minPrice": null,
+            "maxPrice": null,
+            "updatedBy": "63c98d60-d1e6-4f61-86ac-d2423e83f66c",
+            "createdAt": "2026-03-25T06:34:36.191Z",
+            "updatedAt": "2026-03-25T06:34:36.191Z",
+            "mandi": {
+              "id": "fc719ce4-c987-4352-a9d6-19f1eb2725a1",
+              "name": "Azadpur Mandi",
+              "city": "Delhi"
+            },
+            "changePercent": -7.7,
+            "trend": "down"
+          },
+          {
+            "id": "016cf2ee-c96a-4828-9a2e-2f8a08918bc0",
+            "crop": "Rice",
+            "cropHi": "चावल",
+            "category": "general",
+            "unit": "quintal",
+            "mandiId": "d38bc18a-183b-4eb4-b520-68cc4cc699a7",
+            "currentPrice": 3000,
+            "prevPrice": 2900,
+            "minPrice": null,
+            "maxPrice": null,
+            "updatedBy": "63c98d60-d1e6-4f61-86ac-d2423e83f66c",
+            "createdAt": "2026-03-25T06:34:36.191Z",
+            "updatedAt": "2026-03-25T06:34:36.191Z",
+            "mandi": {
+              "id": "d38bc18a-183b-4eb4-b520-68cc4cc699a7",
+              "name": "Koyambedu Market",
+              "city": "Chennai"
+            },
+            "changePercent": 3.4,
+            "trend": "up"
+          },
+          {
+            "id": "90ea7f3a-5560-4bdf-9ca5-83961f149e35",
+            "crop": "Rice",
+            "cropHi": "चावल",
+            "category": "general",
+            "unit": "quintal",
+            "mandiId": "fc719ce4-c987-4352-a9d6-19f1eb2725a1",
+            "currentPrice": 3200,
+            "prevPrice": 3100,
+            "minPrice": null,
+            "maxPrice": null,
+            "updatedBy": "63c98d60-d1e6-4f61-86ac-d2423e83f66c",
+            "createdAt": "2026-03-25T06:34:36.191Z",
+            "updatedAt": "2026-03-25T06:34:36.191Z",
+            "mandi": {
+              "id": "fc719ce4-c987-4352-a9d6-19f1eb2725a1",
+              "name": "Azadpur Mandi",
+              "city": "Delhi"
+            },
+            "changePercent": 3.2,
+            "trend": "up"
+          },
+          {
+            "id": "1826b104-ba2d-4d4e-afc3-43812929f0ec",
+            "crop": "Tomato",
+            "cropHi": "टमाटर",
+            "category": "general",
+            "unit": "quintal",
+            "mandiId": "a5e410f9-4d51-4e4f-be2f-97f6f4eee609",
+            "currentPrice": 2300,
+            "prevPrice": 2600,
+            "minPrice": null,
+            "maxPrice": null,
+            "updatedBy": "63c98d60-d1e6-4f61-86ac-d2423e83f66c",
+            "createdAt": "2026-03-25T06:34:36.191Z",
+            "updatedAt": "2026-03-25T06:34:36.191Z",
+            "mandi": {
+              "id": "a5e410f9-4d51-4e4f-be2f-97f6f4eee609",
+              "name": "Vashi APMC Market",
+              "city": "Navi Mumbai"
+            },
+            "changePercent": -11.5,
+            "trend": "down"
+          },
+          {
+            "id": "db4ddc22-9ad1-4889-88ef-718cfa16c57e",
+            "crop": "Tomato",
+            "cropHi": "टमाटर",
+            "category": "general",
+            "unit": "quintal",
+            "mandiId": "fc719ce4-c987-4352-a9d6-19f1eb2725a1",
+            "currentPrice": 2500,
+            "prevPrice": 2800,
+            "minPrice": null,
+            "maxPrice": null,
+            "updatedBy": "63c98d60-d1e6-4f61-86ac-d2423e83f66c",
+            "createdAt": "2026-03-25T06:34:36.191Z",
+            "updatedAt": "2026-03-25T06:34:36.191Z",
+            "mandi": {
+              "id": "fc719ce4-c987-4352-a9d6-19f1eb2725a1",
+              "name": "Azadpur Mandi",
+              "city": "Delhi"
+            },
+            "changePercent": -10.7,
+            "trend": "down"
+          },
+          {
+            "id": "400c4cd9-b17a-451d-93a5-6c73db6f8285",
+            "crop": "Wheat",
+            "cropHi": "गेहूं",
+            "category": "general",
+            "unit": "quintal",
+            "mandiId": "fc719ce4-c987-4352-a9d6-19f1eb2725a1",
+            "currentPrice": 2200,
+            "prevPrice": 2150,
+            "minPrice": null,
+            "maxPrice": null,
+            "updatedBy": "63c98d60-d1e6-4f61-86ac-d2423e83f66c",
+            "createdAt": "2026-03-25T06:34:36.191Z",
+            "updatedAt": "2026-03-25T06:34:36.191Z",
+            "mandi": {
+              "id": "fc719ce4-c987-4352-a9d6-19f1eb2725a1",
+              "name": "Azadpur Mandi",
+              "city": "Delhi"
+            },
+            "changePercent": 2.3,
+            "trend": "up"
+          }
+        ]
+      }
+    },
+    {
+      "name": "GET /prices/catalog",
+      "passed": true,
+      "details": {
+        "success": true,
+        "data": []
+      }
+    },
+    {
+      "name": "GET /prices/overview",
+      "passed": true,
+      "details": {
+        "success": true,
+        "data": [
+          {
+            "crop": "Banana",
+            "cropHi": "केला",
+            "unit": "quintal",
+            "category": "general",
+            "minPrice": null,
+            "maxPrice": null,
+            "isActive": true,
+            "prices": [
+              {
+                "mandiId": "a5e410f9-4d51-4e4f-be2f-97f6f4eee609",
+                "mandi": "Vashi APMC Market, Navi Mumbai",
+                "price": 800,
+                "prevPrice": 750,
+                "minPrice": null,
+                "maxPrice": null,
+                "changePercent": 6.7,
+                "trend": "up"
+              },
+              {
+                "mandiId": "d38bc18a-183b-4eb4-b520-68cc4cc699a7",
+                "mandi": "Koyambedu Market, Chennai",
+                "price": 850,
+                "prevPrice": 900,
+                "minPrice": null,
+                "maxPrice": null,
+                "changePercent": -5.6,
+                "trend": "down"
+              }
+            ]
+          },
+          {
+            "crop": "Coconut",
+            "cropHi": "नारियल",
+            "unit": "quintal",
+            "category": "general",
+            "minPrice": null,
+            "maxPrice": null,
+            "isActive": true,
+            "prices": [
+              {
+                "mandiId": "d38bc18a-183b-4eb4-b520-68cc4cc699a7",
+                "mandi": "Koyambedu Market, Chennai",
+                "price": 1500,
+                "prevPrice": 1400,
+                "minPrice": null,
+                "maxPrice": null,
+                "changePercent": 7.1,
+                "trend": "up"
+              }
+            ]
+          },
+          {
+            "crop": "Onion",
+            "cropHi": "प्याज़",
+            "unit": "quintal",
+            "category": "general",
+            "minPrice": null,
+            "maxPrice": null,
+            "isActive": true,
+            "prices": [
+              {
+                "mandiId": "a5e410f9-4d51-4e4f-be2f-97f6f4eee609",
+                "mandi": "Vashi APMC Market, Navi Mumbai",
+                "price": 1900,
+                "prevPrice": 1700,
+                "minPrice": null,
+                "maxPrice": null,
+                "changePercent": 11.8,
+                "trend": "up"
+              },
+              {
+                "mandiId": "fc719ce4-c987-4352-a9d6-19f1eb2725a1",
+                "mandi": "Azadpur Mandi, Delhi",
+                "price": 1800,
+                "prevPrice": 1600,
+                "minPrice": null,
+                "maxPrice": null,
+                "changePercent": 12.5,
+                "trend": "up"
+              }
+            ]
+          },
+          {
+            "crop": "Potato",
+            "cropHi": "आलू",
+            "unit": "quintal",
+            "category": "general",
+            "minPrice": null,
+            "maxPrice": null,
+            "isActive": true,
+            "prices": [
+              {
+                "mandiId": "a5e410f9-4d51-4e4f-be2f-97f6f4eee609",
+                "mandi": "Vashi APMC Market, Navi Mumbai",
+                "price": 1100,
+                "prevPrice": 1200,
+                "minPrice": null,
+                "maxPrice": null,
+                "changePercent": -8.3,
+                "trend": "down"
+              },
+              {
+                "mandiId": "fc719ce4-c987-4352-a9d6-19f1eb2725a1",
+                "mandi": "Azadpur Mandi, Delhi",
+                "price": 1200,
+                "prevPrice": 1300,
+                "minPrice": null,
+                "maxPrice": null,
+                "changePercent": -7.7,
+                "trend": "down"
+              }
+            ]
+          },
+          {
+            "crop": "Rice",
+            "cropHi": "चावल",
+            "unit": "quintal",
+            "category": "general",
+            "minPrice": null,
+            "maxPrice": null,
+            "isActive": true,
+            "prices": [
+              {
+                "mandiId": "d38bc18a-183b-4eb4-b520-68cc4cc699a7",
+                "mandi": "Koyambedu Market, Chennai",
+                "price": 3000,
+                "prevPrice": 2900,
+                "minPrice": null,
+                "maxPrice": null,
+                "changePercent": 3.4,
+                "trend": "up"
+              },
+              {
+                "mandiId": "fc719ce4-c987-4352-a9d6-19f1eb2725a1",
+                "mandi": "Azadpur Mandi, Delhi",
+                "price": 3200,
+                "prevPrice": 3100,
+                "minPrice": null,
+                "maxPrice": null,
+                "changePercent": 3.2,
+                "trend": "up"
+              }
+            ]
+          },
+          {
+            "crop": "Tomato",
+            "cropHi": "टमाटर",
+            "unit": "quintal",
+            "category": "general",
+            "minPrice": null,
+            "maxPrice": null,
+            "isActive": true,
+            "prices": [
+              {
+                "mandiId": "a5e410f9-4d51-4e4f-be2f-97f6f4eee609",
+                "mandi": "Vashi APMC Market, Navi Mumbai",
+                "price": 2300,
+                "prevPrice": 2600,
+                "minPrice": null,
+                "maxPrice": null,
+                "changePercent": -11.5,
+                "trend": "down"
+              },
+              {
+                "mandiId": "fc719ce4-c987-4352-a9d6-19f1eb2725a1",
+                "mandi": "Azadpur Mandi, Delhi",
+                "price": 2500,
+                "prevPrice": 2800,
+                "minPrice": null,
+                "maxPrice": null,
+                "changePercent": -10.7,
+                "trend": "down"
+              }
+            ]
+          },
+          {
+            "crop": "Wheat",
+            "cropHi": "गेहूं",
+            "unit": "quintal",
+            "category": "general",
+            "minPrice": null,
+            "maxPrice": null,
+            "isActive": true,
+            "prices": [
+              {
+                "mandiId": "fc719ce4-c987-4352-a9d6-19f1eb2725a1",
+                "mandi": "Azadpur Mandi, Delhi",
+                "price": 2200,
+                "prevPrice": 2150,
+                "minPrice": null,
+                "maxPrice": null,
+                "changePercent": 2.3,
+                "trend": "up"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

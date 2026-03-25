@@ -1,0 +1,81 @@
+{
+  "label": "admin-issues-list",
+  "endpoint": "/issues?status=all&limit=20",
+  "method": "GET",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ***"
+    },
+    "body": null
+  },
+  "response": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "data": [
+        {
+          "id": "c2b67ed7-7ab1-4636-a068-2d9b858314e9",
+          "reporterId": "070facc5-e7ab-4ca9-977d-376a3b1fb244",
+          "reporterName": "Arpit Farmer (Farmer)",
+          "mandiId": "1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+          "mandiName": "Test Geo Mandi TST-642189",
+          "title": "Automated farmer issue",
+          "description": "Testing farmer issue creation flow.",
+          "status": "resolved",
+          "priority": "medium",
+          "assignedTo": null,
+          "resolution": "Resolved during automated manager flow.",
+          "comments": 0,
+          "createdAt": "2026-03-25T15:30:47.704Z",
+          "updatedAt": "2026-03-25T15:30:48.582Z"
+        },
+        {
+          "id": "16674314-9874-4d09-bdd7-7f408ea1b60f",
+          "reporterId": "7609b8df-1589-41c1-85ed-e6dd515a4039",
+          "reporterName": "Ram Singh (Farmer)",
+          "mandiId": "fc719ce4-c987-4352-a9d6-19f1eb2725a1",
+          "mandiName": "Azadpur Mandi",
+          "title": "Long wait time at gate",
+          "description": "Waited 2 hours even with confirmed slot. Gate management needs improvement.",
+          "status": "open",
+          "priority": "high",
+          "assignedTo": null,
+          "resolution": null,
+          "comments": 0,
+          "createdAt": "2026-03-25T06:34:36.197Z",
+          "updatedAt": "2026-03-25T06:34:36.197Z"
+        },
+        {
+          "id": "f18e7715-fae4-47c7-bd7e-f23337cc8c91",
+          "reporterId": "0cf8c28d-df74-4105-8fba-74a84414d6c8",
+          "reporterName": "Priya Sharma (Manager)",
+          "mandiId": "a5e410f9-4d51-4e4f-be2f-97f6f4eee609",
+          "mandiName": "Vashi APMC Market",
+          "title": "System showing wrong prices",
+          "description": "Onion prices not updated properly in the system.",
+          "status": "in-progress",
+          "priority": "medium",
+          "assignedTo": null,
+          "resolution": null,
+          "comments": 0,
+          "createdAt": "2026-03-25T06:34:36.197Z",
+          "updatedAt": "2026-03-25T06:34:36.197Z"
+        }
+      ],
+      "counts": {
+        "open": 1,
+        "in-progress": 1,
+        "resolved": 1,
+        "closed": 0
+      },
+      "total": 3,
+      "page": 1,
+      "limit": 20
+    }
+  },
+  "durationMs": 13,
+  "recordedAt": "2026-03-25T15:30:48.605Z"
+}

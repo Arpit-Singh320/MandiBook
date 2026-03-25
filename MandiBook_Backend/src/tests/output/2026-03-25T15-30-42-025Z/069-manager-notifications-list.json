@@ -1,0 +1,27 @@
+{
+  "label": "manager-notifications-list",
+  "endpoint": "/notifications?limit=20",
+  "method": "GET",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ***"
+    },
+    "body": null
+  },
+  "response": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "data": [],
+      "unreadCount": 0,
+      "total": 0,
+      "page": 1,
+      "limit": 20
+    }
+  },
+  "durationMs": 7,
+  "recordedAt": "2026-03-25T15:30:48.592Z"
+}

@@ -1,0 +1,102 @@
+{
+  "label": "manager-dashboard-reports",
+  "endpoint": "/dashboard/manager/reports",
+  "method": "GET",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ***"
+    },
+    "body": null
+  },
+  "response": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "data": {
+        "summary": {
+          "totalBookings": 0,
+          "uniqueFarmers": 0,
+          "checkinRate": 0,
+          "openIssues": 0
+        },
+        "mandiInfo": {
+          "id": "1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+          "name": "Test Geo Mandi TST-642189",
+          "city": "Delhi",
+          "state": "Delhi",
+          "operatingHoursOpen": "05:00",
+          "operatingHoursClose": "18:00",
+          "workingDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday"
+          ]
+        },
+        "slotSummary": {
+          "totalSlots": 0,
+          "totalCapacity": 0,
+          "totalBooked": 0,
+          "availableSlots": 0,
+          "utilization": 0
+        },
+        "priceSummary": {
+          "totalCrops": 0,
+          "avgPrice": 0
+        },
+        "weeklyData": [
+          {
+            "day": "Thu",
+            "date": "2026-03-19",
+            "bookings": 0,
+            "checkins": 0
+          },
+          {
+            "day": "Fri",
+            "date": "2026-03-20",
+            "bookings": 0,
+            "checkins": 0
+          },
+          {
+            "day": "Sat",
+            "date": "2026-03-21",
+            "bookings": 0,
+            "checkins": 0
+          },
+          {
+            "day": "Sun",
+            "date": "2026-03-22",
+            "bookings": 0,
+            "checkins": 0
+          },
+          {
+            "day": "Mon",
+            "date": "2026-03-23",
+            "bookings": 0,
+            "checkins": 0
+          },
+          {
+            "day": "Tue",
+            "date": "2026-03-24",
+            "bookings": 0,
+            "checkins": 0
+          },
+          {
+            "day": "Wed",
+            "date": "2026-03-25",
+            "bookings": 0,
+            "checkins": 0
+          }
+        ],
+        "topCrops": []
+      }
+    }
+  },
+  "durationMs": 15,
+  "recordedAt": "2026-03-25T15:30:45.670Z"
+}

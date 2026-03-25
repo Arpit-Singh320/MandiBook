@@ -1,0 +1,49 @@
+{
+  "label": "admin-auth-me",
+  "endpoint": "/auth/me",
+  "method": "GET",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ***"
+    },
+    "body": null
+  },
+  "response": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "user": {
+        "id": "63c98d60-d1e6-4f61-86ac-d2423e83f66c",
+        "name": "MandiBook Admin",
+        "role": "admin",
+        "phone": null,
+        "email": "mandibook.admin@gmail.com",
+        "language": "en",
+        "avatar": "",
+        "status": "active",
+        "profileComplete": true,
+        "village": null,
+        "district": null,
+        "state": null,
+        "pincode": null,
+        "landHolding": null,
+        "farmSize": null,
+        "preferredMandis": [],
+        "crops": [],
+        "priceAlertCrops": [],
+        "mandiId": null,
+        "designation": null,
+        "managingSince": null,
+        "department": "Platform Operations",
+        "twoFactorEnabled": true,
+        "lastLoginAt": "2026-03-25T15:18:48.322Z",
+        "createdAt": "2026-03-25T06:34:34.806Z"
+      }
+    }
+  },
+  "durationMs": 2,
+  "recordedAt": "2026-03-25T15:19:11.051Z"
+}

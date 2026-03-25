@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { bookingApi, type BookingData } from "@/lib/data-api";
+import { BookingPassCard } from "@/components/booking-pass-card";
 
 type BookingStatus = "all" | "confirmed" | "completed" | "cancelled" | "pending" | "checked-in";
 
@@ -32,12 +33,12 @@ const isCancelableStatus = (status: BookingData["status"]): status is "confirmed
 };
 
 export default function FarmerBookingsPage() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [bookings, setBookings] = useState<BookingData[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<BookingStatus>("all");
   const [search, setSearch] = useState("");
-  const [qrModal, setQrModal] = useState<string | null>(null);
+  const [qrModalBooking, setQrModalBooking] = useState<BookingData | null>(null);
   const [pageError, setPageError] = useState("");
   const [cancelingId, setCancelingId] = useState<string | null>(null);
 
@@ -108,12 +109,13 @@ export default function FarmerBookingsPage() {
         </div>
       </div>
 
-      {qrModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setQrModal(null)}>
-          <div className="bg-white dark:bg-neutral-900 rounded-xl p-6 max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
-            <img src={qrModal} alt="QR Code" className="w-64 h-64 mx-auto rounded-lg" />
-            <p className="text-center text-xs text-neutral-500 mt-3">Show this QR code at the mandi gate</p>
-            <button onClick={() => setQrModal(null)} className="mt-4 w-full px-4 py-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-sm font-medium">Close</button>
+      {qrModalBooking && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setQrModalBooking(null)}>
+          <div className="w-full max-w-3xl" onClick={(e) => e.stopPropagation()}>
+            <BookingPassCard booking={qrModalBooking} language={user?.language || "en"} />
+            <button onClick={() => setQrModalBooking(null)} className="mt-4 w-full rounded-lg bg-white px-4 py-2 text-sm font-medium text-neutral-900 dark:bg-neutral-900 dark:text-white">
+              Close
+            </button>
           </div>
         </div>
       )}
@@ -136,7 +138,7 @@ export default function FarmerBookingsPage() {
                   </span>
                 </div>
                 {booking.qrCodeData && booking.qrCodeData !== "data:image/png;base64,placeholder" && (
-                  <button onClick={() => setQrModal(booking.qrCodeData!)} className="p-2 rounded-lg bg-[var(--secondary)] hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors">
+                  <button onClick={() => setQrModalBooking(booking)} className="p-2 rounded-lg bg-[var(--secondary)] hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors">
                     <QrCode className="w-5 h-5 text-[var(--primary)]" />
                   </button>
                 )}

@@ -4,6 +4,65 @@ const { Op, fn, col, literal } = require('sequelize');
 const QRCode = require('qrcode');
 const { Booking, TimeSlot, Mandi, Notification, AuditLog, User } = require('../models');
 const { protect, authorize } = require('../middleware/auth');
+const { sequelize } = require('../config/db');
+
+const weekdayForDate = (dateString) => new Date(`${dateString}T00:00:00Z`).toLocaleDateString('en-US', {
+  weekday: 'long',
+  timeZone: 'UTC',
+}).toLowerCase();
+
+const formatReadableDate = (dateString, locale = 'en-IN') => new Intl.DateTimeFormat(locale, {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+  timeZone: 'UTC',
+}).format(new Date(`${dateString}T00:00:00Z`));
+
+const buildQrPayloadText = ({
+  language,
+  bookingNumber,
+  farmerName,
+  mandiName,
+  mandiAddress,
+  date,
+  timeSlot,
+  cropType,
+  estimatedQuantity,
+  vehicleNumber,
+  verificationCode,
+}) => {
+  if (language === 'hi') {
+    return [
+      'MandiBook किसान प्रवेश पास',
+      `बुकिंग नंबर: ${bookingNumber}`,
+      `किसान: ${farmerName}`,
+      `मंडी: ${mandiName}`,
+      `पता: ${mandiAddress}`,
+      `तारीख: ${formatReadableDate(date, 'hi-IN')}`,
+      `समय स्लॉट: ${timeSlot}`,
+      `फसल: ${cropType}`,
+      `अनुमानित मात्रा: ${estimatedQuantity} क्विंटल`,
+      `वाहन नंबर: ${vehicleNumber || 'उल्लेख नहीं'}`,
+      `सत्यापन कोड: ${verificationCode}`,
+      'कृपया प्रवेश द्वार पर यह पास दिखाएँ।',
+    ].join('\n');
+  }
+
+  return [
+    'MandiBook Farmer Entry Pass',
+    `Booking Number: ${bookingNumber}`,
+    `Farmer: ${farmerName}`,
+    `Mandi: ${mandiName}`,
+    `Address: ${mandiAddress}`,
+    `Date: ${formatReadableDate(date, 'en-IN')}`,
+    `Time Slot: ${timeSlot}`,
+    `Crop: ${cropType}`,
+    `Estimated Quantity: ${estimatedQuantity} quintals`,
+    `Vehicle Number: ${vehicleNumber || 'Not provided'}`,
+    `Verification Code: ${verificationCode}`,
+    'Show this pass at the mandi gate for verification.',
+  ].join('\n');
+};
 
 // Helper: generate booking number
 const generateBookingNumber = () => {
@@ -18,44 +77,88 @@ const generateBookingNumber = () => {
 // ─── Create Booking (Farmer) ────────────────────────────────────────────────────
 // POST /api/bookings
 router.post('/', protect, authorize('farmer'), async (req, res, next) => {
+  const transaction = await sequelize.transaction();
   try {
     const { mandiId, slotId, date, cropType, estimatedQuantity, vehicleNumber } = req.body;
 
     if (!mandiId || !slotId || !date || !cropType || !estimatedQuantity) {
+      await transaction.rollback();
       return res.status(400).json({ success: false, message: 'All required fields must be provided' });
     }
 
-    const slot = await TimeSlot.findByPk(slotId);
-    if (!slot) return res.status(404).json({ success: false, message: 'Time slot not found' });
-    if (!slot.isActive) return res.status(400).json({ success: false, message: 'Time slot is inactive' });
+    const slot = await TimeSlot.findByPk(slotId, { transaction, lock: transaction.LOCK.UPDATE });
+    if (!slot) {
+      await transaction.rollback();
+      return res.status(404).json({ success: false, message: 'Time slot not found' });
+    }
+    if (slot.mandiId !== mandiId || slot.date !== date) {
+      await transaction.rollback();
+      return res.status(400).json({ success: false, message: 'Selected slot does not match the chosen mandi or date' });
+    }
+    if (!slot.isActive) {
+      await transaction.rollback();
+      return res.status(400).json({ success: false, message: 'Time slot is inactive' });
+    }
     if (slot.bookedCount >= slot.capacity) {
+      await transaction.rollback();
       return res.status(400).json({ success: false, message: 'Time slot is full' });
     }
 
-    const mandi = await Mandi.findByPk(mandiId);
-    if (!mandi) return res.status(404).json({ success: false, message: 'Mandi not found' });
+    const mandi = await Mandi.findByPk(mandiId, { transaction });
+    if (!mandi) {
+      await transaction.rollback();
+      return res.status(404).json({ success: false, message: 'Mandi not found' });
+    }
+    if (!mandi.isActive) {
+      await transaction.rollback();
+      return res.status(400).json({ success: false, message: 'Selected mandi is not active' });
+    }
+
+    const weekday = weekdayForDate(date);
+    if (Array.isArray(mandi.workingDays) && mandi.workingDays.length > 0 && !mandi.workingDays.includes(weekday)) {
+      await transaction.rollback();
+      return res.status(400).json({ success: false, message: 'Mandi is closed on the selected day' });
+    }
+    if (Array.isArray(mandi.holidays) && mandi.holidays.includes(date)) {
+      await transaction.rollback();
+      return res.status(400).json({ success: false, message: 'Mandi is closed on the selected date' });
+    }
+
+    const existingBooking = await Booking.findOne({
+      where: {
+        farmerId: req.user.id,
+        slotId,
+        date,
+        status: { [Op.notIn]: ['cancelled'] },
+      },
+      transaction,
+      lock: transaction.LOCK.UPDATE,
+    });
+
+    if (existingBooking) {
+      await transaction.rollback();
+      return res.status(400).json({ success: false, message: 'You already have a booking for this slot' });
+    }
 
     const bookingNumber = generateBookingNumber();
+    const verificationCode = Buffer.from(`${bookingNumber}:${req.user.id}:${mandiId}`).toString('base64').slice(0, 12);
+    const timeSlotLabel = slot.label || `${slot.startTime} - ${slot.endTime}`;
 
     // Rich QR payload with full booking metadata
-    const qrPayload = {
-      v: 1,
-      bn: bookingNumber,
-      fid: req.user.id,
-      fn: req.user.name,
-      fp: req.user.phone || '',
-      mid: mandiId,
-      mn: mandi.name,
-      sid: slotId,
-      sl: slot.label || `${slot.startTime} - ${slot.endTime}`,
-      d: date,
-      ct: cropType,
-      eq: estimatedQuantity,
-      vn: vehicleNumber || '',
-      ts: new Date().toISOString(),
-      chk: Buffer.from(`${bookingNumber}:${req.user.id}:${mandiId}`).toString('base64').slice(0, 12),
-    };
-    const qrCodeData = await QRCode.toDataURL(JSON.stringify(qrPayload), {
+    const qrPayload = buildQrPayloadText({
+      language: req.user.language,
+      bookingNumber,
+      farmerName: req.user.name,
+      mandiName: mandi.name,
+      mandiAddress: [mandi.address, mandi.city, mandi.state, mandi.pincode].filter(Boolean).join(', '),
+      date,
+      timeSlot: timeSlotLabel,
+      cropType,
+      estimatedQuantity,
+      vehicleNumber,
+      verificationCode,
+    });
+    const qrCodeData = await QRCode.toDataURL(qrPayload, {
       errorCorrectionLevel: 'H',
       margin: 2,
       width: 400,
@@ -68,15 +171,15 @@ router.post('/', protect, authorize('farmer'), async (req, res, next) => {
       mandiId,
       slotId,
       date,
-      timeSlot: slot.label || `${slot.startTime} - ${slot.endTime}`,
+      timeSlot: timeSlotLabel,
       cropType,
       estimatedQuantity,
       vehicleNumber: vehicleNumber || '',
       status: 'confirmed',
       qrCodeData,
-    });
+    }, { transaction });
 
-    await slot.increment('bookedCount');
+    await slot.increment('bookedCount', { by: 1, transaction });
 
     await Notification.create({
       userId: req.user.id,
@@ -84,7 +187,7 @@ router.post('/', protect, authorize('farmer'), async (req, res, next) => {
       title: 'Booking Confirmed',
       message: `Your slot at ${mandi.name} on ${date} (${booking.timeSlot}) is confirmed.`,
       actionUrl: '/farmer/bookings',
-    });
+    }, { transaction });
 
     await AuditLog.create({
       userId: req.user.id,
@@ -96,10 +199,13 @@ router.post('/', protect, authorize('farmer'), async (req, res, next) => {
       details: `${bookingNumber} @ ${mandi.name}`,
       type: 'booking',
       ipAddress: req.ip,
-    });
+    }, { transaction });
+
+    await transaction.commit();
 
     res.status(201).json({ success: true, data: booking, message: 'Booking confirmed' });
   } catch (error) {
+    await transaction.rollback();
     next(error);
   }
 });

@@ -1,0 +1,12 @@
+{
+  "baseUrl": "http://localhost:5001/api",
+  "runId": "2026-03-25T15-30-42-025Z",
+  "startedAt": "2026-03-25T15:30:42.028Z",
+  "completedAt": "2026-03-25T15:30:48.648Z",
+  "failed": [],
+  "totalAssertions": 69,
+  "passedAssertions": 69,
+  "outputDir": "/Users/arpitsingh/Desktop/College_Work/MandiBook/MandiBook_Backend/src/tests/output/2026-03-25T15-30-42-025Z",
+  "sessionCachePath": "/Users/arpitsingh/Desktop/College_Work/MandiBook/MandiBook_Backend/src/tests/output/session-cache.json",
+  "createdMandiId": "1640cfbc-3e8e-412e-8fa9-965e7d8bcaca"
+}

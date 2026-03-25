@@ -1,0 +1,81 @@
+{
+  "label": "admin-create-mandi-address-geocode",
+  "endpoint": "/mandis",
+  "method": "POST",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ***"
+    },
+    "body": {
+      "name": "Test Geo Mandi TST-642189",
+      "code": "TST-642189",
+      "address": "Azadpur Mandi, GT Karnal Road",
+      "city": "Delhi",
+      "district": "North Delhi",
+      "state": "Delhi",
+      "pincode": "110033",
+      "lat": 28.7183,
+      "lng": 77.181,
+      "contactPhone": "01100000000",
+      "crops": [
+        "Wheat"
+      ],
+      "operatingHoursOpen": "05:00",
+      "operatingHoursClose": "18:00",
+      "workingDays": [
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday"
+      ]
+    }
+  },
+  "response": {
+    "ok": true,
+    "status": 201,
+    "data": {
+      "success": true,
+      "data": {
+        "id": "1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+        "nameHi": "",
+        "managerIds": [],
+        "holidays": [],
+        "isActive": true,
+        "rating": 0,
+        "name": "Test Geo Mandi TST-642189",
+        "code": "TST-642189",
+        "address": "Azadpur Mandi, GT Karnal Road",
+        "city": "Delhi",
+        "district": "North Delhi",
+        "state": "Delhi",
+        "pincode": "110033",
+        "lat": 28.7183,
+        "lng": 77.181,
+        "contactPhone": "01100000000",
+        "crops": [
+          "Wheat"
+        ],
+        "operatingHoursOpen": "05:00",
+        "operatingHoursClose": "18:00",
+        "workingDays": [
+          "monday",
+          "tuesday",
+          "wednesday",
+          "thursday",
+          "friday",
+          "saturday"
+        ],
+        "updatedAt": "2026-03-25T15:30:42.192Z",
+        "createdAt": "2026-03-25T15:30:42.192Z",
+        "managerId": null
+      },
+      "message": "Mandi created"
+    }
+  },
+  "durationMs": 11,
+  "recordedAt": "2026-03-25T15:30:42.200Z"
+}

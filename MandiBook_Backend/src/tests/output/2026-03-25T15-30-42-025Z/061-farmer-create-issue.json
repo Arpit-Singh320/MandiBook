@@ -1,0 +1,45 @@
+{
+  "label": "farmer-create-issue",
+  "endpoint": "/issues",
+  "method": "POST",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ***"
+    },
+    "body": {
+      "title": "Automated farmer issue",
+      "description": "Testing farmer issue creation flow.",
+      "mandiId": "1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+      "mandiName": "Test Geo Mandi TST-642189",
+      "priority": "medium"
+    }
+  },
+  "response": {
+    "ok": true,
+    "status": 201,
+    "data": {
+      "success": true,
+      "data": {
+        "id": "c2b67ed7-7ab1-4636-a068-2d9b858314e9",
+        "status": "open",
+        "comments": 0,
+        "reporterId": "070facc5-e7ab-4ca9-977d-376a3b1fb244",
+        "reporterName": "Arpit Farmer (Farmer)",
+        "mandiId": "1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+        "mandiName": "Test Geo Mandi TST-642189",
+        "title": "Automated farmer issue",
+        "description": "Testing farmer issue creation flow.",
+        "priority": "medium",
+        "updatedAt": "2026-03-25T15:30:47.704Z",
+        "createdAt": "2026-03-25T15:30:47.704Z",
+        "assignedTo": null,
+        "resolution": null
+      },
+      "message": "Issue reported"
+    }
+  },
+  "durationMs": 7,
+  "recordedAt": "2026-03-25T15:30:47.708Z"
+}

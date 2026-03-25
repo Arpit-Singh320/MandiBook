@@ -1,0 +1,26 @@
+{
+  "label": "manager-notification-broadcast",
+  "endpoint": "/notifications/broadcast",
+  "method": "POST",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ***"
+    },
+    "body": {
+      "title": "Manager Test Broadcast",
+      "message": "This is a manager-scoped broadcast test."
+    }
+  },
+  "response": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "message": "Broadcast sent to 0 users"
+    }
+  },
+  "durationMs": 5,
+  "recordedAt": "2026-03-25T15:30:46.653Z"
+}

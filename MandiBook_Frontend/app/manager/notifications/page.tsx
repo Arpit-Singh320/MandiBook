@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
 import {
   Bell,
@@ -10,27 +10,12 @@ import {
   CheckCheck,
   Circle,
   Send,
+  Loader2,
 } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
+import { notificationApi, type NotificationData } from "@/lib/data-api";
 
 type NotificationType = "booking" | "alert" | "farmer" | "system";
-
-interface Notification {
-  id: string;
-  type: NotificationType;
-  title: string;
-  message: string;
-  time: string;
-  read: boolean;
-}
-
-const notifications: Notification[] = [
-  { id: "n1", type: "booking", title: "New Booking", message: "Ramesh Kumar booked slot 08:00-10:00 AM for Mar 21 (Wheat, 50Q)", time: "5 min ago", read: false },
-  { id: "n2", type: "alert", title: "Slot Almost Full", message: "08:00-10:00 AM slot is at 90% capacity (18/20). Consider opening overflow.", time: "30 min ago", read: false },
-  { id: "n3", type: "farmer", title: "Check-in Alert", message: "3 farmers haven't checked in for the 08:00 AM slot. Consider sending reminders.", time: "1 hour ago", read: false },
-  { id: "n4", type: "system", title: "Price Update Reminder", message: "Wheat and Rice prices haven't been updated today. Please update market rates.", time: "2 hours ago", read: true },
-  { id: "n5", type: "booking", title: "Booking Cancelled", message: "Deepak Verma cancelled booking BK-107 for tomorrow's 08:00 AM slot.", time: "3 hours ago", read: true },
-  { id: "n6", type: "system", title: "Daily Summary", message: "Yesterday: 42 bookings, 38 check-ins, ₹12.4L total transaction value.", time: "Yesterday", read: true },
-];
 
 const typeConfig: Record<NotificationType, { icon: typeof Bell; color: string }> = {
   booking: { icon: CalendarCheck, color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" },
@@ -39,20 +24,91 @@ const typeConfig: Record<NotificationType, { icon: typeof Bell; color: string }>
   system: { icon: Bell, color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" },
 };
 
+const mapNotificationType = (type: string): NotificationType => {
+  if (type.startsWith("booking")) return "booking";
+  if (type === "announcement") return "farmer";
+  if (type === "price-alert") return "alert";
+  return "system";
+};
+
+const formatRelativeTime = (value: string) => {
+  const createdAt = new Date(value).getTime();
+  const diffMinutes = Math.max(1, Math.round((Date.now() - createdAt) / 60000));
+  if (diffMinutes < 60) return `${diffMinutes} min ago`;
+  const diffHours = Math.round(diffMinutes / 60);
+  if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? "" : "s"} ago`;
+  const diffDays = Math.round(diffHours / 24);
+  return `${diffDays} day${diffDays === 1 ? "" : "s"} ago`;
+};
+
 export default function ManagerNotificationsPage() {
-  const [items, setItems] = useState(notifications);
+  const { token } = useAuth();
+  const [items, setItems] = useState<NotificationData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [showBroadcast, setShowBroadcast] = useState(false);
+  const [broadcastTitle, setBroadcastTitle] = useState("");
   const [broadcastMsg, setBroadcastMsg] = useState("");
+  const [sendingBroadcast, setSendingBroadcast] = useState(false);
 
-  const unreadCount = items.filter((n) => !n.read).length;
+  useEffect(() => {
+    if (!token) return;
 
-  const markAllRead = () => {
-    setItems((prev) => prev.map((n) => ({ ...n, read: true })));
+    const loadNotifications = async () => {
+      try {
+        const response = await notificationApi.list(token, { limit: 50 });
+        setItems(response.data);
+      } catch (loadError: unknown) {
+        setError(loadError instanceof Error ? loadError.message : "Failed to load notifications");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadNotifications();
+  }, [token]);
+
+  const unreadCount = useMemo(() => items.filter((n) => !n.isRead).length, [items]);
+
+  const markAllRead = async () => {
+    if (!token || unreadCount === 0) return;
+    await notificationApi.markAllRead(token);
+    setItems((prev) => prev.map((notification) => ({ ...notification, isRead: true })));
   };
 
-  const toggleRead = (id: string) => {
-    setItems((prev) => prev.map((n) => (n.id === id ? { ...n, read: !n.read } : n)));
+  const markRead = async (notification: NotificationData) => {
+    if (!token || notification.isRead) return;
+    await notificationApi.markRead(token, notification.id);
+    setItems((prev) => prev.map((item) => (item.id === notification.id ? { ...item, isRead: true } : item)));
   };
+
+  const handleBroadcast = async () => {
+    if (!token || !broadcastTitle.trim() || !broadcastMsg.trim()) return;
+    setSendingBroadcast(true);
+    setError("");
+    try {
+      await notificationApi.broadcast(token, {
+        title: broadcastTitle.trim(),
+        message: broadcastMsg.trim(),
+        target: "farmers",
+      });
+      setBroadcastTitle("");
+      setBroadcastMsg("");
+      setShowBroadcast(false);
+    } catch (sendError: unknown) {
+      setError(sendError instanceof Error ? sendError.message : "Failed to send broadcast");
+    } finally {
+      setSendingBroadcast(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-green-700" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -78,6 +134,12 @@ export default function ManagerNotificationsPage() {
         </div>
       </motion.div>
 
+      {error ? (
+        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/20 dark:text-red-300">
+          {error}
+        </div>
+      ) : null}
+
       {/* Broadcast Form */}
       {showBroadcast && (
         <motion.div
@@ -88,6 +150,13 @@ export default function ManagerNotificationsPage() {
           <h3 className="text-base font-semibold text-neutral-900 dark:text-white mb-3">
             Broadcast to All Farmers
           </h3>
+          <input
+            type="text"
+            value={broadcastTitle}
+            onChange={(e) => setBroadcastTitle(e.target.value)}
+            placeholder="Broadcast title"
+            className="mb-3 w-full rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-sm text-neutral-900 placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-[var(--ring)] dark:bg-neutral-800 dark:text-white"
+          />
           <textarea
             value={broadcastMsg}
             onChange={(e) => setBroadcastMsg(e.target.value)}
@@ -100,11 +169,11 @@ export default function ManagerNotificationsPage() {
               Cancel
             </button>
             <button
-              onClick={() => { setBroadcastMsg(""); setShowBroadcast(false); }}
-              disabled={!broadcastMsg.trim()}
+              onClick={() => void handleBroadcast()}
+              disabled={!broadcastTitle.trim() || !broadcastMsg.trim() || sendingBroadcast}
               className="px-4 py-2 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] text-sm font-medium hover:opacity-90 disabled:opacity-50"
             >
-              Send Broadcast
+              {sendingBroadcast ? "Sending..." : "Send Broadcast"}
             </button>
           </div>
         </motion.div>
@@ -113,7 +182,7 @@ export default function ManagerNotificationsPage() {
       {/* Notification List */}
       <div className="space-y-2">
         {items.map((notification, index) => {
-          const config = typeConfig[notification.type];
+          const config = typeConfig[mapNotificationType(notification.type)];
           const Icon = config.icon;
           return (
             <motion.div
@@ -121,9 +190,9 @@ export default function ManagerNotificationsPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: index * 0.03 }}
-              onClick={() => toggleRead(notification.id)}
+              onClick={() => void markRead(notification)}
               className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-colors ${
-                notification.read
+                notification.isRead
                   ? "border-[var(--border)] bg-white dark:bg-neutral-900"
                   : "border-[var(--primary)]/30 bg-[var(--secondary)]"
               }`}
@@ -133,17 +202,21 @@ export default function ManagerNotificationsPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <p className={`text-sm ${notification.read ? "font-medium text-neutral-700 dark:text-neutral-300" : "font-semibold text-neutral-900 dark:text-white"}`}>
+                  <p className={`text-sm ${notification.isRead ? "font-medium text-neutral-700 dark:text-neutral-300" : "font-semibold text-neutral-900 dark:text-white"}`}>
                     {notification.title}
                   </p>
-                  {!notification.read && <Circle className="w-2 h-2 fill-[var(--primary)] text-[var(--primary)] shrink-0" />}
+                  {!notification.isRead && <Circle className="w-2 h-2 fill-[var(--primary)] text-[var(--primary)] shrink-0" />}
                 </div>
                 <p className="text-xs text-neutral-500 mt-0.5 line-clamp-2">{notification.message}</p>
-                <p className="text-[10px] text-neutral-400 mt-1">{notification.time}</p>
+                <p className="text-[10px] text-neutral-400 mt-1">{formatRelativeTime(notification.createdAt)}</p>
               </div>
             </motion.div>
           );
         })}
+
+        {items.length === 0 ? (
+          <div className="text-center py-12 text-neutral-500">No notifications available.</div>
+        ) : null}
       </div>
     </div>
   );

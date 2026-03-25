@@ -1,0 +1,31 @@
+{
+  "label": "admin-login-start",
+  "endpoint": "/auth/admin/login",
+  "method": "POST",
+  "attempt": 2,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "email": "mandibook.admin@gmail.com",
+      "password": "admin123"
+    }
+  },
+  "response": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "message": "2FA code sent to email",
+      "requires2FA": true,
+      "tempUserId": "63c98d60-d1e6-4f61-86ac-d2423e83f66c",
+      "otpRequestId": "admin_otp_a3b4315913a9509b36b43c3e",
+      "expiresInSeconds": 600,
+      "resendAfterSeconds": 30,
+      "debugOtp": "801888"
+    }
+  },
+  "durationMs": 2374,
+  "recordedAt": "2026-03-25T15:17:39.851Z"
+}

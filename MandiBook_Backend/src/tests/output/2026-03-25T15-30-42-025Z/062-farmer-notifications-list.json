@@ -1,0 +1,67 @@
+{
+  "label": "farmer-notifications-list",
+  "endpoint": "/notifications?limit=20",
+  "method": "GET",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ***"
+    },
+    "body": null
+  },
+  "response": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "data": [
+        {
+          "id": "d73da461-b0ea-44d1-b0af-fc6d4333ee3a",
+          "userId": "070facc5-e7ab-4ca9-977d-376a3b1fb244",
+          "type": "booking-cancelled",
+          "title": "Booking Cancelled",
+          "titleHi": "",
+          "message": "Your booking BK-2026-03-25-7768 at Test Geo Mandi TST-642189 has been cancelled.",
+          "messageHi": "",
+          "isRead": false,
+          "actionUrl": "/farmer/bookings",
+          "createdAt": "2026-03-25T15:30:47.696Z",
+          "updatedAt": "2026-03-25T15:30:47.696Z"
+        },
+        {
+          "id": "1c3af368-9de9-405b-8749-da9c3d60f864",
+          "userId": "070facc5-e7ab-4ca9-977d-376a3b1fb244",
+          "type": "booking-confirmed",
+          "title": "Booking Confirmed",
+          "titleHi": "",
+          "message": "Your slot at Test Geo Mandi TST-642189 on 2026-03-27 (06:00 PM - 07:00 PM Cancel) is confirmed.",
+          "messageHi": "",
+          "isRead": false,
+          "actionUrl": "/farmer/bookings",
+          "createdAt": "2026-03-25T15:30:47.663Z",
+          "updatedAt": "2026-03-25T15:30:47.663Z"
+        },
+        {
+          "id": "ba52feb3-a019-4077-89d0-8b3a63703d84",
+          "userId": "070facc5-e7ab-4ca9-977d-376a3b1fb244",
+          "type": "booking-confirmed",
+          "title": "Booking Confirmed",
+          "titleHi": "",
+          "message": "Your slot at Test Geo Mandi TST-642189 on 2026-03-27 (05:00 PM - 06:00 PM Test) is confirmed.",
+          "messageHi": "",
+          "isRead": false,
+          "actionUrl": "/farmer/bookings",
+          "createdAt": "2026-03-25T15:30:47.616Z",
+          "updatedAt": "2026-03-25T15:30:47.616Z"
+        }
+      ],
+      "unreadCount": 3,
+      "total": 3,
+      "page": 1,
+      "limit": 20
+    }
+  },
+  "durationMs": 8,
+  "recordedAt": "2026-03-25T15:30:47.717Z"
+}

@@ -1,12 +1,17 @@
 require('dotenv').config();
 
+const buildUniquePhone = (seed = '') => {
+  const numericSeed = `${Date.now()}${process.pid}${seed}`.replace(/\D/g, '');
+  return `9${numericSeed.slice(-9).padStart(9, '0')}`;
+};
+
 const BASE_URL = process.env.TEST_API_BASE_URL || `http://localhost:${process.env.PORT || 5001}/api`;
 const MANAGER_EMAIL = process.env.TEST_MANAGER_EMAIL || 'suresh@mandibook.in';
 const MANAGER_PASSWORD = process.env.TEST_MANAGER_PASSWORD || 'manager123';
 const ADMIN_EMAIL = process.env.TEST_ADMIN_EMAIL || 'mandibook.admin@gmail.com';
 const ADMIN_PASSWORD = process.env.TEST_ADMIN_PASSWORD || 'admin123';
 const FARMER_EMAIL = process.env.TEST_FARMER_EMAIL || 'otp.farmer@example.com';
-const FARMER_PHONE = process.env.TEST_FARMER_PHONE || '9444444444';
+const FARMER_PHONE = process.env.TEST_FARMER_PHONE || buildUniquePhone(FARMER_EMAIL);
 const FARMER_NAME = process.env.TEST_FARMER_NAME || 'OTP Test Farmer';
 const FARMER_OTP = process.env.TEST_FARMER_EMAIL_OTP || null;
 const ADMIN_OTP = process.env.TEST_ADMIN_2FA_CODE || null;

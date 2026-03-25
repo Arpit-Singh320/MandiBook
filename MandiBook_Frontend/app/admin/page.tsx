@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
 import {
   Building2,
@@ -9,62 +10,119 @@ import {
   ArrowRight,
   ArrowUpRight,
   ArrowDownRight,
+  AlertCircle,
+  Loader2,
 } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
+import { dashboardApi, type DashboardAdminData } from "@/lib/data-api";
 
-const stats = [
-  {
-    label: "Total Mandis",
-    value: "156",
-    change: "+4",
-    trend: "up",
-    icon: Building2,
-    color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-  },
-  {
-    label: "Registered Farmers",
-    value: "12,847",
-    change: "+342",
-    trend: "up",
-    icon: Users,
-    color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-  },
-  {
-    label: "Total Bookings (Month)",
-    value: "8,921",
-    change: "+15%",
-    trend: "up",
-    icon: CalendarCheck,
-    color:
-      "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-  },
-  {
-    label: "Avg. Crop Price",
-    value: "₹2,350",
-    change: "-2%",
-    trend: "down",
-    icon: TrendingUp,
-    color:
-      "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
-  },
-];
+const currencyFormatter = new Intl.NumberFormat("en-IN", {
+  style: "currency",
+  currency: "INR",
+  maximumFractionDigits: 0,
+});
 
-const topMandis = [
-  { name: "Azadpur Mandi, Delhi", bookings: 1245, farmers: 892, revenue: "₹12.5L" },
-  { name: "Vashi Mandi, Mumbai", bookings: 1102, farmers: 756, revenue: "₹10.8L" },
-  { name: "Koyambedu, Chennai", bookings: 987, farmers: 634, revenue: "₹9.2L" },
-  { name: "Bowenpally, Hyderabad", bookings: 876, farmers: 542, revenue: "₹8.1L" },
-  { name: "Yeshwanthpur, Bangalore", bookings: 823, farmers: 498, revenue: "₹7.6L" },
-];
+const numberFormatter = new Intl.NumberFormat("en-IN");
 
-const recentActivity = [
-  { action: "New mandi registered", detail: "Siliguri Mandi, West Bengal", time: "2 hours ago" },
-  { action: "Price alert triggered", detail: "Wheat dropped below ₹2,200/Q", time: "4 hours ago" },
-  { action: "Manager approved", detail: "Vikas Patel — Surat Mandi", time: "5 hours ago" },
-  { action: "Issue reported", detail: "Slot overbooking at Azadpur", time: "6 hours ago" },
-  { action: "System update", detail: "v2.4.1 deployed — bug fixes", time: "8 hours ago" },
-];
+function formatMonthLabel(monthKey?: string) {
+  if (!monthKey) return "Current period";
+  return new Intl.DateTimeFormat("en-IN", { month: "long", year: "numeric" }).format(new Date(`${monthKey}-01T00:00:00`));
+}
+
+function formatRelativeDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "numeric",
+    month: "short",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
+}
 
 export default function AdminDashboard() {
+  const { token } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [dashboard, setDashboard] = useState<DashboardAdminData["data"] | null>(null);
+
+  useEffect(() => {
+    if (!token) return;
+
+    const load = async () => {
+      try {
+        const response = await dashboardApi.admin(token);
+        setDashboard(response.data);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Failed to load admin dashboard");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void load();
+  }, [token]);
+
+  const stats = useMemo(() => {
+    if (!dashboard) return [];
+
+    const latestMonth = dashboard.monthlyBookings.at(-1);
+
+    return [
+      {
+        label: "Total Mandis",
+        value: numberFormatter.format(dashboard.stats.totalMandis),
+        change: `${dashboard.stats.activeMandis} active`,
+        trend: dashboard.stats.activeMandis > 0 ? "up" : "down",
+        icon: Building2,
+        color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+      },
+      {
+        label: "Registered Farmers",
+        value: numberFormatter.format(dashboard.stats.totalFarmers),
+        change: `${dashboard.stats.totalManagers} managers`,
+        trend: dashboard.stats.totalManagers > 0 ? "up" : "down",
+        icon: Users,
+        color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+      },
+      {
+        label: `Bookings (${formatMonthLabel(latestMonth?.month)})`,
+        value: numberFormatter.format(latestMonth?.bookings || dashboard.stats.totalBookingsToday),
+        change: `${numberFormatter.format(dashboard.stats.totalBookingsToday)} today`,
+        trend: (latestMonth?.bookings || 0) >= dashboard.stats.totalBookingsToday ? "up" : "down",
+        icon: CalendarCheck,
+        color:
+          "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+      },
+      {
+        label: "Avg. Crop Price",
+        value: currencyFormatter.format(dashboard.stats.avgCropPrice),
+        change: `${dashboard.stats.totalCatalogCrops} catalog crops`,
+        trend: dashboard.stats.avgCropPrice > 0 ? "up" : "down",
+        icon: TrendingUp,
+        color:
+          "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
+      },
+    ];
+  }, [dashboard]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-8 h-8 animate-spin text-green-700" />
+      </div>
+    );
+  }
+
+  if (error || !dashboard) {
+    return (
+      <div className="max-w-lg mx-auto text-center py-20">
+        <AlertCircle className="w-10 h-10 text-red-500 mx-auto mb-3" />
+        <p className="text-red-600">{error || "Failed to load admin dashboard"}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Welcome */}
@@ -77,7 +135,7 @@ export default function AdminDashboard() {
           Admin Dashboard
         </h1>
         <p className="mt-1 text-neutral-600 dark:text-neutral-400">
-          Platform overview — March 2026
+          Platform overview — {formatMonthLabel(dashboard.monthlyBookings.at(-1)?.month)}
         </p>
       </motion.div>
 
@@ -157,13 +215,19 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border)]">
-                {topMandis.map((mandi) => (
+                {dashboard.topMandis.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="px-5 py-8 text-center text-sm text-neutral-500">
+                      No mandi performance data available yet.
+                    </td>
+                  </tr>
+                ) : dashboard.topMandis.map((mandi) => (
                   <tr
-                    key={mandi.name}
+                    key={`${mandi.name}-${mandi.city}`}
                     className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
                   >
                     <td className="px-5 py-3 text-sm font-medium text-neutral-900 dark:text-white">
-                      {mandi.name}
+                      {[mandi.name, mandi.city, mandi.state].filter(Boolean).join(", ")}
                     </td>
                     <td className="px-5 py-3 text-sm text-neutral-600 dark:text-neutral-400">
                       {mandi.bookings.toLocaleString()}
@@ -172,7 +236,7 @@ export default function AdminDashboard() {
                       {mandi.farmers.toLocaleString()}
                     </td>
                     <td className="px-5 py-3 text-sm font-medium text-neutral-900 dark:text-white">
-                      {mandi.revenue}
+                      {currencyFormatter.format(dashboard.stats.avgCropPrice * mandi.bookings)}
                     </td>
                   </tr>
                 ))}
@@ -194,16 +258,25 @@ export default function AdminDashboard() {
             </h2>
           </div>
           <div className="divide-y divide-[var(--border)]">
-            {recentActivity.map((activity, index) => (
-              <div key={index} className="p-4 sm:p-5">
+            <div className="p-4 sm:p-5 bg-neutral-50 dark:bg-neutral-800/50 border-b border-[var(--border)] space-y-1">
+              <p className="text-sm font-medium text-neutral-900 dark:text-white">Compliance snapshot</p>
+              <p className="text-xs text-neutral-500">Mandis without managers: {dashboard.compliance.mandisWithoutManagers}</p>
+              <p className="text-xs text-neutral-500">Mandis at manager limit: {dashboard.compliance.mandisAtManagerLimit}</p>
+              <p className="text-xs text-neutral-500">Mandis missing prices: {dashboard.compliance.mandisMissingPrices}</p>
+              <p className="text-xs text-neutral-500">Mandis with prices below baseline: {dashboard.compliance.mandisWithOutOfRangePrices}</p>
+            </div>
+            {dashboard.recentActivity.length === 0 ? (
+              <div className="p-4 sm:p-5 text-sm text-neutral-500">No recent platform activity available.</div>
+            ) : dashboard.recentActivity.map((activity) => (
+              <div key={activity.id} className="p-4 sm:p-5">
                 <p className="text-sm font-medium text-neutral-900 dark:text-white">
                   {activity.action}
                 </p>
                 <p className="text-xs text-neutral-500 mt-0.5">
-                  {activity.detail}
+                  {activity.details || activity.entity}
                 </p>
                 <p className="text-[10px] text-neutral-400 mt-1">
-                  {activity.time}
+                  {formatRelativeDate(activity.createdAt)}
                 </p>
               </div>
             ))}

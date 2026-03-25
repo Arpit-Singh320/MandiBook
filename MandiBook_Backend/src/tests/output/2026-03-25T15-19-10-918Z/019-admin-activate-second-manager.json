@@ -1,0 +1,56 @@
+{
+  "label": "admin-activate-second-manager",
+  "endpoint": "/users/036a8e56-0628-42c6-bdc2-605d40deae7b/status",
+  "method": "PUT",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ***"
+    },
+    "body": {
+      "status": "active"
+    }
+  },
+  "response": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "data": {
+        "id": "036a8e56-0628-42c6-bdc2-605d40deae7b",
+        "name": "Deependra Sastiya",
+        "role": "manager",
+        "phone": "9555000002",
+        "email": "deependrasastiya17@gmail.com",
+        "avatar": "",
+        "language": "en",
+        "status": "active",
+        "profileComplete": true,
+        "lastLoginIp": "::1",
+        "lastLoginAt": "2026-03-25T15:17:42.245Z",
+        "aadhaarLast4": null,
+        "village": null,
+        "district": null,
+        "state": null,
+        "pincode": null,
+        "landHolding": null,
+        "farmSize": null,
+        "preferredMandis": [],
+        "crops": [],
+        "priceAlertCrops": [],
+        "mandiId": "fc719ce4-c987-4352-a9d6-19f1eb2725a1",
+        "designation": "Assistant Mandi Manager",
+        "managingSince": "2026-03-25T15:12:11.125Z",
+        "department": null,
+        "twoFactorEnabled": false,
+        "tokenVersion": 0,
+        "createdAt": "2026-03-25T15:12:10.856Z",
+        "updatedAt": "2026-03-25T15:19:11.128Z"
+      },
+      "message": "User active"
+    }
+  },
+  "durationMs": 10,
+  "recordedAt": "2026-03-25T15:19:11.133Z"
+}

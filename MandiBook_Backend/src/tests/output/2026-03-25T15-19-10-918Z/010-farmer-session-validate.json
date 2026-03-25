@@ -1,0 +1,54 @@
+{
+  "label": "farmer-session-validate",
+  "endpoint": "/auth/me",
+  "method": "GET",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ***"
+    },
+    "body": null
+  },
+  "response": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "user": {
+        "id": "070facc5-e7ab-4ca9-977d-376a3b1fb244",
+        "name": "Arpit Farmer",
+        "role": "farmer",
+        "phone": "9444444444",
+        "email": "arpit@compliledger.com",
+        "language": "en",
+        "avatar": "",
+        "status": "active",
+        "profileComplete": true,
+        "village": "Test Village",
+        "district": "Indore",
+        "state": "Madhya Pradesh",
+        "pincode": "452001",
+        "landHolding": 3.5,
+        "farmSize": "Medium (2-10 acres)",
+        "preferredMandis": [
+          "fc719ce4-c987-4352-a9d6-19f1eb2725a1"
+        ],
+        "crops": [
+          "Wheat",
+          "Rice"
+        ],
+        "priceAlertCrops": [],
+        "mandiId": null,
+        "designation": null,
+        "managingSince": null,
+        "department": null,
+        "twoFactorEnabled": false,
+        "lastLoginAt": "2026-03-25T15:17:44.445Z",
+        "createdAt": "2026-03-25T15:05:27.546Z"
+      }
+    }
+  },
+  "durationMs": 3,
+  "recordedAt": "2026-03-25T15:19:11.047Z"
+}

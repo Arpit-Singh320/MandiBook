@@ -1,0 +1,58 @@
+{
+  "label": "public-single-mandi",
+  "endpoint": "/mandis/1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+  "method": "GET",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": null
+  },
+  "response": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "data": {
+        "id": "1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+        "name": "Test Geo Mandi TST-642189",
+        "nameHi": "",
+        "code": "TST-642189",
+        "address": "Azadpur Mandi, GT Karnal Road",
+        "city": "Delhi",
+        "district": "North Delhi",
+        "state": "Delhi",
+        "pincode": "110033",
+        "lat": 28.7183,
+        "lng": 77.181,
+        "contactPhone": "01100000000",
+        "managerId": null,
+        "managerIds": [],
+        "crops": [
+          "Wheat"
+        ],
+        "operatingHoursOpen": "05:00",
+        "operatingHoursClose": "18:00",
+        "holidays": [],
+        "workingDays": [
+          "monday",
+          "tuesday",
+          "wednesday",
+          "thursday",
+          "friday",
+          "saturday"
+        ],
+        "isActive": true,
+        "rating": 0,
+        "createdAt": "2026-03-25T15:30:42.192Z",
+        "updatedAt": "2026-03-25T15:30:42.192Z",
+        "manager": null,
+        "managers": [],
+        "managerCount": 0
+      }
+    }
+  },
+  "durationMs": 4,
+  "recordedAt": "2026-03-25T15:30:42.205Z"
+}

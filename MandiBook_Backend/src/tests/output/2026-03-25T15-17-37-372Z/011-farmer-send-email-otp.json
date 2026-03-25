@@ -1,0 +1,29 @@
+{
+  "label": "farmer-send-email-otp",
+  "endpoint": "/auth/farmer/send-email-otp",
+  "method": "POST",
+  "attempt": 2,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "email": "arpit@compliledger.com"
+    }
+  },
+  "response": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "message": "OTP sent to email",
+      "method": "email",
+      "otpRequestId": "farmer_otp_b2c47e40a7b1815a8602069e",
+      "expiresInSeconds": 600,
+      "resendAfterSeconds": 30,
+      "debugOtp": "225245"
+    }
+  },
+  "durationMs": 2162,
+  "recordedAt": "2026-03-25T15:17:44.421Z"
+}

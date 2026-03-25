@@ -1,0 +1,220 @@
+{
+  "label": "public-prices-overview",
+  "endpoint": "/prices/overview",
+  "method": "GET",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": null
+  },
+  "response": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "data": [
+        {
+          "crop": "Banana",
+          "cropHi": "केला",
+          "unit": "quintal",
+          "category": "general",
+          "minPrice": null,
+          "maxPrice": null,
+          "isActive": true,
+          "prices": [
+            {
+              "mandiId": "a5e410f9-4d51-4e4f-be2f-97f6f4eee609",
+              "mandi": "Vashi APMC Market, Navi Mumbai",
+              "price": 800,
+              "prevPrice": 750,
+              "minPrice": null,
+              "maxPrice": null,
+              "changePercent": 6.7,
+              "trend": "up"
+            },
+            {
+              "mandiId": "d38bc18a-183b-4eb4-b520-68cc4cc699a7",
+              "mandi": "Koyambedu Market, Chennai",
+              "price": 850,
+              "prevPrice": 900,
+              "minPrice": null,
+              "maxPrice": null,
+              "changePercent": -5.6,
+              "trend": "down"
+            }
+          ]
+        },
+        {
+          "crop": "Coconut",
+          "cropHi": "नारियल",
+          "unit": "quintal",
+          "category": "general",
+          "minPrice": null,
+          "maxPrice": null,
+          "isActive": true,
+          "prices": [
+            {
+              "mandiId": "d38bc18a-183b-4eb4-b520-68cc4cc699a7",
+              "mandi": "Koyambedu Market, Chennai",
+              "price": 1500,
+              "prevPrice": 1400,
+              "minPrice": null,
+              "maxPrice": null,
+              "changePercent": 7.1,
+              "trend": "up"
+            }
+          ]
+        },
+        {
+          "crop": "Onion",
+          "cropHi": "प्याज़",
+          "unit": "quintal",
+          "category": "general",
+          "minPrice": null,
+          "maxPrice": null,
+          "isActive": true,
+          "prices": [
+            {
+              "mandiId": "a5e410f9-4d51-4e4f-be2f-97f6f4eee609",
+              "mandi": "Vashi APMC Market, Navi Mumbai",
+              "price": 1900,
+              "prevPrice": 1700,
+              "minPrice": null,
+              "maxPrice": null,
+              "changePercent": 11.8,
+              "trend": "up"
+            },
+            {
+              "mandiId": "fc719ce4-c987-4352-a9d6-19f1eb2725a1",
+              "mandi": "Azadpur Mandi, Delhi",
+              "price": 1800,
+              "prevPrice": 1600,
+              "minPrice": null,
+              "maxPrice": null,
+              "changePercent": 12.5,
+              "trend": "up"
+            }
+          ]
+        },
+        {
+          "crop": "Potato",
+          "cropHi": "आलू",
+          "unit": "quintal",
+          "category": "general",
+          "minPrice": null,
+          "maxPrice": null,
+          "isActive": true,
+          "prices": [
+            {
+              "mandiId": "a5e410f9-4d51-4e4f-be2f-97f6f4eee609",
+              "mandi": "Vashi APMC Market, Navi Mumbai",
+              "price": 1100,
+              "prevPrice": 1200,
+              "minPrice": null,
+              "maxPrice": null,
+              "changePercent": -8.3,
+              "trend": "down"
+            },
+            {
+              "mandiId": "fc719ce4-c987-4352-a9d6-19f1eb2725a1",
+              "mandi": "Azadpur Mandi, Delhi",
+              "price": 1200,
+              "prevPrice": 1300,
+              "minPrice": null,
+              "maxPrice": null,
+              "changePercent": -7.7,
+              "trend": "down"
+            }
+          ]
+        },
+        {
+          "crop": "Rice",
+          "cropHi": "चावल",
+          "unit": "quintal",
+          "category": "general",
+          "minPrice": null,
+          "maxPrice": null,
+          "isActive": true,
+          "prices": [
+            {
+              "mandiId": "d38bc18a-183b-4eb4-b520-68cc4cc699a7",
+              "mandi": "Koyambedu Market, Chennai",
+              "price": 3000,
+              "prevPrice": 2900,
+              "minPrice": null,
+              "maxPrice": null,
+              "changePercent": 3.4,
+              "trend": "up"
+            },
+            {
+              "mandiId": "fc719ce4-c987-4352-a9d6-19f1eb2725a1",
+              "mandi": "Azadpur Mandi, Delhi",
+              "price": 3200,
+              "prevPrice": 3100,
+              "minPrice": null,
+              "maxPrice": null,
+              "changePercent": 3.2,
+              "trend": "up"
+            }
+          ]
+        },
+        {
+          "crop": "Tomato",
+          "cropHi": "टमाटर",
+          "unit": "quintal",
+          "category": "general",
+          "minPrice": null,
+          "maxPrice": null,
+          "isActive": true,
+          "prices": [
+            {
+              "mandiId": "a5e410f9-4d51-4e4f-be2f-97f6f4eee609",
+              "mandi": "Vashi APMC Market, Navi Mumbai",
+              "price": 2300,
+              "prevPrice": 2600,
+              "minPrice": null,
+              "maxPrice": null,
+              "changePercent": -11.5,
+              "trend": "down"
+            },
+            {
+              "mandiId": "fc719ce4-c987-4352-a9d6-19f1eb2725a1",
+              "mandi": "Azadpur Mandi, Delhi",
+              "price": 2500,
+              "prevPrice": 2800,
+              "minPrice": null,
+              "maxPrice": null,
+              "changePercent": -10.7,
+              "trend": "down"
+            }
+          ]
+        },
+        {
+          "crop": "Wheat",
+          "cropHi": "गेहूं",
+          "unit": "quintal",
+          "category": "general",
+          "minPrice": null,
+          "maxPrice": null,
+          "isActive": true,
+          "prices": [
+            {
+              "mandiId": "fc719ce4-c987-4352-a9d6-19f1eb2725a1",
+              "mandi": "Azadpur Mandi, Delhi",
+              "price": 2200,
+              "prevPrice": 2150,
+              "minPrice": null,
+              "maxPrice": null,
+              "changePercent": 2.3,
+              "trend": "up"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "durationMs": 4,
+  "recordedAt": "2026-03-25T15:17:37.476Z"
+}

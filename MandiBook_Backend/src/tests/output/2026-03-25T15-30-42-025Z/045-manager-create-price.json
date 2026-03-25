@@ -1,0 +1,42 @@
+{
+  "label": "manager-create-price",
+  "endpoint": "/prices",
+  "method": "POST",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ***"
+    },
+    "body": {
+      "crop": "Test Millet TST-642189",
+      "mandiId": "1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+      "currentPrice": 2000
+    }
+  },
+  "response": {
+    "ok": true,
+    "status": 201,
+    "data": {
+      "success": true,
+      "data": {
+        "id": "afd0a6a4-0deb-4b91-b61d-d859a1203b42",
+        "crop": "Test Millet TST-642189",
+        "cropHi": "परीक्षण बाजरा",
+        "category": "test",
+        "unit": "quintal",
+        "mandiId": "1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+        "currentPrice": 2000,
+        "prevPrice": 2000,
+        "minPrice": 1500,
+        "maxPrice": 2700,
+        "updatedBy": "1fe01a01-185f-4ece-9aa6-901206543595",
+        "updatedAt": "2026-03-25T15:30:46.614Z",
+        "createdAt": "2026-03-25T15:30:46.614Z"
+      },
+      "message": "Price entry created"
+    }
+  },
+  "durationMs": 11,
+  "recordedAt": "2026-03-25T15:30:46.618Z"
+}

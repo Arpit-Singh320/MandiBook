@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import {
   motion,
   useMotionValue,
@@ -116,10 +117,12 @@ function BackgroundCard({
       animate={{ opacity: card.opacity, scale: card.scale }}
       transition={{ duration: 0.8, delay: index * 0.1 }}
     >
-      <div className="w-20 h-20 sm:w-32 sm:h-32 md:w-40 md:h-40 lg:w-48 lg:h-48 rounded-xl sm:rounded-2xl overflow-hidden shadow-xl">
-        <img
+      <div className="relative w-20 h-20 sm:w-32 sm:h-32 md:w-40 md:h-40 lg:w-48 lg:h-48 rounded-xl sm:rounded-2xl overflow-hidden shadow-xl">
+        <Image
           src={card.image}
           alt=""
+          fill
+          sizes="(max-width: 640px) 80px, (max-width: 768px) 128px, (max-width: 1024px) 160px, 192px"
           className="w-full h-full object-cover"
           aria-hidden="true"
         />

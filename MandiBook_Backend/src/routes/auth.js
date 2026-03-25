@@ -36,6 +36,8 @@ const OTP_EXPIRY_SECONDS = Math.floor(OTP_EXPIRY_MS / 1000);
 const OTP_RESEND_AFTER_SECONDS = 30;
 const OTP_MAX_ATTEMPTS = 5;
 
+const isLocalOtpFallbackEnabled = () => process.env.NODE_ENV !== 'production' && process.env.OTP_ALLOW_LOCAL_FALLBACK !== 'false';
+
 const issueOtpRequest = async ({ purpose, identifier, userId, recipientName, metadata = {} }) => {
   const normalizedIdentifier = normalizeIdentifier(identifier);
 
@@ -73,12 +75,32 @@ const issueOtpRequest = async ({ purpose, identifier, userId, recipientName, met
   });
 
   let emailResult = { success: true, messageId: 'debug-bypass' };
+  const debugBypassEnabled = isOtpDebugBypassEnabled();
 
-  if (!isOtpDebugBypassEnabled()) {
+  if (!debugBypassEnabled) {
     emailResult = await sendEmailOTP(normalizedIdentifier, recipientName, otp);
   }
 
   if (!emailResult.success) {
+    if (isLocalOtpFallbackEnabled()) {
+      console.warn(`OTP email delivery failed for ${normalizedIdentifier}; using local fallback in ${process.env.NODE_ENV || 'development'} mode.`);
+
+      await otpRequest.update({
+        status: 'sent',
+        deliveryProvider: 'local-fallback',
+        deliveryReference: emailResult.error || 'local-fallback',
+      });
+
+      return {
+        success: true,
+        otpRequestId: otpRequest.requestId,
+        expiresInSeconds: OTP_EXPIRY_SECONDS,
+        resendAfterSeconds: OTP_RESEND_AFTER_SECONDS,
+        debugOtp: otp,
+        fallbackDelivery: true,
+      };
+    }
+
     await otpRequest.update({ status: 'cancelled' });
     return { success: false, error: emailResult.error };
   }
@@ -93,7 +115,7 @@ const issueOtpRequest = async ({ purpose, identifier, userId, recipientName, met
     otpRequestId: otpRequest.requestId,
     expiresInSeconds: OTP_EXPIRY_SECONDS,
     resendAfterSeconds: OTP_RESEND_AFTER_SECONDS,
-    ...(isOtpDebugBypassEnabled() ? { debugOtp: otp } : {}),
+    ...(debugBypassEnabled ? { debugOtp: otp } : {}),
   };
 };
 

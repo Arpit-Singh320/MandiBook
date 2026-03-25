@@ -1,0 +1,188 @@
+{
+  "label": "admin-dashboard-reports",
+  "endpoint": "/dashboard/admin/reports",
+  "method": "GET",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ***"
+    },
+    "body": null
+  },
+  "response": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "data": {
+        "platformSummary": {
+          "platformBookings": 3,
+          "totalFarmers": 5,
+          "activeMandis": 3,
+          "totalManagers": 5,
+          "openIssues": 2,
+          "totalCatalogCrops": 0
+        },
+        "totalFarmers": 5,
+        "activeMandis": 3,
+        "totalManagers": 5,
+        "openIssues": 2,
+        "bookingStatusBreakdown": [
+          {
+            "status": "checked-in",
+            "count": 1
+          },
+          {
+            "status": "confirmed",
+            "count": 2
+          }
+        ],
+        "managerDistribution": [
+          {
+            "mandiId": "a5e410f9-4d51-4e4f-be2f-97f6f4eee609",
+            "managerCount": 1
+          },
+          {
+            "mandiId": "d38bc18a-183b-4eb4-b520-68cc4cc699a7",
+            "managerCount": 1
+          },
+          {
+            "mandiId": "fc719ce4-c987-4352-a9d6-19f1eb2725a1",
+            "managerCount": 3
+          }
+        ],
+        "cropCoverage": [
+          {
+            "id": "fc719ce4-c987-4352-a9d6-19f1eb2725a1",
+            "name": "Azadpur Mandi",
+            "city": "Delhi",
+            "state": "Delhi",
+            "priceCount": 15,
+            "managerCount": 3
+          },
+          {
+            "id": "d38bc18a-183b-4eb4-b520-68cc4cc699a7",
+            "name": "Koyambedu Market",
+            "city": "Chennai",
+            "state": "Tamil Nadu",
+            "priceCount": 3,
+            "managerCount": 1
+          },
+          {
+            "id": "a5e410f9-4d51-4e4f-be2f-97f6f4eee609",
+            "name": "Vashi APMC Market",
+            "city": "Navi Mumbai",
+            "state": "Maharashtra",
+            "priceCount": 4,
+            "managerCount": 1
+          }
+        ],
+        "recentActivity": [
+          {
+            "id": "f7ca7b15-e2bb-4161-9744-23f70566de08",
+            "action": "Logged in via email OTP",
+            "entity": "Farmer Portal",
+            "details": null,
+            "type": "login",
+            "createdAt": "2026-03-25T15:17:44.451Z",
+            "userName": "Arpit Farmer",
+            "userRole": "farmer"
+          },
+          {
+            "id": "8595f24e-15ab-4157-b455-b13e538d769f",
+            "action": "Logged in",
+            "entity": "Manager Portal",
+            "details": null,
+            "type": "login",
+            "createdAt": "2026-03-25T15:17:42.251Z",
+            "userName": "Deependra Sastiya",
+            "userRole": "manager"
+          },
+          {
+            "id": "7ab86279-0737-4241-91d6-fd571b8c0e66",
+            "action": "Logged in",
+            "entity": "Manager Portal",
+            "details": null,
+            "type": "login",
+            "createdAt": "2026-03-25T15:17:41.058Z",
+            "userName": "Arpit Singh",
+            "userRole": "manager"
+          },
+          {
+            "id": "34d16770-af38-4c1d-9c2c-5606403f789a",
+            "action": "Logged in",
+            "entity": "Admin Portal",
+            "details": null,
+            "type": "login",
+            "createdAt": "2026-03-25T15:17:39.875Z",
+            "userName": "MandiBook Admin",
+            "userRole": "admin"
+          },
+          {
+            "id": "795300d6-a8c5-48fe-b986-d15eef18229b",
+            "action": "Logged in",
+            "entity": "Admin Portal",
+            "details": null,
+            "type": "login",
+            "createdAt": "2026-03-25T15:16:44.520Z",
+            "userName": "MandiBook Admin",
+            "userRole": "admin"
+          },
+          {
+            "id": "bb7bda8c-7c47-4782-9f54-4051f9a422df",
+            "action": "Registered via email OTP",
+            "entity": "Farmer Portal",
+            "details": null,
+            "type": "login",
+            "createdAt": "2026-03-25T15:16:43.324Z",
+            "userName": "otp.farmer@example.com",
+            "userRole": "farmer"
+          },
+          {
+            "id": "4d741fb9-b1c3-4320-83fe-823f4916d1f8",
+            "action": "Logged out",
+            "entity": "Manager Portal",
+            "details": null,
+            "type": "login",
+            "createdAt": "2026-03-25T15:16:41.888Z",
+            "userName": "Suresh Yadav",
+            "userRole": "manager"
+          },
+          {
+            "id": "5c63bbfa-0c37-441b-b052-43a28d3f5c28",
+            "action": "Logged in",
+            "entity": "Manager Portal",
+            "details": null,
+            "type": "login",
+            "createdAt": "2026-03-25T15:16:41.875Z",
+            "userName": "Suresh Yadav",
+            "userRole": "manager"
+          },
+          {
+            "id": "27193ab5-542c-40e4-a158-53402de03480",
+            "action": "Logged out",
+            "entity": "Manager Portal",
+            "details": null,
+            "type": "login",
+            "createdAt": "2026-03-25T15:07:58.967Z",
+            "userName": "Suresh Yadav",
+            "userRole": "manager"
+          },
+          {
+            "id": "1cbdb732-2be6-4366-9b2a-538677ac73b0",
+            "action": "Logged in",
+            "entity": "Manager Portal",
+            "details": null,
+            "type": "login",
+            "createdAt": "2026-03-25T15:07:58.939Z",
+            "userName": "Suresh Yadav",
+            "userRole": "manager"
+          }
+        ]
+      }
+    }
+  },
+  "durationMs": 22,
+  "recordedAt": "2026-03-25T15:17:44.563Z"
+}

@@ -1,0 +1,34 @@
+{
+  "label": "admin-assign-primary-manager",
+  "endpoint": "/users/manager/1fe01a01-185f-4ece-9aa6-901206543595/assignment",
+  "method": "PUT",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ***"
+    },
+    "body": {
+      "mandiId": "1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+      "designation": "Lead Mandi Manager"
+    }
+  },
+  "response": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "data": {
+        "id": "1fe01a01-185f-4ece-9aa6-901206543595",
+        "name": "Arpit Singh",
+        "email": "arpit2005singh@gmail.com",
+        "role": "manager",
+        "mandiId": "1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+        "designation": "Lead Mandi Manager"
+      },
+      "message": "Manager assignment updated"
+    }
+  },
+  "durationMs": 20,
+  "recordedAt": "2026-03-25T15:30:42.225Z"
+}

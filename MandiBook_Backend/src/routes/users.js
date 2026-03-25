@@ -6,6 +6,32 @@ const Mandi = require('../models/Mandi');
 const AuditLog = require('../models/AuditLog');
 const { protect, authorize } = require('../middleware/auth');
 
+const MAX_MANAGERS_PER_MANDI = 3;
+
+const normalizeEmail = (value) => String(value).trim().toLowerCase();
+
+const syncMandiManagerLinks = async (mandiId) => {
+  if (!mandiId) return [];
+
+  const mandi = await Mandi.findByPk(mandiId);
+  if (!mandi) return [];
+
+  const managers = await User.findAll({
+    where: { role: 'manager', mandiId },
+    attributes: ['id', 'name', 'email', 'phone', 'designation', 'status'],
+    order: [['createdAt', 'ASC']],
+  });
+
+  const managerIds = managers.map((manager) => manager.id).slice(0, MAX_MANAGERS_PER_MANDI);
+
+  await mandi.update({
+    managerIds,
+    managerId: managerIds[0] || null,
+  });
+
+  return managers;
+};
+
 // ─── Get all users (Admin) ──────────────────────────────────────────────────────
 // GET /api/users?role=farmer&search=xxx&status=active&page=1&limit=20
 router.get('/', protect, authorize('admin'), async (req, res, next) => {
@@ -130,12 +156,17 @@ router.post('/manager', protect, authorize('admin'), async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Name, email, and password are required' });
     }
 
-    const normalizedEmail = String(email).trim().toLowerCase();
+    const normalizedEmail = normalizeEmail(email);
     let assignedMandi = null;
     if (mandiId) {
       assignedMandi = await Mandi.findByPk(mandiId);
       if (!assignedMandi) {
         return res.status(404).json({ success: false, message: 'Assigned mandi not found' });
+      }
+
+      const managerCount = await User.count({ where: { role: 'manager', mandiId } });
+      if (managerCount >= MAX_MANAGERS_PER_MANDI) {
+        return res.status(400).json({ success: false, message: `A mandi can have at most ${MAX_MANAGERS_PER_MANDI} managers` });
       }
     }
 
@@ -147,13 +178,13 @@ router.post('/manager', protect, authorize('admin'), async (req, res, next) => {
     const user = await User.create({
       name, email: normalizedEmail, password, phone,
       role: 'manager',
-      mandiId,
+      mandiId: mandiId || null,
       designation,
       profileComplete: true,
     });
 
     if (assignedMandi) {
-      await assignedMandi.update({ managerId: user.id });
+      await syncMandiManagerLinks(assignedMandi.id);
     }
 
     await AuditLog.create({
@@ -170,8 +201,74 @@ router.post('/manager', protect, authorize('admin'), async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      data: { id: user.id, name: user.name, email: user.email, role: user.role },
+      data: { id: user.id, name: user.name, email: user.email, role: user.role, mandiId: user.mandiId, designation: user.designation },
       message: 'Manager created',
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ─── Assign or reassign manager to a mandi (Admin) ──────────────────────────────
+// PUT /api/users/manager/:id/assignment
+router.put('/manager/:id/assignment', protect, authorize('admin'), async (req, res, next) => {
+  try {
+    const { mandiId, designation } = req.body;
+
+    const manager = await User.findByPk(req.params.id);
+    if (!manager || manager.role !== 'manager') {
+      return res.status(404).json({ success: false, message: 'Manager not found' });
+    }
+
+    const previousMandiId = manager.mandiId || null;
+
+    if (mandiId) {
+      const mandi = await Mandi.findByPk(mandiId);
+      if (!mandi) {
+        return res.status(404).json({ success: false, message: 'Assigned mandi not found' });
+      }
+
+      const managerCount = await User.count({
+        where: {
+          role: 'manager',
+          mandiId,
+          id: { [Op.ne]: manager.id },
+        },
+      });
+
+      if (managerCount >= MAX_MANAGERS_PER_MANDI) {
+        return res.status(400).json({ success: false, message: `A mandi can have at most ${MAX_MANAGERS_PER_MANDI} managers` });
+      }
+    }
+
+    const updates = { mandiId: mandiId || null };
+    if (designation !== undefined) updates.designation = designation;
+
+    await manager.update(updates);
+
+    if (previousMandiId && previousMandiId !== mandiId) {
+      await syncMandiManagerLinks(previousMandiId);
+    }
+    if (mandiId) {
+      await syncMandiManagerLinks(mandiId);
+    }
+
+    await AuditLog.create({
+      userId: req.user.id,
+      userName: req.user.name,
+      userRole: 'admin',
+      action: mandiId ? 'Assigned manager to mandi' : 'Removed manager assignment',
+      entity: 'User',
+      entityId: manager.id,
+      details: mandiId ? `${manager.name} → mandiId ${mandiId}` : `${manager.name} unassigned`,
+      type: 'user',
+      ipAddress: req.ip,
+    });
+
+    res.json({
+      success: true,
+      data: { id: manager.id, name: manager.name, email: manager.email, role: manager.role, mandiId: manager.mandiId, designation: manager.designation },
+      message: mandiId ? 'Manager assignment updated' : 'Manager unassigned successfully',
     });
   } catch (error) {
     next(error);

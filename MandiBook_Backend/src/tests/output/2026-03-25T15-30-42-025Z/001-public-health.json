@@ -1,0 +1,23 @@
+{
+  "label": "public-health",
+  "endpoint": "/health",
+  "method": "GET",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": null
+  },
+  "response": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "message": "MandiBook API is running",
+      "timestamp": "2026-03-25T15:30:42.047Z"
+    }
+  },
+  "durationMs": 22,
+  "recordedAt": "2026-03-25T15:30:42.051Z"
+}

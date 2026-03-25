@@ -1,0 +1,208 @@
+{
+  "label": "admin-dashboard",
+  "endpoint": "/dashboard/admin",
+  "method": "GET",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ***"
+    },
+    "body": null
+  },
+  "response": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "data": {
+        "stats": {
+          "totalMandis": 3,
+          "activeMandis": 3,
+          "totalFarmers": 5,
+          "totalManagers": 5,
+          "totalBookingsToday": 2,
+          "openIssues": 2,
+          "avgCropPrice": 1863,
+          "totalCatalogCrops": 0
+        },
+        "monthlyBookings": [
+          {
+            "month": "2026-03",
+            "bookings": 3,
+            "farmers": 3
+          }
+        ],
+        "topMandis": [
+          {
+            "name": "Vashi APMC Market",
+            "city": "Navi Mumbai",
+            "state": "Maharashtra",
+            "bookings": 1,
+            "farmers": 1
+          },
+          {
+            "name": "Koyambedu Market",
+            "city": "Chennai",
+            "state": "Tamil Nadu",
+            "bookings": 1,
+            "farmers": 1
+          },
+          {
+            "name": "Azadpur Mandi",
+            "city": "Delhi",
+            "state": "Delhi",
+            "bookings": 1,
+            "farmers": 1
+          }
+        ],
+        "recentActivity": [
+          {
+            "id": "2a24a4cc-f4e4-4a0c-a834-e2ea04c7caad",
+            "action": "Logged in",
+            "entity": "Admin Portal",
+            "details": null,
+            "type": "login",
+            "createdAt": "2026-03-25T15:30:39.514Z",
+            "userName": "MandiBook Admin",
+            "userRole": "admin"
+          },
+          {
+            "id": "4a91bd28-5a5c-400e-a9b3-de407d8b3092",
+            "action": "Completed profile",
+            "entity": "User",
+            "details": null,
+            "type": "user",
+            "createdAt": "2026-03-25T15:30:39.235Z",
+            "userName": "OTP Test Farmer",
+            "userRole": "farmer"
+          },
+          {
+            "id": "cebf8305-1ec6-4ac2-9ad5-526e5e5226f0",
+            "action": "Registered via email OTP",
+            "entity": "Farmer Portal",
+            "details": null,
+            "type": "login",
+            "createdAt": "2026-03-25T15:30:39.225Z",
+            "userName": "otp.farmer@example.com",
+            "userRole": "farmer"
+          },
+          {
+            "id": "0c48098e-eb15-417e-a93a-c6a9c8c2a7b0",
+            "action": "Logged out",
+            "entity": "Manager Portal",
+            "details": null,
+            "type": "login",
+            "createdAt": "2026-03-25T15:30:39.193Z",
+            "userName": "Suresh Yadav",
+            "userRole": "manager"
+          },
+          {
+            "id": "229e39cb-8d15-49ef-b682-8a0f7232ac3a",
+            "action": "Logged in",
+            "entity": "Manager Portal",
+            "details": null,
+            "type": "login",
+            "createdAt": "2026-03-25T15:30:39.180Z",
+            "userName": "Suresh Yadav",
+            "userRole": "manager"
+          },
+          {
+            "id": "03743efe-8a09-45bb-b2c0-2304a99c8618",
+            "action": "Logged in",
+            "entity": "Admin Portal",
+            "details": null,
+            "type": "login",
+            "createdAt": "2026-03-25T15:26:27.587Z",
+            "userName": "MandiBook Admin",
+            "userRole": "admin"
+          },
+          {
+            "id": "611aa278-e19e-4b33-ae6e-420325dc4130",
+            "action": "Registered via email OTP",
+            "entity": "Farmer Portal",
+            "details": null,
+            "type": "login",
+            "createdAt": "2026-03-25T15:26:27.290Z",
+            "userName": "otp.farmer@example.com",
+            "userRole": "farmer"
+          },
+          {
+            "id": "85d8d0ed-7229-43fc-9762-fbcb616726da",
+            "action": "Logged out",
+            "entity": "Manager Portal",
+            "details": null,
+            "type": "login",
+            "createdAt": "2026-03-25T15:26:27.245Z",
+            "userName": "Suresh Yadav",
+            "userRole": "manager"
+          }
+        ],
+        "mandiHealth": [
+          {
+            "id": "fc719ce4-c987-4352-a9d6-19f1eb2725a1",
+            "name": "Azadpur Mandi",
+            "city": "Delhi",
+            "state": "Delhi",
+            "isActive": true,
+            "managerCount": 3,
+            "configuredCrops": 5,
+            "workingDays": [
+              "monday",
+              "tuesday",
+              "wednesday",
+              "thursday",
+              "friday",
+              "saturday"
+            ],
+            "outOfRangePrices": 0
+          },
+          {
+            "id": "d38bc18a-183b-4eb4-b520-68cc4cc699a7",
+            "name": "Koyambedu Market",
+            "city": "Chennai",
+            "state": "Tamil Nadu",
+            "isActive": true,
+            "managerCount": 1,
+            "configuredCrops": 5,
+            "workingDays": [
+              "monday",
+              "tuesday",
+              "wednesday",
+              "thursday",
+              "friday",
+              "saturday"
+            ],
+            "outOfRangePrices": 0
+          },
+          {
+            "id": "a5e410f9-4d51-4e4f-be2f-97f6f4eee609",
+            "name": "Vashi APMC Market",
+            "city": "Navi Mumbai",
+            "state": "Maharashtra",
+            "isActive": true,
+            "managerCount": 1,
+            "configuredCrops": 5,
+            "workingDays": [
+              "monday",
+              "tuesday",
+              "wednesday",
+              "thursday",
+              "friday",
+              "saturday"
+            ],
+            "outOfRangePrices": 0
+          }
+        ],
+        "compliance": {
+          "mandisWithoutManagers": 0,
+          "mandisAtManagerLimit": 1,
+          "mandisMissingPrices": 0,
+          "mandisWithOutOfRangePrices": 0
+        }
+      }
+    }
+  },
+  "durationMs": 31,
+  "recordedAt": "2026-03-25T15:30:42.150Z"
+}

@@ -1,0 +1,33 @@
+{
+  "label": "manager-bookings-before-farmer",
+  "endpoint": "/bookings/mandi/1640cfbc-3e8e-412e-8fa9-965e7d8bcaca?date=2026-03-27",
+  "method": "GET",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ***"
+    },
+    "body": null
+  },
+  "response": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "data": [],
+      "summary": {
+        "total": 0,
+        "checkedIn": 0,
+        "confirmed": 0,
+        "pending": 0,
+        "cancelled": 0
+      },
+      "total": 0,
+      "page": 1,
+      "limit": 50
+    }
+  },
+  "durationMs": 13,
+  "recordedAt": "2026-03-25T15:30:46.640Z"
+}

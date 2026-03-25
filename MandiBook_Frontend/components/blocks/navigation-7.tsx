@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronDown, Menu, X } from "lucide-react";
 
@@ -93,7 +94,7 @@ export function Navigation7() {
           {/* Left side: Logo + Nav Items */}
           <div className="flex items-center gap-2">
             {/* Logo */}
-            <a
+            <Link
               href="/"
               className="flex items-center gap-2 h-10 px-3 bg-neutral-200 dark:bg-neutral-900 rounded-md hover:bg-neutral-300 dark:hover:bg-neutral-800 transition-colors"
               aria-label="MandiBook Home"
@@ -102,7 +103,7 @@ export function Navigation7() {
                 <span className="text-xs font-bold text-white">M</span>
               </div>
               <span className="text-sm font-semibold tracking-tight text-neutral-900 dark:text-white hidden sm:inline">MandiBook</span>
-            </a>
+            </Link>
 
             {/* Nav Items */}
             <div className="hidden md:flex items-center gap-2">
@@ -220,12 +221,12 @@ export function Navigation7() {
           >
             {/* Header */}
             <div className="flex items-center justify-between py-4 sm:py-6 px-5">
-              <a href="/" className="flex items-center gap-2 h-10 px-3 bg-neutral-200 dark:bg-neutral-900 rounded-md">
+              <Link href="/" className="flex items-center gap-2 h-10 px-3 bg-neutral-200 dark:bg-neutral-900 rounded-md">
                 <div className="flex h-6 w-6 items-center justify-center rounded-md bg-green-700">
                   <span className="text-xs font-bold text-white">M</span>
                 </div>
                 <span className="text-sm font-semibold tracking-tight text-neutral-900 dark:text-white">MandiBook</span>
-              </a>
+              </Link>
               <button
                 onClick={() => {
                   setIsMobileMenuOpen(false);

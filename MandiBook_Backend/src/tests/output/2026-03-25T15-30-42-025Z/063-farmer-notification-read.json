@@ -1,0 +1,35 @@
+{
+  "label": "farmer-notification-read",
+  "endpoint": "/notifications/d73da461-b0ea-44d1-b0af-fc6d4333ee3a/read",
+  "method": "PUT",
+  "attempt": 2,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ***"
+    },
+    "body": null
+  },
+  "response": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "data": {
+        "id": "d73da461-b0ea-44d1-b0af-fc6d4333ee3a",
+        "userId": "070facc5-e7ab-4ca9-977d-376a3b1fb244",
+        "type": "booking-cancelled",
+        "title": "Booking Cancelled",
+        "titleHi": "",
+        "message": "Your booking BK-2026-03-25-7768 at Test Geo Mandi TST-642189 has been cancelled.",
+        "messageHi": "",
+        "isRead": true,
+        "actionUrl": "/farmer/bookings",
+        "createdAt": "2026-03-25T15:30:47.696Z",
+        "updatedAt": "2026-03-25T15:30:48.510Z"
+      }
+    }
+  },
+  "durationMs": 801,
+  "recordedAt": "2026-03-25T15:30:48.519Z"
+}

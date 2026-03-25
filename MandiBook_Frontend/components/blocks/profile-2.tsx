@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "motion/react";
 import { Heart, MessageSquare } from "lucide-react";
 import { useState } from "react";
@@ -71,9 +72,11 @@ export default function Profile2() {
                   >
                     <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-neutral-800 dark:bg-neutral-900 p-1.5 shadow-xl">
                       <div className="relative w-full h-full rounded-full overflow-hidden">
-                        <img
+                        <Image
                           src="https://pbs.twimg.com/profile_images/1927474594102784000/Al0g-I6o_400x400.jpg"
                           alt="Profile picture"
+                          fill
+                          sizes="(max-width: 640px) 96px, 128px"
                           className="w-full h-full rounded-full object-cover bg-neutral-700 dark:bg-neutral-800"
                         />
                       </div>

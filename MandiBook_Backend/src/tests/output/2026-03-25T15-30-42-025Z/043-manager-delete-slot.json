@@ -1,0 +1,23 @@
+{
+  "label": "manager-delete-slot",
+  "endpoint": "/slots/8b88f3ef-3a4c-4f90-b224-6f82f4dce222",
+  "method": "DELETE",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ***"
+    },
+    "body": null
+  },
+  "response": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "message": "Slot deleted"
+    }
+  },
+  "durationMs": 11,
+  "recordedAt": "2026-03-25T15:30:46.600Z"
+}

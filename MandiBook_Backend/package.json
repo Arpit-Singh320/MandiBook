@@ -7,8 +7,10 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "seed": "node src/seeders/seed.js",
+    "provision:test-users": "node src/scripts/provision-test-users.js",
     "test:api": "node src/tests/test-endpoints.js",
-    "test:auth": "node src/tests/test-auth-contracts.js"
+    "test:auth": "node src/tests/test-auth-contracts.js",
+    "test:full-flow": "node src/tests/test-complete-flow.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

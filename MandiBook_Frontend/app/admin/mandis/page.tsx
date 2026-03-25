@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
 import {
   Search,
@@ -8,49 +8,125 @@ import {
   MapPin,
   Users,
   CalendarCheck,
-  MoreVertical,
-  Eye,
-  Edit3,
   ToggleLeft,
   ToggleRight,
+  AlertCircle,
+  Loader2,
 } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
+import { mandiApi, type MandiData, type MandiStatsResponse } from "@/lib/data-api";
 
-interface Mandi {
-  id: string;
-  name: string;
-  city: string;
-  state: string;
-  manager: string;
-  farmers: number;
-  bookingsToday: number;
-  slots: number;
-  active: boolean;
-}
+type EnrichedMandi = MandiData & {
+  totalFarmers: number;
+  todayBookings: number;
+  availableSlots: number;
+  workingToday: boolean;
+};
 
-const mandis: Mandi[] = [
-  { id: "m1", name: "Azadpur Mandi", city: "Delhi", state: "Delhi", manager: "Suresh Patel", farmers: 892, bookingsToday: 47, slots: 6, active: true },
-  { id: "m2", name: "Vashi Mandi", city: "Mumbai", state: "Maharashtra", manager: "Rajesh Desai", farmers: 756, bookingsToday: 38, slots: 8, active: true },
-  { id: "m3", name: "Koyambedu Market", city: "Chennai", state: "Tamil Nadu", manager: "Senthil Kumar", farmers: 634, bookingsToday: 32, slots: 5, active: true },
-  { id: "m4", name: "Bowenpally Mandi", city: "Hyderabad", state: "Telangana", manager: "Naresh Reddy", farmers: 542, bookingsToday: 28, slots: 4, active: true },
-  { id: "m5", name: "Yeshwanthpur Mandi", city: "Bangalore", state: "Karnataka", manager: "Mahesh Gowda", farmers: 498, bookingsToday: 25, slots: 5, active: true },
-  { id: "m6", name: "Ghazipur Mandi", city: "Delhi", state: "Delhi", manager: "Amit Verma", farmers: 445, bookingsToday: 22, slots: 4, active: true },
-  { id: "m7", name: "Siliguri Mandi", city: "Siliguri", state: "West Bengal", manager: "—", farmers: 0, bookingsToday: 0, slots: 0, active: false },
-  { id: "m8", name: "Narela Mandi", city: "Delhi", state: "Delhi", manager: "Vikram Singh", farmers: 312, bookingsToday: 18, slots: 3, active: true },
-];
+const numberFormatter = new Intl.NumberFormat("en-IN");
 
 export default function AdminMandisPage() {
+  const { token } = useAuth();
   const [search, setSearch] = useState("");
   const [showInactive, setShowInactive] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [mandis, setMandis] = useState<EnrichedMandi[]>([]);
 
-  const filtered = mandis.filter((m) => {
+  useEffect(() => {
+    if (!token) return;
+
+    const load = async () => {
+      try {
+        const mandiResponse = await mandiApi.list();
+        const statsResponses = await Promise.all(
+          mandiResponse.data.map(async (mandi) => {
+            try {
+              const stats = await mandiApi.stats(mandi.id, token);
+              return { mandi, stats: stats.data };
+            } catch {
+              return {
+                mandi,
+                stats: {
+                  todayBookings: 0,
+                  todayCheckedIn: 0,
+                  totalFarmers: 0,
+                  managerCount: mandi.managerCount || mandi.managers?.length || 0,
+                  slotUtilization: 0,
+                  availableSlots: 0,
+                  workingToday: false,
+                  operatingHoursOpen: mandi.operatingHoursOpen,
+                  operatingHoursClose: mandi.operatingHoursClose,
+                  workingDays: mandi.workingDays || [],
+                  crops: mandi.crops || [],
+                } satisfies MandiStatsResponse["data"],
+              };
+            }
+          })
+        );
+
+        setMandis(
+          statsResponses.map(({ mandi, stats }) => ({
+            ...mandi,
+            managerCount: stats.managerCount,
+            totalFarmers: stats.totalFarmers,
+            todayBookings: stats.todayBookings,
+            availableSlots: stats.availableSlots,
+            workingToday: stats.workingToday,
+          }))
+        );
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Failed to load mandis");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void load();
+  }, [token]);
+
+  const filtered = useMemo(() => mandis.filter((m) => {
     const matchesSearch =
       search === "" ||
       m.name.toLowerCase().includes(search.toLowerCase()) ||
       m.city.toLowerCase().includes(search.toLowerCase()) ||
       m.state.toLowerCase().includes(search.toLowerCase());
-    const matchesActive = showInactive || m.active;
+    const matchesActive = showInactive || m.isActive;
     return matchesSearch && matchesActive;
-  });
+  }), [mandis, search, showInactive]);
+
+  const toggleMandiStatus = async (id: string) => {
+    if (!token) return;
+    try {
+      setTogglingId(id);
+      const response = await mandiApi.toggle(token, id);
+      setMandis((current) => current.map((mandi) => (
+        mandi.id === id ? { ...mandi, isActive: response.data.isActive } : mandi
+      )));
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to update mandi status");
+    } finally {
+      setTogglingId(null);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-8 h-8 animate-spin text-green-700" />
+      </div>
+    );
+  }
+
+  if (error && mandis.length === 0) {
+    return (
+      <div className="max-w-lg mx-auto text-center py-20">
+        <AlertCircle className="w-10 h-10 text-red-500 mx-auto mb-3" />
+        <p className="text-red-600">{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -59,10 +135,16 @@ export default function AdminMandisPage() {
           <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white">Mandi Management</h1>
           <p className="mt-1 text-neutral-600 dark:text-neutral-400">{mandis.length} mandis registered on the platform</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] text-sm font-medium hover:opacity-90">
+        <button type="button" className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] text-sm font-medium hover:opacity-90">
           <Plus className="w-4 h-4" /> Add Mandi
         </button>
       </motion.div>
+
+      {error ? (
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      ) : null}
 
       {/* Search & Filter */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
@@ -112,27 +194,32 @@ export default function AdminMandisPage() {
                     <MapPin className="w-3 h-3" /> {mandi.city}, {mandi.state}
                   </span>
                 </td>
-                <td className="px-5 py-3.5 text-sm text-neutral-600 dark:text-neutral-400">{mandi.manager}</td>
+                <td className="px-5 py-3.5 text-sm text-neutral-600 dark:text-neutral-400">{mandi.managers?.map((manager) => manager.name).join(", ") || "—"}</td>
                 <td className="px-5 py-3.5 text-sm text-right text-neutral-600 dark:text-neutral-400 flex items-center justify-end gap-1">
-                  <Users className="w-3 h-3" /> {mandi.farmers.toLocaleString()}
+                  <Users className="w-3 h-3" /> {numberFormatter.format(mandi.totalFarmers)}
                 </td>
                 <td className="px-5 py-3.5 text-sm text-right text-neutral-600 dark:text-neutral-400 flex items-center justify-end gap-1">
-                  <CalendarCheck className="w-3 h-3" /> {mandi.bookingsToday}
+                  <CalendarCheck className="w-3 h-3" /> {numberFormatter.format(mandi.todayBookings)}
                 </td>
                 <td className="px-5 py-3.5 text-center">
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                    mandi.active
+                    mandi.isActive
                       ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
                       : "bg-neutral-200 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-500"
                   }`}>
-                    {mandi.active ? "Active" : "Inactive"}
+                    {mandi.isActive ? "Active" : "Inactive"}
                   </span>
                 </td>
                 <td className="px-5 py-3.5 text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <button className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800"><Eye className="w-4 h-4 text-neutral-500" /></button>
-                    <button className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800"><Edit3 className="w-4 h-4 text-neutral-500" /></button>
-                    <button className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800"><MoreVertical className="w-4 h-4 text-neutral-500" /></button>
+                    <button
+                      type="button"
+                      onClick={() => void toggleMandiStatus(mandi.id)}
+                      disabled={togglingId === mandi.id}
+                      className="px-3 py-1.5 rounded-lg border border-[var(--border)] text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-50"
+                    >
+                      {togglingId === mandi.id ? "Updating..." : mandi.isActive ? "Deactivate" : "Activate"}
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -154,19 +241,27 @@ export default function AdminMandisPage() {
             <div className="flex items-center justify-between mb-2">
               <span className="text-base font-semibold text-neutral-900 dark:text-white">{mandi.name}</span>
               <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                mandi.active ? "bg-green-100 text-green-700" : "bg-neutral-200 text-neutral-500"
+                mandi.isActive ? "bg-green-100 text-green-700" : "bg-neutral-200 text-neutral-500"
               }`}>
-                {mandi.active ? "Active" : "Inactive"}
+                {mandi.isActive ? "Active" : "Inactive"}
               </span>
             </div>
             <p className="text-xs text-neutral-500 flex items-center gap-1 mb-2">
               <MapPin className="w-3 h-3" /> {mandi.city}, {mandi.state}
             </p>
             <div className="flex items-center gap-4 text-xs text-neutral-500">
-              <span>Manager: {mandi.manager}</span>
-              <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {mandi.farmers}</span>
-              <span className="flex items-center gap-1"><CalendarCheck className="w-3 h-3" /> {mandi.bookingsToday}</span>
+              <span>Manager: {mandi.managers?.map((manager) => manager.name).join(", ") || "—"}</span>
+              <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {numberFormatter.format(mandi.totalFarmers)}</span>
+              <span className="flex items-center gap-1"><CalendarCheck className="w-3 h-3" /> {numberFormatter.format(mandi.todayBookings)}</span>
             </div>
+            <button
+              type="button"
+              onClick={() => void toggleMandiStatus(mandi.id)}
+              disabled={togglingId === mandi.id}
+              className="mt-3 w-full px-3 py-2 rounded-lg border border-[var(--border)] text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-50"
+            >
+              {togglingId === mandi.id ? "Updating..." : mandi.isActive ? "Deactivate Mandi" : "Activate Mandi"}
+            </button>
           </motion.div>
         ))}
       </div>

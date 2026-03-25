@@ -1,0 +1,49 @@
+{
+  "label": "primaryManager-session-validate",
+  "endpoint": "/auth/me",
+  "method": "GET",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ***"
+    },
+    "body": null
+  },
+  "response": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "user": {
+        "id": "1fe01a01-185f-4ece-9aa6-901206543595",
+        "name": "Arpit Singh",
+        "role": "manager",
+        "phone": "9555000001",
+        "email": "arpit2005singh@gmail.com",
+        "language": "en",
+        "avatar": "",
+        "status": "active",
+        "profileComplete": true,
+        "village": null,
+        "district": null,
+        "state": null,
+        "pincode": null,
+        "landHolding": null,
+        "farmSize": null,
+        "preferredMandis": [],
+        "crops": [],
+        "priceAlertCrops": [],
+        "mandiId": "fc719ce4-c987-4352-a9d6-19f1eb2725a1",
+        "designation": "Mandi Manager",
+        "managingSince": "2026-03-25T15:12:10.847Z",
+        "department": null,
+        "twoFactorEnabled": false,
+        "lastLoginAt": "2026-03-25T15:17:41.051Z",
+        "createdAt": "2026-03-25T15:12:10.467Z"
+      }
+    }
+  },
+  "durationMs": 3,
+  "recordedAt": "2026-03-25T15:19:11.040Z"
+}

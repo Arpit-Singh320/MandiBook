@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
 import {
   CalendarCheck,
@@ -8,45 +9,83 @@ import {
   BarChart3,
   Download,
   ArrowUpRight,
+  AlertCircle,
+  Loader2,
 } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
+import { dashboardApi, type ManagerReportData } from "@/lib/data-api";
 
-const weeklyData = [
-  { day: "Mon", bookings: 38, checkins: 35, revenue: 8.2 },
-  { day: "Tue", bookings: 42, checkins: 40, revenue: 9.5 },
-  { day: "Wed", bookings: 35, checkins: 33, revenue: 7.8 },
-  { day: "Thu", bookings: 47, checkins: 44, revenue: 10.2 },
-  { day: "Fri", bookings: 51, checkins: 48, revenue: 11.5 },
-  { day: "Sat", bookings: 55, checkins: 52, revenue: 12.8 },
-  { day: "Sun", bookings: 30, checkins: 28, revenue: 6.4 },
-];
-
-const topCrops = [
-  { crop: "Wheat", volume: "450 Q", share: 28 },
-  { crop: "Rice", volume: "380 Q", share: 24 },
-  { crop: "Potato", volume: "250 Q", share: 16 },
-  { crop: "Onion", volume: "200 Q", share: 12 },
-  { crop: "Tomato", volume: "180 Q", share: 11 },
-  { crop: "Others", volume: "140 Q", share: 9 },
-];
-
-const summaryStats = [
-  { label: "Total Bookings (Week)", value: "298", change: "+12%", icon: CalendarCheck },
-  { label: "Unique Farmers", value: "187", change: "+8%", icon: Users },
-  { label: "Check-in Rate", value: "94.3%", change: "+1.2%", icon: TrendingUp },
-  { label: "Weekly Revenue", value: "₹66.4L", change: "+15%", icon: BarChart3 },
-];
+const numberFormatter = new Intl.NumberFormat("en-IN");
+const currencyFormatter = new Intl.NumberFormat("en-IN", {
+  style: "currency",
+  currency: "INR",
+  maximumFractionDigits: 0,
+});
 
 export default function ManagerReportsPage() {
-  const maxBookings = Math.max(...weeklyData.map((d) => d.bookings));
+  const { token } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [report, setReport] = useState<ManagerReportData["data"] | null>(null);
+
+  useEffect(() => {
+    if (!token) return;
+
+    const load = async () => {
+      try {
+        const response = await dashboardApi.managerReports(token);
+        setReport(response.data);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Failed to load manager reports");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void load();
+  }, [token]);
+
+  const maxBookings = useMemo(() => {
+    if (!report || report.weeklyData.length === 0) return 1;
+    return Math.max(...report.weeklyData.map((d) => d.bookings), 1);
+  }, [report]);
+
+  const summaryStats = useMemo(() => {
+    if (!report) return [];
+
+    return [
+      { label: "Total Bookings (Week)", value: numberFormatter.format(report.summary.totalBookings), change: `${report.slotSummary.totalSlots} slots`, icon: CalendarCheck },
+      { label: "Unique Farmers", value: numberFormatter.format(report.summary.uniqueFarmers), change: `${report.summary.openIssues} open issues`, icon: Users },
+      { label: "Check-in Rate", value: `${report.summary.checkinRate}%`, change: `${report.slotSummary.utilization}% utilized`, icon: TrendingUp },
+      { label: "Avg. Crop Price", value: currencyFormatter.format(report.priceSummary.avgPrice), change: `${report.priceSummary.totalCrops} crops`, icon: BarChart3 },
+    ];
+  }, [report]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-8 h-8 animate-spin text-green-700" />
+      </div>
+    );
+  }
+
+  if (error || !report) {
+    return (
+      <div className="max-w-lg mx-auto text-center py-20">
+        <AlertCircle className="w-10 h-10 text-red-500 mx-auto mb-3" />
+        <p className="text-red-600">{error || "Failed to load manager reports"}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white">Reports</h1>
-          <p className="mt-1 text-neutral-600 dark:text-neutral-400">Weekly performance overview — Azadpur Mandi</p>
+          <p className="mt-1 text-neutral-600 dark:text-neutral-400">Weekly performance overview — {report.mandiInfo.name}</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-[var(--border)] text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors">
+        <button type="button" className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-[var(--border)] text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors">
           <Download className="w-4 h-4" /> Export
         </button>
       </motion.div>
@@ -88,7 +127,7 @@ export default function ManagerReportsPage() {
             Weekly Bookings
           </h2>
           <div className="flex items-end gap-3 h-48">
-            {weeklyData.map((day) => {
+            {report.weeklyData.map((day) => {
               const height = (day.bookings / maxBookings) * 100;
               const checkinHeight = (day.checkins / maxBookings) * 100;
               return (
@@ -100,7 +139,7 @@ export default function ManagerReportsPage() {
                     >
                       <div
                         className="absolute bottom-0 left-0 right-0 rounded-t-md bg-[var(--primary)]"
-                        style={{ height: `${(checkinHeight / height) * 100}%` }}
+                        style={{ height: `${height === 0 ? 0 : (checkinHeight / height) * 100}%` }}
                       />
                     </div>
                   </div>
@@ -131,11 +170,13 @@ export default function ManagerReportsPage() {
             Top Crops by Volume
           </h2>
           <div className="space-y-4">
-            {topCrops.map((crop) => (
+            {report.topCrops.length === 0 ? (
+              <p className="text-sm text-neutral-500">No crop volume data available for this week.</p>
+            ) : report.topCrops.map((crop) => (
               <div key={crop.crop}>
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-sm font-medium text-neutral-900 dark:text-white">{crop.crop}</span>
-                  <span className="text-xs text-neutral-500">{crop.volume} ({crop.share}%)</span>
+                  <span className="text-xs text-neutral-500">{numberFormatter.format(crop.totalQty)} Q ({crop.share}%)</span>
                 </div>
                 <div className="h-2 rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
                   <div
@@ -164,22 +205,24 @@ export default function ManagerReportsPage() {
             <thead>
               <tr className="border-b border-[var(--border)] bg-neutral-50 dark:bg-neutral-800/50">
                 <th className="text-left text-xs font-medium text-neutral-500 px-5 py-3">Day</th>
+                <th className="text-left text-xs font-medium text-neutral-500 px-5 py-3">Date</th>
                 <th className="text-right text-xs font-medium text-neutral-500 px-5 py-3">Bookings</th>
                 <th className="text-right text-xs font-medium text-neutral-500 px-5 py-3">Check-ins</th>
                 <th className="text-right text-xs font-medium text-neutral-500 px-5 py-3">Rate</th>
-                <th className="text-right text-xs font-medium text-neutral-500 px-5 py-3">Revenue</th>
+                <th className="text-right text-xs font-medium text-neutral-500 px-5 py-3">Avg Price</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border)]">
-              {weeklyData.map((day) => {
-                const rate = ((day.checkins / day.bookings) * 100).toFixed(1);
+              {report.weeklyData.map((day) => {
+                const rate = day.bookings > 0 ? ((day.checkins / day.bookings) * 100).toFixed(1) : "0.0";
                 return (
                   <tr key={day.day} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
                     <td className="px-5 py-3 text-sm font-medium text-neutral-900 dark:text-white">{day.day}</td>
-                    <td className="px-5 py-3 text-sm text-right text-neutral-600 dark:text-neutral-400">{day.bookings}</td>
-                    <td className="px-5 py-3 text-sm text-right text-neutral-600 dark:text-neutral-400">{day.checkins}</td>
+                    <td className="px-5 py-3 text-sm text-neutral-600 dark:text-neutral-400">{day.date}</td>
+                    <td className="px-5 py-3 text-sm text-right text-neutral-600 dark:text-neutral-400">{numberFormatter.format(day.bookings)}</td>
+                    <td className="px-5 py-3 text-sm text-right text-neutral-600 dark:text-neutral-400">{numberFormatter.format(day.checkins)}</td>
                     <td className="px-5 py-3 text-sm text-right text-neutral-600 dark:text-neutral-400">{rate}%</td>
-                    <td className="px-5 py-3 text-sm text-right font-medium text-neutral-900 dark:text-white">₹{day.revenue}L</td>
+                    <td className="px-5 py-3 text-sm text-right font-medium text-neutral-900 dark:text-white">{currencyFormatter.format(report.priceSummary.avgPrice)}</td>
                   </tr>
                 );
               })}

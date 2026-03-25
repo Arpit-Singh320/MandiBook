@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
 import {
   Search,
@@ -11,33 +11,12 @@ import {
   MoreVertical,
   Eye,
   Ban,
+  Loader2,
 } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
+import { userApi, type UserData } from "@/lib/data-api";
 
 type RoleFilter = "all" | "farmer" | "manager" | "admin";
-
-interface AppUser {
-  id: string;
-  name: string;
-  role: "farmer" | "manager" | "admin";
-  email?: string;
-  phone: string;
-  location: string;
-  status: "active" | "suspended";
-  joinedAt: string;
-}
-
-const users: AppUser[] = [
-  { id: "u1", name: "Ramesh Kumar", role: "farmer", phone: "98765xxxxx", location: "Varanasi, UP", status: "active", joinedAt: "Dec 2024" },
-  { id: "u2", name: "Suresh Patel", role: "manager", email: "suresh@mandibook.in", phone: "98765xxxxx", location: "Delhi", status: "active", joinedAt: "Nov 2024" },
-  { id: "u3", name: "Priya Devi", role: "farmer", phone: "98765xxxxx", location: "Lucknow, UP", status: "active", joinedAt: "Jan 2025" },
-  { id: "u4", name: "Amit Singh", role: "farmer", phone: "98765xxxxx", location: "Meerut, UP", status: "active", joinedAt: "Feb 2025" },
-  { id: "u5", name: "Rajesh Desai", role: "manager", email: "rajesh@mandibook.in", phone: "98765xxxxx", location: "Mumbai", status: "active", joinedAt: "Oct 2024" },
-  { id: "u6", name: "Admin User", role: "admin", email: "admin@mandibook.in", phone: "98765xxxxx", location: "Delhi", status: "active", joinedAt: "Oct 2024" },
-  { id: "u7", name: "Sunita Yadav", role: "farmer", phone: "98765xxxxx", location: "Agra, UP", status: "suspended", joinedAt: "Mar 2025" },
-  { id: "u8", name: "Vikas Sharma", role: "farmer", phone: "98765xxxxx", location: "Jaipur, RJ", status: "active", joinedAt: "Jan 2025" },
-  { id: "u9", name: "Senthil Kumar", role: "manager", email: "senthil@mandibook.in", phone: "98765xxxxx", location: "Chennai", status: "active", joinedAt: "Nov 2024" },
-  { id: "u10", name: "Deepak Verma", role: "farmer", phone: "98765xxxxx", location: "Kanpur, UP", status: "active", joinedAt: "Feb 2025" },
-];
 
 const roleConfig: Record<string, { icon: typeof Users; color: string; label: string }> = {
   farmer: { icon: Wheat, color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400", label: "Farmer" },
@@ -45,33 +24,91 @@ const roleConfig: Record<string, { icon: typeof Users; color: string; label: str
   admin: { icon: Shield, color: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400", label: "Admin" },
 };
 
+const formatJoinedDate = (value: string) => new Intl.DateTimeFormat("en-IN", {
+  month: "short",
+  year: "numeric",
+}).format(new Date(value));
+
+const buildUserLocation = (user: UserData) => {
+  const pieces = [user.village, user.district, user.state].filter(Boolean);
+  if (pieces.length > 0) return pieces.join(", ");
+  if (user.designation) return user.designation;
+  if (user.department) return user.department;
+  return "Location unavailable";
+};
+
 export default function AdminUsersPage() {
+  const { token } = useAuth();
   const [filter, setFilter] = useState<RoleFilter>("all");
   const [search, setSearch] = useState("");
+  const [users, setUsers] = useState<UserData[]>([]);
+  const [counts, setCounts] = useState<Record<string, number>>({});
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [actionUserId, setActionUserId] = useState<string | null>(null);
 
-  const filtered = users.filter((u) => {
-    const matchesFilter = filter === "all" || u.role === filter;
-    const matchesSearch =
-      search === "" ||
-      u.name.toLowerCase().includes(search.toLowerCase()) ||
-      u.location.toLowerCase().includes(search.toLowerCase()) ||
-      (u.email?.toLowerCase().includes(search.toLowerCase()) ?? false);
-    return matchesFilter && matchesSearch;
-  });
+  useEffect(() => {
+    if (!token) return;
 
-  const counts = {
-    all: users.length,
-    farmer: users.filter((u) => u.role === "farmer").length,
-    manager: users.filter((u) => u.role === "manager").length,
-    admin: users.filter((u) => u.role === "admin").length,
+    const loadUsers = async () => {
+      try {
+        setLoading(true);
+        const params: { role?: string; search?: string; limit?: number } = { limit: 100 };
+        if (filter !== "all") params.role = filter;
+        if (search) params.search = search;
+        const response = await userApi.list(token, params);
+        setUsers(response.data);
+        setCounts(response.counts || {});
+        setTotal(response.total || response.data.length);
+      } catch (loadError: unknown) {
+        setError(loadError instanceof Error ? loadError.message : "Failed to load users");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadUsers();
+  }, [filter, search, token]);
+
+  const summaryCounts = useMemo(() => ({
+    all: total,
+    farmer: counts.farmer || 0,
+    manager: counts.manager || 0,
+    admin: counts.admin || 0,
+  }), [counts, total]);
+
+  const toggleStatus = async (user: UserData) => {
+    if (!token) return;
+    const nextStatus = user.status === "active" ? "suspended" : "active";
+    setActionUserId(user.id);
+    setError("");
+    try {
+      const response = await userApi.updateStatus(token, user.id, nextStatus);
+      setUsers((prev) => prev.map((entry) => (entry.id === user.id ? response.data : entry)));
+    } catch (actionError: unknown) {
+      setError(actionError instanceof Error ? actionError.message : "Failed to update user status");
+    } finally {
+      setActionUserId(null);
+    }
   };
+
+  if (loading) {
+    return <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-green-700" /></div>;
+  }
 
   return (
     <div className="max-w-6xl mx-auto">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
         <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white">User Management</h1>
-        <p className="mt-1 text-neutral-600 dark:text-neutral-400">{users.length} users across all roles</p>
+        <p className="mt-1 text-neutral-600 dark:text-neutral-400">{summaryCounts.all} users across all roles</p>
       </motion.div>
+
+      {error ? (
+        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/20 dark:text-red-300">
+          {error}
+        </div>
+      ) : null}
 
       {/* Role Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
@@ -89,7 +126,7 @@ export default function AdminUsersPage() {
               <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${config.color} mb-2`}>
                 <Icon className="w-4 h-4" />
               </div>
-              <p className="text-xl font-bold text-neutral-900 dark:text-white">{counts[role]}</p>
+              <p className="text-xl font-bold text-neutral-900 dark:text-white">{summaryCounts[role]}</p>
               <p className="text-xs text-neutral-500">{config.label}</p>
             </button>
           );
@@ -123,7 +160,7 @@ export default function AdminUsersPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--border)]">
-            {filtered.map((user) => {
+            {users.map((user) => {
               const rc = roleConfig[user.role]!;
               return (
                 <tr key={user.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
@@ -138,8 +175,8 @@ export default function AdminUsersPage() {
                   <td className="px-5 py-3.5">
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${rc.color}`}>{rc.label}</span>
                   </td>
-                  <td className="px-5 py-3.5 text-sm text-neutral-500">{user.email ?? user.phone}</td>
-                  <td className="px-5 py-3.5 text-sm text-neutral-500">{user.location}</td>
+                  <td className="px-5 py-3.5 text-sm text-neutral-500">{user.email ?? user.phone ?? "—"}</td>
+                  <td className="px-5 py-3.5 text-sm text-neutral-500">{buildUserLocation(user)}</td>
                   <td className="px-5 py-3.5 text-center">
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
                       user.status === "active" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
@@ -147,24 +184,36 @@ export default function AdminUsersPage() {
                       {user.status}
                     </span>
                   </td>
-                  <td className="px-5 py-3.5 text-sm text-neutral-500">{user.joinedAt}</td>
+                  <td className="px-5 py-3.5 text-sm text-neutral-500">{formatJoinedDate(user.createdAt)}</td>
                   <td className="px-5 py-3.5 text-right">
                     <div className="flex items-center justify-end gap-1">
                       <button className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800"><Eye className="w-4 h-4 text-neutral-500" /></button>
-                      <button className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"><Ban className="w-4 h-4 text-red-500" /></button>
+                      <button
+                        type="button"
+                        onClick={() => void toggleStatus(user)}
+                        disabled={actionUserId === user.id}
+                        className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50"
+                      >
+                        <Ban className="w-4 h-4 text-red-500" />
+                      </button>
                       <button className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800"><MoreVertical className="w-4 h-4 text-neutral-500" /></button>
                     </div>
                   </td>
                 </tr>
               );
             })}
+            {users.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="px-5 py-10 text-center text-sm text-neutral-500">No users found matching your criteria.</td>
+              </tr>
+            ) : null}
           </tbody>
         </table>
       </div>
 
       {/* Mobile Cards */}
       <div className="lg:hidden space-y-3">
-        {filtered.map((user, index) => {
+        {users.map((user, index) => {
           const rc = roleConfig[user.role]!;
           return (
             <motion.div
@@ -188,10 +237,13 @@ export default function AdminUsersPage() {
                   </div>
                 </div>
               </div>
-              <p className="text-xs text-neutral-500">{user.location} · Joined {user.joinedAt}</p>
+              <p className="text-xs text-neutral-500">{buildUserLocation(user)} · Joined {formatJoinedDate(user.createdAt)}</p>
             </motion.div>
           );
         })}
+        {users.length === 0 ? (
+          <div className="text-center py-12 text-neutral-500">No users found matching your criteria.</div>
+        ) : null}
       </div>
     </div>
   );

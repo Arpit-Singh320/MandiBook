@@ -1,57 +1,139 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
-import { TrendingUp, TrendingDown, Edit3, Save, X, History } from "lucide-react";
+import { TrendingUp, TrendingDown, Edit3, Save, X, History, Plus, AlertCircle, Loader2 } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
+import { priceApi, type CropCatalogData, type CropPriceData } from "@/lib/data-api";
 
-interface CropPrice {
-  id: string;
-  crop: string;
-  unit: string;
-  currentPrice: number;
-  prevPrice: number;
-  lastUpdated: string;
+const currencyFormatter = new Intl.NumberFormat("en-IN", {
+  style: "currency",
+  currency: "INR",
+  maximumFractionDigits: 0,
+});
+
+function formatRelativeDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "numeric",
+    month: "short",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
 }
 
-const initialPrices: CropPrice[] = [
-  { id: "p1", crop: "Wheat", unit: "Quintal", currentPrice: 2480, prevPrice: 2420, lastUpdated: "Today, 08:30 AM" },
-  { id: "p2", crop: "Rice (Basmati)", unit: "Quintal", currentPrice: 3850, prevPrice: 3900, lastUpdated: "Today, 08:30 AM" },
-  { id: "p3", crop: "Potato", unit: "Quintal", currentPrice: 1250, prevPrice: 1180, lastUpdated: "Today, 07:00 AM" },
-  { id: "p4", crop: "Onion", unit: "Quintal", currentPrice: 1890, prevPrice: 2050, lastUpdated: "Today, 07:00 AM" },
-  { id: "p5", crop: "Tomato", unit: "Quintal", currentPrice: 2100, prevPrice: 1800, lastUpdated: "Today, 09:00 AM" },
-  { id: "p6", crop: "Mustard", unit: "Quintal", currentPrice: 5200, prevPrice: 5150, lastUpdated: "Yesterday" },
-  { id: "p7", crop: "Maize", unit: "Quintal", currentPrice: 1980, prevPrice: 1950, lastUpdated: "Yesterday" },
-  { id: "p8", crop: "Cauliflower", unit: "Quintal", currentPrice: 1500, prevPrice: 1650, lastUpdated: "Today, 08:00 AM" },
-];
-
 export default function PriceManagementPage() {
-  const [prices, setPrices] = useState<CropPrice[]>(initialPrices);
+  const { token, user } = useAuth();
+  const [prices, setPrices] = useState<CropPriceData[]>([]);
+  const [catalog, setCatalog] = useState<CropCatalogData[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
+  const [selectedCrop, setSelectedCrop] = useState("");
+  const [newPrice, setNewPrice] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [savingId, setSavingId] = useState<string | null>(null);
 
-  const startEdit = (price: CropPrice) => {
+  useEffect(() => {
+    const mandiId = user?.mandiId;
+    if (!mandiId) return;
+
+    const load = async () => {
+      try {
+        const [priceResponse, catalogResponse] = await Promise.all([
+          priceApi.list({ mandiId }),
+          priceApi.catalog({ active: true }),
+        ]);
+        setPrices(priceResponse.data);
+        setCatalog(catalogResponse.data);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Failed to load prices");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void load();
+  }, [user?.mandiId]);
+
+  const catalogMap = useMemo(
+    () => new Map(catalog.map((entry) => [entry.crop.toLowerCase(), entry])),
+    [catalog]
+  );
+
+  const missingCatalogCrops = useMemo(
+    () => catalog.filter((entry) => !prices.some((price) => price.crop.toLowerCase() === entry.crop.toLowerCase())),
+    [catalog, prices]
+  );
+
+  const startEdit = (price: CropPriceData) => {
     setEditingId(price.id);
     setEditValue(price.currentPrice.toString());
   };
 
-  const saveEdit = (id: string) => {
-    const newPrice = parseInt(editValue);
-    if (isNaN(newPrice) || newPrice <= 0) return;
-    setPrices((prev) =>
-      prev.map((p) =>
-        p.id === id
-          ? { ...p, prevPrice: p.currentPrice, currentPrice: newPrice, lastUpdated: "Just now" }
-          : p
-      )
-    );
-    setEditingId(null);
-    setEditValue("");
+  const saveEdit = async (id: string) => {
+    if (!token) return;
+    const value = parseInt(editValue, 10);
+    if (isNaN(value) || value <= 0) return;
+
+    try {
+      setSavingId(id);
+      const response = await priceApi.update(token, id, { currentPrice: value });
+      setPrices((prev) => prev.map((p) => (p.id === id ? response.data : p)));
+      setEditingId(null);
+      setEditValue("");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to update price");
+    } finally {
+      setSavingId(null);
+    }
   };
 
   const cancelEdit = () => {
     setEditingId(null);
     setEditValue("");
   };
+
+  const addCropPrice = async () => {
+    const mandiId = user?.mandiId;
+    if (!token || !mandiId || !selectedCrop) return;
+    const value = parseInt(newPrice, 10);
+    if (isNaN(value) || value <= 0) return;
+
+    try {
+      setSavingId("new");
+      const response = await priceApi.create(token, {
+        crop: selectedCrop,
+        mandiId,
+        currentPrice: value,
+      });
+      setPrices((prev) => [...prev, response.data].sort((a, b) => a.crop.localeCompare(b.crop)));
+      setSelectedCrop("");
+      setNewPrice("");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to add crop price");
+    } finally {
+      setSavingId(null);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-8 h-8 animate-spin text-green-700" />
+      </div>
+    );
+  }
+
+  if (error && prices.length === 0) {
+    return (
+      <div className="max-w-lg mx-auto text-center py-20">
+        <AlertCircle className="w-10 h-10 text-red-500 mx-auto mb-3" />
+        <p className="text-red-600">{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -64,11 +146,50 @@ export default function PriceManagementPage() {
         </p>
       </motion.div>
 
+      {error ? (
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      ) : null}
+
       {/* Info Banner */}
       <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 rounded-xl p-4 mb-6">
         <p className="text-sm text-amber-800 dark:text-amber-300">
           <strong>Note:</strong> Price updates are visible to all farmers in real-time. Please verify before saving.
         </p>
+      </div>
+
+      <div className="bg-white dark:bg-neutral-900 rounded-xl border border-[var(--border)] p-4 sm:p-5 mb-6 space-y-3">
+        <h2 className="text-base font-semibold text-neutral-900 dark:text-white">Add mandi crop price</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <select
+            value={selectedCrop}
+            onChange={(e) => setSelectedCrop(e.target.value)}
+            className="px-3 py-2.5 rounded-lg border border-[var(--border)] bg-white dark:bg-neutral-800 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+          >
+            <option value="">Select crop from catalog</option>
+            {missingCatalogCrops.map((entry) => (
+              <option key={entry.id} value={entry.crop}>
+                {entry.crop} (min {currencyFormatter.format(entry.minPrice)})
+              </option>
+            ))}
+          </select>
+          <input
+            type="number"
+            value={newPrice}
+            onChange={(e) => setNewPrice(e.target.value)}
+            placeholder="Enter mandi price"
+            className="px-3 py-2.5 rounded-lg border border-[var(--border)] bg-white dark:bg-neutral-800 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+          />
+          <button
+            type="button"
+            onClick={() => void addCropPrice()}
+            disabled={savingId === "new" || !selectedCrop || !newPrice}
+            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] text-sm font-medium hover:opacity-90 disabled:opacity-50"
+          >
+            <Plus className="w-4 h-4" /> Add Crop
+          </button>
+        </div>
       </div>
 
       {/* Desktop Table */}
@@ -78,6 +199,7 @@ export default function PriceManagementPage() {
             <tr className="border-b border-[var(--border)] bg-neutral-50 dark:bg-neutral-800/50">
               <th className="text-left text-xs font-medium text-neutral-500 px-5 py-3">Crop</th>
               <th className="text-right text-xs font-medium text-neutral-500 px-5 py-3">Current Price (₹)</th>
+              <th className="text-right text-xs font-medium text-neutral-500 px-5 py-3">Minimum Baseline</th>
               <th className="text-right text-xs font-medium text-neutral-500 px-5 py-3">Change</th>
               <th className="text-left text-xs font-medium text-neutral-500 px-5 py-3">Last Updated</th>
               <th className="text-right text-xs font-medium text-neutral-500 px-5 py-3">Actions</th>
@@ -86,9 +208,10 @@ export default function PriceManagementPage() {
           <tbody className="divide-y divide-[var(--border)]">
             {prices.map((price) => {
               const change = price.currentPrice - price.prevPrice;
-              const pct = ((change / price.prevPrice) * 100).toFixed(1);
+              const pct = price.prevPrice > 0 ? ((change / price.prevPrice) * 100).toFixed(1) : "0.0";
               const isUp = change >= 0;
               const isEditing = editingId === price.id;
+              const catalogEntry = catalogMap.get(price.crop.toLowerCase());
 
               return (
                 <tr key={price.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
@@ -111,9 +234,12 @@ export default function PriceManagementPage() {
                       />
                     ) : (
                       <span className="text-sm font-bold text-neutral-900 dark:text-white">
-                        ₹{price.currentPrice.toLocaleString()}
+                        {currencyFormatter.format(price.currentPrice)}
                       </span>
                     )}
+                  </td>
+                  <td className="px-5 py-3.5 text-right text-sm text-neutral-600 dark:text-neutral-400">
+                    {catalogEntry ? currencyFormatter.format(catalogEntry.minPrice) : "—"}
                   </td>
                   <td className="px-5 py-3.5 text-right">
                     <span className={`inline-flex items-center gap-0.5 text-sm font-medium ${isUp ? "text-green-600" : "text-red-500"}`}>
@@ -124,19 +250,22 @@ export default function PriceManagementPage() {
                   <td className="px-5 py-3.5">
                     <span className="text-xs text-neutral-500 flex items-center gap-1">
                       <History className="w-3 h-3" />
-                      {price.lastUpdated}
+                      {formatRelativeDate(price.updatedAt)}
                     </span>
                   </td>
                   <td className="px-5 py-3.5 text-right">
                     {isEditing ? (
                       <div className="flex items-center justify-end gap-1">
                         <button
-                          onClick={() => saveEdit(price.id)}
+                          type="button"
+                          onClick={() => void saveEdit(price.id)}
+                          disabled={savingId === price.id}
                           className="p-1.5 rounded-lg bg-green-100 text-green-700 hover:bg-green-200 transition-colors"
                         >
                           <Save className="w-4 h-4" />
                         </button>
                         <button
+                          type="button"
                           onClick={cancelEdit}
                           className="p-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-500 hover:bg-neutral-200 transition-colors"
                         >
@@ -145,6 +274,7 @@ export default function PriceManagementPage() {
                       </div>
                     ) : (
                       <button
+                        type="button"
                         onClick={() => startEdit(price)}
                         className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                       >
@@ -163,7 +293,7 @@ export default function PriceManagementPage() {
       <div className="sm:hidden space-y-3">
         {prices.map((price, index) => {
           const change = price.currentPrice - price.prevPrice;
-          const pct = ((change / price.prevPrice) * 100).toFixed(1);
+          const pct = price.prevPrice > 0 ? ((change / price.prevPrice) * 100).toFixed(1) : "0.0";
           const isUp = change >= 0;
           const isEditing = editingId === price.id;
 
@@ -192,25 +322,28 @@ export default function PriceManagementPage() {
                       autoFocus
                       className="w-24 px-3 py-1.5 rounded-lg border border-[var(--primary)] text-sm font-bold text-neutral-900 dark:text-white bg-white dark:bg-neutral-800 focus:outline-none"
                     />
-                    <button onClick={() => saveEdit(price.id)} className="p-1.5 rounded-lg bg-green-100 text-green-700">
+                    <button type="button" onClick={() => void saveEdit(price.id)} className="p-1.5 rounded-lg bg-green-100 text-green-700">
                       <Save className="w-4 h-4" />
                     </button>
-                    <button onClick={cancelEdit} className="p-1.5 rounded-lg bg-neutral-100 text-neutral-500">
+                    <button type="button" onClick={cancelEdit} className="p-1.5 rounded-lg bg-neutral-100 text-neutral-500">
                       <X className="w-4 h-4" />
                     </button>
                   </div>
                 ) : (
                   <>
-                    <span className="text-xs text-neutral-500">{price.lastUpdated}</span>
+                    <span className="text-xs text-neutral-500">{formatRelativeDate(price.updatedAt)}</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-lg font-bold text-neutral-900 dark:text-white">₹{price.currentPrice.toLocaleString()}</span>
-                      <button onClick={() => startEdit(price)} className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800">
+                      <span className="text-lg font-bold text-neutral-900 dark:text-white">{currencyFormatter.format(price.currentPrice)}</span>
+                      <button type="button" onClick={() => startEdit(price)} className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800">
                         <Edit3 className="w-4 h-4 text-neutral-500" />
                       </button>
                     </div>
                   </>
                 )}
               </div>
+              <p className="text-xs text-neutral-400 mt-2">
+                Minimum baseline: {catalogMap.get(price.crop.toLowerCase()) ? `${currencyFormatter.format(catalogMap.get(price.crop.toLowerCase())!.minPrice)}` : "—"}
+              </p>
             </motion.div>
           );
         })}

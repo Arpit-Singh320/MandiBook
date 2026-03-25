@@ -1,0 +1,43 @@
+{
+  "label": "manager-create-slot",
+  "endpoint": "/slots",
+  "method": "POST",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ***"
+    },
+    "body": {
+      "mandiId": "1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+      "date": "2026-03-27",
+      "startTime": "17:00",
+      "endTime": "18:00",
+      "label": "05:00 PM - 06:00 PM",
+      "capacity": 12
+    }
+  },
+  "response": {
+    "ok": true,
+    "status": 201,
+    "data": {
+      "success": true,
+      "data": {
+        "id": "fb89118d-1124-4052-963c-75a29237f31c",
+        "bookedCount": 0,
+        "isActive": true,
+        "mandiId": "1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+        "date": "2026-03-27",
+        "startTime": "17:00",
+        "endTime": "18:00",
+        "label": "05:00 PM - 06:00 PM",
+        "capacity": 12,
+        "updatedAt": "2026-03-25T15:30:45.703Z",
+        "createdAt": "2026-03-25T15:30:45.703Z"
+      },
+      "message": "Slot created"
+    }
+  },
+  "durationMs": 8,
+  "recordedAt": "2026-03-25T15:30:45.707Z"
+}

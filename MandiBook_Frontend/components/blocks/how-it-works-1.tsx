@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 import { motion } from "motion/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -171,11 +172,12 @@ export function HowItWorks1() {
                       whileHover={{ scale: 1.02 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <img
+                      <Image
                         src={item.image1}
                         alt=""
+                        fill
+                        sizes="(max-width: 768px) 100vw, 420px"
                         className="w-full h-full object-cover"
-                        loading="lazy"
                       />
                     </motion.div>
 
@@ -191,11 +193,12 @@ export function HowItWorks1() {
                       whileHover={{ scale: 1.02 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <img
+                      <Image
                         src={item.image2}
                         alt=""
+                        fill
+                        sizes="(max-width: 768px) 65vw, 260px"
                         className="w-full h-full object-cover"
-                        loading="lazy"
                       />
                     </motion.div>
                   </div>

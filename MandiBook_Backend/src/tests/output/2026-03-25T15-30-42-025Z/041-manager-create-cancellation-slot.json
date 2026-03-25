@@ -1,0 +1,43 @@
+{
+  "label": "manager-create-cancellation-slot",
+  "endpoint": "/slots",
+  "method": "POST",
+  "attempt": 2,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ***"
+    },
+    "body": {
+      "mandiId": "1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+      "date": "2026-03-27",
+      "startTime": "18:00",
+      "endTime": "19:00",
+      "label": "06:00 PM - 07:00 PM Cancel",
+      "capacity": 8
+    }
+  },
+  "response": {
+    "ok": true,
+    "status": 201,
+    "data": {
+      "success": true,
+      "data": {
+        "id": "f2b80d13-3580-4774-92f3-82617c35a1ee",
+        "bookedCount": 0,
+        "isActive": true,
+        "mandiId": "1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+        "date": "2026-03-27",
+        "startTime": "18:00",
+        "endTime": "19:00",
+        "label": "06:00 PM - 07:00 PM Cancel",
+        "capacity": 8,
+        "updatedAt": "2026-03-25T15:30:46.564Z",
+        "createdAt": "2026-03-25T15:30:46.564Z"
+      },
+      "message": "Slot created"
+    }
+  },
+  "durationMs": 843,
+  "recordedAt": "2026-03-25T15:30:46.578Z"
+}

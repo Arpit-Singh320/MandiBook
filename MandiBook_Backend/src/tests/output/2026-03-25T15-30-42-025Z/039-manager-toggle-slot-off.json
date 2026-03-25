@@ -1,0 +1,36 @@
+{
+  "label": "manager-toggle-slot-off",
+  "endpoint": "/slots/fb89118d-1124-4052-963c-75a29237f31c/toggle",
+  "method": "PUT",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ***"
+    },
+    "body": null
+  },
+  "response": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "data": {
+        "id": "fb89118d-1124-4052-963c-75a29237f31c",
+        "mandiId": "1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+        "date": "2026-03-27",
+        "startTime": "17:00",
+        "endTime": "18:00",
+        "label": "05:00 PM - 06:00 PM Test",
+        "capacity": 10,
+        "bookedCount": 0,
+        "isActive": false,
+        "createdAt": "2026-03-25T15:30:45.703Z",
+        "updatedAt": "2026-03-25T15:30:45.716Z"
+      },
+      "message": "Slot deactivated"
+    }
+  },
+  "durationMs": 9,
+  "recordedAt": "2026-03-25T15:30:45.720Z"
+}

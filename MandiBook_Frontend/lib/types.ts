@@ -19,6 +19,20 @@ export interface User {
   profileComplete?: boolean;
   lastLoginAt?: string;
   createdAt: string;
+  village?: string;
+  district?: string;
+  state?: string;
+  pincode?: string;
+  landHolding?: number;
+  farmSize?: string;
+  preferredMandis?: string[];
+  crops?: string[];
+  priceAlertCrops?: string[];
+  mandiId?: string;
+  designation?: string;
+  managingSince?: string;
+  department?: string;
+  twoFactorEnabled?: boolean;
 }
 
 export interface Farmer extends User {

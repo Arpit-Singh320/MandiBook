@@ -1,0 +1,42 @@
+{
+  "label": "admin-dashboard-analytics",
+  "endpoint": "/dashboard/analytics",
+  "method": "GET",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ***"
+    },
+    "body": null
+  },
+  "response": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "data": {
+        "byState": [
+          {
+            "state": "Delhi",
+            "mandis": 1,
+            "bookings": 1
+          },
+          {
+            "state": "Maharashtra",
+            "mandis": 1,
+            "bookings": 1
+          },
+          {
+            "state": "Tamil Nadu",
+            "mandis": 1,
+            "bookings": 1
+          }
+        ],
+        "platformUtilization": 0.6
+      }
+    }
+  },
+  "durationMs": 4,
+  "recordedAt": "2026-03-25T15:30:42.154Z"
+}

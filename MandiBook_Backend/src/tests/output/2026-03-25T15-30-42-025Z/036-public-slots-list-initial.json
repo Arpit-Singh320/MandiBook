@@ -1,0 +1,101 @@
+{
+  "label": "public-slots-list-initial",
+  "endpoint": "/slots?mandiId=1640cfbc-3e8e-412e-8fa9-965e7d8bcaca&date=2026-03-27",
+  "method": "GET",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": null
+  },
+  "response": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "data": [
+        {
+          "id": "6c4d9b5d-0b95-4fbf-bacd-5169ceb044b1",
+          "mandiId": "1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+          "date": "2026-03-27",
+          "startTime": "05:00",
+          "endTime": "07:00",
+          "label": "05:00 AM - 07:00 AM",
+          "capacity": 12,
+          "bookedCount": 0,
+          "isActive": true,
+          "createdAt": "2026-03-25T15:30:45.693Z",
+          "updatedAt": "2026-03-25T15:30:45.693Z"
+        },
+        {
+          "id": "da4e56f8-5033-4afa-8199-195f98b55cfc",
+          "mandiId": "1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+          "date": "2026-03-27",
+          "startTime": "07:00",
+          "endTime": "09:00",
+          "label": "07:00 AM - 09:00 AM",
+          "capacity": 12,
+          "bookedCount": 0,
+          "isActive": true,
+          "createdAt": "2026-03-25T15:30:45.693Z",
+          "updatedAt": "2026-03-25T15:30:45.693Z"
+        },
+        {
+          "id": "7b8a633a-a4ce-4534-b841-f49b8932c4ae",
+          "mandiId": "1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+          "date": "2026-03-27",
+          "startTime": "09:00",
+          "endTime": "11:00",
+          "label": "09:00 AM - 11:00 AM",
+          "capacity": 12,
+          "bookedCount": 0,
+          "isActive": true,
+          "createdAt": "2026-03-25T15:30:45.693Z",
+          "updatedAt": "2026-03-25T15:30:45.693Z"
+        },
+        {
+          "id": "4665ad74-fa52-4302-8c1a-d1b419feaf80",
+          "mandiId": "1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+          "date": "2026-03-27",
+          "startTime": "11:00",
+          "endTime": "13:00",
+          "label": "11:00 AM - 01:00 PM",
+          "capacity": 12,
+          "bookedCount": 0,
+          "isActive": true,
+          "createdAt": "2026-03-25T15:30:45.693Z",
+          "updatedAt": "2026-03-25T15:30:45.693Z"
+        },
+        {
+          "id": "87fb7750-265e-471d-81ab-4f0ccb527f38",
+          "mandiId": "1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+          "date": "2026-03-27",
+          "startTime": "13:00",
+          "endTime": "15:00",
+          "label": "01:00 PM - 03:00 PM",
+          "capacity": 12,
+          "bookedCount": 0,
+          "isActive": true,
+          "createdAt": "2026-03-25T15:30:45.693Z",
+          "updatedAt": "2026-03-25T15:30:45.693Z"
+        },
+        {
+          "id": "a12fe34e-57a7-463d-aedd-84e512f67d22",
+          "mandiId": "1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+          "date": "2026-03-27",
+          "startTime": "15:00",
+          "endTime": "17:00",
+          "label": "03:00 PM - 05:00 PM",
+          "capacity": 12,
+          "bookedCount": 0,
+          "isActive": true,
+          "createdAt": "2026-03-25T15:30:45.693Z",
+          "updatedAt": "2026-03-25T15:30:45.693Z"
+        }
+      ]
+    }
+  },
+  "durationMs": 7,
+  "recordedAt": "2026-03-25T15:30:45.698Z"
+}

@@ -1,0 +1,54 @@
+{
+  "label": "farmer-verify-email-otp",
+  "endpoint": "/auth/farmer/verify-email-otp",
+  "method": "POST",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "email": "arpit@compliledger.com",
+      "otp": "225245",
+      "otpRequestId": "farmer_otp_b2c47e40a7b1815a8602069e"
+    }
+  },
+  "response": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "message": "Login successful",
+      "isNew": false,
+      "profileComplete": true,
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjA3MGZhY2M1LWU3YWItNGNhOS05NzdkLTM3NmEzYjFmYjI0NCIsInJvbGUiOiJmYXJtZXIiLCJ0b2tlblZlcnNpb24iOjAsImlhdCI6MTc3NDQ1MTg2NCwiZXhwIjoxNzc3MDQzODY0fQ.JPRkeo4mrK88o22ef8pOkxXbOAFRSt9_fA1VwedVfbw",
+      "user": {
+        "id": "070facc5-e7ab-4ca9-977d-376a3b1fb244",
+        "name": "Arpit Farmer",
+        "role": "farmer",
+        "phone": "9444444444",
+        "email": "arpit@compliledger.com",
+        "language": "en",
+        "avatar": "",
+        "profileComplete": true,
+        "village": "Test Village",
+        "district": "Indore",
+        "state": "Madhya Pradesh",
+        "pincode": "452001",
+        "landHolding": 3.5,
+        "farmSize": "Medium (2-10 acres)",
+        "preferredMandis": [
+          "fc719ce4-c987-4352-a9d6-19f1eb2725a1"
+        ],
+        "crops": [
+          "Wheat",
+          "Rice"
+        ],
+        "priceAlertCrops": [],
+        "createdAt": "2026-03-25T15:05:27.546Z"
+      }
+    }
+  },
+  "durationMs": 35,
+  "recordedAt": "2026-03-25T15:17:44.458Z"
+}

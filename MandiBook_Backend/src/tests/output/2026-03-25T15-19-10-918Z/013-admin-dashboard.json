@@ -1,0 +1,24 @@
+{
+  "label": "admin-dashboard",
+  "endpoint": "/dashboard/admin",
+  "method": "GET",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ***"
+    },
+    "body": null
+  },
+  "response": {
+    "ok": false,
+    "status": 500,
+    "data": {
+      "success": false,
+      "message": "function substring(date, integer, integer) does not exist",
+      "stack": "Error\n    at Query.run (/Users/arpitsingh/Desktop/College_Work/MandiBook/MandiBook_Backend/node_modules/sequelize/lib/dialects/postgres/query.js:50:25)\n    at /Users/arpitsingh/Desktop/College_Work/MandiBook/MandiBook_Backend/node_modules/sequelize/lib/sequelize.js:315:28\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async PostgresQueryInterface.select (/Users/arpitsingh/Desktop/College_Work/MandiBook/MandiBook_Backend/node_modules/sequelize/lib/dialects/abstract/query-interface.js:407:12)\n    at async Booking.findAll (/Users/arpitsingh/Desktop/College_Work/MandiBook/MandiBook_Backend/node_modules/sequelize/lib/model.js:1140:21)\n    at async /Users/arpitsingh/Desktop/College_Work/MandiBook/MandiBook_Backend/src/routes/dashboard.js:237:29"
+    }
+  },
+  "durationMs": 18,
+  "recordedAt": "2026-03-25T15:19:11.070Z"
+}

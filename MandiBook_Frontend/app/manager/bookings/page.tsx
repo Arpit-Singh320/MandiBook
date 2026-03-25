@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
 import {
   Search,
@@ -10,42 +10,126 @@ import {
   XCircle,
   Clock,
   Eye,
+  AlertCircle,
+  Loader2,
 } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
+import { bookingApi, type BookingData } from "@/lib/data-api";
 
-type Status = "all" | "confirmed" | "checked-in" | "pending" | "cancelled";
+type Status = "all" | BookingData["status"];
 
-const bookings = [
-  { id: "BK-101", farmer: "Ramesh Kumar", phone: "98765xxxxx", crop: "Wheat", qty: "50 Q", date: "Mar 19, 2026", slot: "08:00 - 10:00 AM", vehicle: "UP32AB1234", status: "checked-in" as const },
-  { id: "BK-102", farmer: "Suresh Patel", phone: "98765xxxxx", crop: "Rice", qty: "30 Q", date: "Mar 19, 2026", slot: "09:00 - 11:00 AM", vehicle: "DL4CAF5678", status: "confirmed" as const },
-  { id: "BK-103", farmer: "Amit Singh", phone: "98765xxxxx", crop: "Vegetables", qty: "20 Q", date: "Mar 19, 2026", slot: "10:00 - 12:00 PM", vehicle: "HR26DK9012", status: "confirmed" as const },
-  { id: "BK-104", farmer: "Priya Devi", phone: "98765xxxxx", crop: "Mustard", qty: "40 Q", date: "Mar 19, 2026", slot: "10:00 - 12:00 PM", vehicle: "—", status: "pending" as const },
-  { id: "BK-105", farmer: "Vikas Sharma", phone: "98765xxxxx", crop: "Potato", qty: "60 Q", date: "Mar 19, 2026", slot: "11:00 AM - 01:00 PM", vehicle: "UP14GH3456", status: "confirmed" as const },
-  { id: "BK-106", farmer: "Sunita Yadav", phone: "98765xxxxx", crop: "Onion", qty: "25 Q", date: "Mar 19, 2026", slot: "06:00 - 08:00 AM", vehicle: "DL8SAB7890", status: "checked-in" as const },
-  { id: "BK-107", farmer: "Deepak Verma", phone: "98765xxxxx", crop: "Tomato", qty: "15 Q", date: "Mar 18, 2026", slot: "08:00 - 10:00 AM", vehicle: "UP32CD1122", status: "cancelled" as const },
-  { id: "BK-108", farmer: "Neha Gupta", phone: "98765xxxxx", crop: "Maize", qty: "45 Q", date: "Mar 18, 2026", slot: "10:00 - 12:00 PM", vehicle: "HR06EF3344", status: "checked-in" as const },
-];
+const numberFormatter = new Intl.NumberFormat("en-IN");
+
+function formatDisplayDate(date: string) {
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(`${date}T00:00:00`));
+}
+
+function todayKey() {
+  return new Date().toISOString().split("T")[0];
+}
 
 const statusConfig: Record<string, { label: string; color: string; icon: typeof CheckCircle }> = {
   "checked-in": { label: "Checked In", color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400", icon: CheckCircle },
   confirmed: { label: "Confirmed", color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400", icon: Clock },
   pending: { label: "Pending", color: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400", icon: Clock },
+  completed: { label: "Completed", color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400", icon: CheckCircle },
   cancelled: { label: "Cancelled", color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400", icon: XCircle },
 };
 
 export default function ManagerBookingsPage() {
+  const { token, user } = useAuth();
   const [filter, setFilter] = useState<Status>("all");
   const [search, setSearch] = useState("");
   const [selectedBooking, setSelectedBooking] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [actionBookingId, setActionBookingId] = useState<string | null>(null);
+  const [bookings, setBookings] = useState<BookingData[]>([]);
 
-  const filtered = bookings.filter((b) => {
+  useEffect(() => {
+    const mandiId = user?.mandiId;
+    if (!token || !mandiId) return;
+
+    const load = async () => {
+      try {
+        const response = await bookingApi.mandiBookings(token, mandiId);
+        setBookings(response.data);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Failed to load bookings");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void load();
+  }, [token, user?.mandiId]);
+
+  const filtered = useMemo(() => bookings.filter((b) => {
     const matchesFilter = filter === "all" || b.status === filter;
     const matchesSearch =
       search === "" ||
-      b.farmer.toLowerCase().includes(search.toLowerCase()) ||
-      b.crop.toLowerCase().includes(search.toLowerCase()) ||
-      b.id.toLowerCase().includes(search.toLowerCase());
+      (b.farmer?.name || b.Farmer?.name || "").toLowerCase().includes(search.toLowerCase()) ||
+      b.cropType.toLowerCase().includes(search.toLowerCase()) ||
+      b.bookingNumber.toLowerCase().includes(search.toLowerCase());
     return matchesFilter && matchesSearch;
-  });
+  }), [bookings, filter, search]);
+
+  const summaryCards = useMemo(() => {
+    const today = todayKey();
+    return [
+      { label: "Total Today", value: bookings.filter((b) => b.date === today).length, color: "text-neutral-900 dark:text-white" },
+      { label: "Checked In", value: bookings.filter((b) => b.status === "checked-in").length, color: "text-green-600" },
+      { label: "Confirmed", value: bookings.filter((b) => b.status === "confirmed").length, color: "text-blue-600" },
+      { label: "Pending", value: bookings.filter((b) => b.status === "pending").length, color: "text-amber-600" },
+    ];
+  }, [bookings]);
+
+  const handleCheckIn = async (bookingId: string) => {
+    if (!token) return;
+    try {
+      setActionBookingId(bookingId);
+      const response = await bookingApi.checkIn(token, bookingId);
+      setBookings((current) => current.map((booking) => booking.id === bookingId ? response.data : booking));
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to check in booking");
+    } finally {
+      setActionBookingId(null);
+    }
+  };
+
+  const handleComplete = async (bookingId: string) => {
+    if (!token) return;
+    try {
+      setActionBookingId(bookingId);
+      const response = await bookingApi.complete(token, bookingId);
+      setBookings((current) => current.map((booking) => booking.id === bookingId ? response.data : booking));
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to complete booking");
+    } finally {
+      setActionBookingId(null);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-8 h-8 animate-spin text-green-700" />
+      </div>
+    );
+  }
+
+  if (error && bookings.length === 0) {
+    return (
+      <div className="max-w-lg mx-auto text-center py-20">
+        <AlertCircle className="w-10 h-10 text-red-500 mx-auto mb-3" />
+        <p className="text-red-600">{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -58,14 +142,15 @@ export default function ManagerBookingsPage() {
         </p>
       </motion.div>
 
+      {error ? (
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      ) : null}
+
       {/* Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        {[
-          { label: "Total Today", value: bookings.filter((b) => b.date === "Mar 19, 2026").length, color: "text-neutral-900 dark:text-white" },
-          { label: "Checked In", value: bookings.filter((b) => b.status === "checked-in").length, color: "text-green-600" },
-          { label: "Confirmed", value: bookings.filter((b) => b.status === "confirmed").length, color: "text-blue-600" },
-          { label: "Pending", value: bookings.filter((b) => b.status === "pending").length, color: "text-amber-600" },
-        ].map((s) => (
+        {summaryCards.map((s) => (
           <div key={s.label} className="bg-white dark:bg-neutral-900 rounded-xl border border-[var(--border)] p-4 text-center">
             <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
             <p className="text-xs text-neutral-500 mt-0.5">{s.label}</p>
@@ -121,36 +206,78 @@ export default function ManagerBookingsPage() {
             {filtered.map((b) => {
               const sc = statusConfig[b.status];
               return (
-                <tr key={b.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
-                  <td className="px-5 py-3 text-sm font-mono text-neutral-500">{b.id}</td>
-                  <td className="px-5 py-3">
-                    <p className="text-sm font-medium text-neutral-900 dark:text-white">{b.farmer}</p>
-                    <p className="text-[10px] text-neutral-400">{b.phone}</p>
-                  </td>
-                  <td className="px-5 py-3 text-sm text-neutral-600 dark:text-neutral-400">{b.crop} · {b.qty}</td>
-                  <td className="px-5 py-3 text-sm text-neutral-600 dark:text-neutral-400">{b.slot}</td>
-                  <td className="px-5 py-3 text-sm font-mono text-neutral-500">{b.vehicle}</td>
-                  <td className="px-5 py-3">
-                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${sc?.color}`}>
-                      {sc?.label}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      {b.status === "confirmed" && (
-                        <button className="px-3 py-1.5 rounded-lg bg-green-100 text-green-700 text-xs font-medium hover:bg-green-200 transition-colors flex items-center gap-1">
-                          <QrCode className="w-3 h-3" /> Check In
+                <Fragment key={b.id}>
+                  <tr className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
+                    <td className="px-5 py-3 text-sm font-mono text-neutral-500">{b.bookingNumber}</td>
+                    <td className="px-5 py-3">
+                      <p className="text-sm font-medium text-neutral-900 dark:text-white">{b.farmer?.name || b.Farmer?.name || "Farmer"}</p>
+                      <p className="text-[10px] text-neutral-400">{b.farmer?.phone || b.Farmer?.phone || "—"}</p>
+                    </td>
+                    <td className="px-5 py-3 text-sm text-neutral-600 dark:text-neutral-400">{b.cropType} · {numberFormatter.format(b.estimatedQuantity)} Q</td>
+                    <td className="px-5 py-3 text-sm text-neutral-600 dark:text-neutral-400">{formatDisplayDate(b.date)} · {b.timeSlot}</td>
+                    <td className="px-5 py-3 text-sm font-mono text-neutral-500">{b.vehicleNumber || "—"}</td>
+                    <td className="px-5 py-3">
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${sc?.color}`}>
+                        {sc?.label}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        {b.status === "confirmed" ? (
+                          <button
+                            type="button"
+                            disabled={actionBookingId === b.id}
+                            onClick={() => void handleCheckIn(b.id)}
+                            className="px-3 py-1.5 rounded-lg bg-green-100 text-green-700 text-xs font-medium hover:bg-green-200 transition-colors flex items-center gap-1 disabled:opacity-50"
+                          >
+                            <QrCode className="w-3 h-3" /> Check In
+                          </button>
+                        ) : null}
+                        {b.status === "checked-in" ? (
+                          <button
+                            type="button"
+                            disabled={actionBookingId === b.id}
+                            onClick={() => void handleComplete(b.id)}
+                            className="px-3 py-1.5 rounded-lg bg-blue-100 text-blue-700 text-xs font-medium hover:bg-blue-200 transition-colors disabled:opacity-50"
+                          >
+                            Complete
+                          </button>
+                        ) : null}
+                        <button
+                          type="button"
+                          onClick={() => setSelectedBooking(selectedBooking === b.id ? null : b.id)}
+                          className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                        >
+                          <Eye className="w-4 h-4 text-neutral-500" />
                         </button>
-                      )}
-                      <button
-                        onClick={() => setSelectedBooking(selectedBooking === b.id ? null : b.id)}
-                        className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                      >
-                        <Eye className="w-4 h-4 text-neutral-500" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                      </div>
+                    </td>
+                  </tr>
+                  {selectedBooking === b.id ? (
+                    <tr className="bg-neutral-50 dark:bg-neutral-800/50">
+                      <td colSpan={7} className="px-5 py-4 text-sm text-neutral-600 dark:text-neutral-300">
+                        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                          <div>
+                            <p className="text-xs text-neutral-500">Booking Date</p>
+                            <p>{formatDisplayDate(b.date)}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-neutral-500">Slot</p>
+                            <p>{b.timeSlot}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-neutral-500">Vehicle</p>
+                            <p>{b.vehicleNumber || "—"}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-neutral-500">Status</p>
+                            <p>{sc?.label || b.status}</p>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : null}
+                </Fragment>
               );
             })}
           </tbody>
@@ -171,18 +298,34 @@ export default function ManagerBookingsPage() {
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-mono text-neutral-400">{b.id}</span>
+                  <span className="text-xs font-mono text-neutral-400">{b.bookingNumber}</span>
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${sc?.color}`}>{sc?.label}</span>
                 </div>
                 {b.status === "confirmed" && (
-                  <button className="px-2.5 py-1 rounded-lg bg-green-100 text-green-700 text-[10px] font-medium flex items-center gap-1">
+                  <button
+                    type="button"
+                    disabled={actionBookingId === b.id}
+                    onClick={() => void handleCheckIn(b.id)}
+                    className="px-2.5 py-1 rounded-lg bg-green-100 text-green-700 text-[10px] font-medium flex items-center gap-1 disabled:opacity-50"
+                  >
                     <QrCode className="w-3 h-3" /> Check In
                   </button>
                 )}
               </div>
-              <p className="text-sm font-semibold text-neutral-900 dark:text-white">{b.farmer}</p>
-              <p className="text-xs text-neutral-500 mt-1">{b.crop} · {b.qty} · {b.slot}</p>
-              {b.vehicle !== "—" && <p className="text-xs text-neutral-400 font-mono mt-0.5">{b.vehicle}</p>}
+              <p className="text-sm font-semibold text-neutral-900 dark:text-white">{b.farmer?.name || b.Farmer?.name || "Farmer"}</p>
+              <p className="text-xs text-neutral-500 mt-1">{b.cropType} · {numberFormatter.format(b.estimatedQuantity)} Q · {b.timeSlot}</p>
+              <p className="text-xs text-neutral-400 mt-0.5">{formatDisplayDate(b.date)}</p>
+              {b.vehicleNumber ? <p className="text-xs text-neutral-400 font-mono mt-0.5">{b.vehicleNumber}</p> : null}
+              {b.status === "checked-in" ? (
+                <button
+                  type="button"
+                  disabled={actionBookingId === b.id}
+                  onClick={() => void handleComplete(b.id)}
+                  className="mt-3 px-3 py-1.5 rounded-lg bg-blue-100 text-blue-700 text-xs font-medium disabled:opacity-50"
+                >
+                  Complete Booking
+                </button>
+              ) : null}
             </motion.div>
           );
         })}

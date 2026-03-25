@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
 import {
   CalendarCheck,
@@ -8,56 +9,104 @@ import {
   Clock,
   ArrowRight,
   AlertCircle,
+  Loader2,
 } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
+import { dashboardApi, type DashboardManagerData } from "@/lib/data-api";
 
-const stats = [
-  {
-    label: "Today's Bookings",
-    value: "47",
-    change: "+12%",
-    icon: CalendarCheck,
-    color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-  },
-  {
-    label: "Active Farmers",
-    value: "1,234",
-    change: "+8%",
-    icon: Users,
-    color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-  },
-  {
-    label: "Avg. Price (Wheat)",
-    value: "₹2,480",
-    change: "+3%",
-    icon: TrendingUp,
-    color:
-      "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-  },
-  {
-    label: "Available Slots",
-    value: "28",
-    change: "-5",
-    icon: Clock,
-    color:
-      "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
-  },
-];
+const currencyFormatter = new Intl.NumberFormat("en-IN", {
+  style: "currency",
+  currency: "INR",
+  maximumFractionDigits: 0,
+});
 
-const recentBookings = [
-  { id: "BK-101", farmer: "Ramesh Kumar", crop: "Wheat", qty: "50 Q", time: "08:00 AM", status: "checked-in" },
-  { id: "BK-102", farmer: "Suresh Patel", crop: "Rice", qty: "30 Q", time: "09:00 AM", status: "confirmed" },
-  { id: "BK-103", farmer: "Amit Singh", crop: "Vegetables", qty: "20 Q", time: "10:00 AM", status: "confirmed" },
-  { id: "BK-104", farmer: "Priya Devi", crop: "Mustard", qty: "40 Q", time: "10:00 AM", status: "pending" },
-  { id: "BK-105", farmer: "Vikas Sharma", crop: "Potato", qty: "60 Q", time: "11:00 AM", status: "confirmed" },
-];
+const numberFormatter = new Intl.NumberFormat("en-IN");
 
-const alerts = [
-  { message: "3 farmers haven't checked in for their 8 AM slot", type: "warning" },
-  { message: "Wheat prices updated — ₹2,480/Q", type: "info" },
-  { message: "Tomorrow has 15 unconfirmed bookings", type: "warning" },
-];
+function formatToday() {
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date());
+}
 
 export default function ManagerDashboard() {
+  const { token } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [dashboard, setDashboard] = useState<DashboardManagerData["data"] | null>(null);
+
+  useEffect(() => {
+    if (!token) return;
+
+    const load = async () => {
+      try {
+        const response = await dashboardApi.manager(token);
+        setDashboard(response.data);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Failed to load manager dashboard");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void load();
+  }, [token]);
+
+  const stats = useMemo(() => {
+    if (!dashboard) return [];
+
+    return [
+      {
+        label: "Today's Bookings",
+        value: numberFormatter.format(dashboard.stats.todayBookings),
+        change: `${dashboard.todayBreakdown.confirmed} confirmed`,
+        icon: CalendarCheck,
+        color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+      },
+      {
+        label: "Active Farmers",
+        value: numberFormatter.format(dashboard.stats.activeFarmers),
+        change: `${dashboard.stats.managerCount} managers`,
+        icon: Users,
+        color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+      },
+      {
+        label: "Avg. Price (Wheat)",
+        value: currencyFormatter.format(dashboard.stats.avgWheatPrice),
+        change: `${dashboard.priceSummary.totalCrops} crops priced`,
+        icon: TrendingUp,
+        color:
+          "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+      },
+      {
+        label: "Available Slots",
+        value: numberFormatter.format(dashboard.slotSummary.availableSlots),
+        change: `${dashboard.slotSummary.utilization}% utilized`,
+        icon: Clock,
+        color:
+          "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
+      },
+    ];
+  }, [dashboard]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-8 h-8 animate-spin text-green-700" />
+      </div>
+    );
+  }
+
+  if (error || !dashboard) {
+    return (
+      <div className="max-w-lg mx-auto text-center py-20">
+        <AlertCircle className="w-10 h-10 text-red-500 mx-auto mb-3" />
+        <p className="text-red-600">{error || "Failed to load manager dashboard"}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Welcome */}
@@ -67,10 +116,10 @@ export default function ManagerDashboard() {
         transition={{ duration: 0.4 }}
       >
         <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white">
-          Azadpur Mandi Dashboard
+          {dashboard.mandiInfo.name} Dashboard
         </h1>
         <p className="mt-1 text-neutral-600 dark:text-neutral-400">
-          Today&apos;s overview — March 19, 2026
+          Today&apos;s overview — {formatToday()}
         </p>
       </motion.div>
 
@@ -92,7 +141,7 @@ export default function ManagerDashboard() {
                 >
                   <Icon className="w-5 h-5" />
                 </div>
-                <span className="text-xs font-medium text-green-600">
+                <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
                   {stat.change}
                 </span>
               </div>
@@ -150,25 +199,31 @@ export default function ManagerDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border)]">
-                {recentBookings.map((b) => (
+                {dashboard.recentBookings.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-5 py-8 text-center text-sm text-neutral-500">
+                      No bookings found for today.
+                    </td>
+                  </tr>
+                ) : dashboard.recentBookings.map((b) => (
                   <tr
                     key={b.id}
                     className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
                   >
                     <td className="px-5 py-3 text-sm font-mono text-neutral-500">
-                      {b.id}
+                      {b.bookingNumber}
                     </td>
                     <td className="px-5 py-3 text-sm font-medium text-neutral-900 dark:text-white">
-                      {b.farmer}
+                      {b.farmer?.name || b.Farmer?.name || "Farmer"}
                     </td>
                     <td className="px-5 py-3 text-sm text-neutral-600 dark:text-neutral-400">
-                      {b.crop}
+                      {b.cropType}
                     </td>
                     <td className="px-5 py-3 text-sm text-neutral-600 dark:text-neutral-400">
-                      {b.qty}
+                      {numberFormatter.format(b.estimatedQuantity)} Q
                     </td>
                     <td className="px-5 py-3 text-sm text-neutral-600 dark:text-neutral-400">
-                      {b.time}
+                      {b.timeSlot}
                     </td>
                     <td className="px-5 py-3">
                       <span
@@ -190,11 +245,13 @@ export default function ManagerDashboard() {
           </div>
           {/* Mobile Cards */}
           <div className="sm:hidden divide-y divide-[var(--border)]">
-            {recentBookings.map((b) => (
+            {dashboard.recentBookings.length === 0 ? (
+              <div className="p-4 text-sm text-neutral-500">No bookings found for today.</div>
+            ) : dashboard.recentBookings.map((b) => (
               <div key={b.id} className="p-4">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-sm font-semibold text-neutral-900 dark:text-white">
-                    {b.farmer}
+                    {b.farmer?.name || b.Farmer?.name || "Farmer"}
                   </span>
                   <span
                     className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
@@ -209,7 +266,7 @@ export default function ManagerDashboard() {
                   </span>
                 </div>
                 <p className="text-xs text-neutral-500">
-                  {b.crop} · {b.qty} · {b.time}
+                  {b.cropType} · {numberFormatter.format(b.estimatedQuantity)} Q · {b.timeSlot}
                 </p>
               </div>
             ))}
@@ -229,7 +286,11 @@ export default function ManagerDashboard() {
             </h2>
           </div>
           <div className="divide-y divide-[var(--border)]">
-            {alerts.map((alert, index) => (
+            {dashboard.alerts.length === 0 ? (
+              <div className="p-4 sm:p-5 text-sm text-neutral-500">
+                No operational alerts right now.
+              </div>
+            ) : dashboard.alerts.map((alert, index) => (
               <div
                 key={index}
                 className="flex items-start gap-3 p-4 sm:p-5"

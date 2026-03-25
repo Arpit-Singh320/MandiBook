@@ -1,70 +1,57 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
-import { Search, TrendingUp, TrendingDown, MapPin, AlertCircle } from "lucide-react";
+import { Search, TrendingUp, TrendingDown, MapPin, AlertCircle, Loader2 } from "lucide-react";
+import { priceApi, type PriceOverviewData } from "@/lib/data-api";
 
-interface PriceEntry {
-  crop: string;
-  unit: string;
-  prices: { mandi: string; price: number; prevPrice: number }[];
-}
-
-const priceData: PriceEntry[] = [
-  {
-    crop: "Wheat",
-    unit: "Quintal",
-    prices: [
-      { mandi: "Azadpur, Delhi", price: 2480, prevPrice: 2420 },
-      { mandi: "Vashi, Mumbai", price: 2520, prevPrice: 2500 },
-      { mandi: "Koyambedu, Chennai", price: 2450, prevPrice: 2400 },
-      { mandi: "Bowenpally, Hyd", price: 2470, prevPrice: 2430 },
-    ],
-  },
-  {
-    crop: "Rice (Basmati)",
-    unit: "Quintal",
-    prices: [
-      { mandi: "Azadpur, Delhi", price: 3850, prevPrice: 3900 },
-      { mandi: "Vashi, Mumbai", price: 3900, prevPrice: 3950 },
-      { mandi: "Koyambedu, Chennai", price: 3780, prevPrice: 3800 },
-    ],
-  },
-  {
-    crop: "Potato",
-    unit: "Quintal",
-    prices: [
-      { mandi: "Azadpur, Delhi", price: 1250, prevPrice: 1180 },
-      { mandi: "Ghazipur, Delhi", price: 1230, prevPrice: 1200 },
-      { mandi: "Bowenpally, Hyd", price: 1280, prevPrice: 1220 },
-    ],
-  },
-  {
-    crop: "Onion",
-    unit: "Quintal",
-    prices: [
-      { mandi: "Azadpur, Delhi", price: 1890, prevPrice: 2050 },
-      { mandi: "Vashi, Mumbai", price: 1850, prevPrice: 2000 },
-      { mandi: "Yeshwanthpur, Blr", price: 1920, prevPrice: 2080 },
-    ],
-  },
-  {
-    crop: "Tomato",
-    unit: "Quintal",
-    prices: [
-      { mandi: "Koyambedu, Chennai", price: 2100, prevPrice: 1800 },
-      { mandi: "Vashi, Mumbai", price: 2150, prevPrice: 1900 },
-      { mandi: "Azadpur, Delhi", price: 2050, prevPrice: 1780 },
-    ],
-  },
-];
+const currencyFormatter = new Intl.NumberFormat("en-IN", {
+  style: "currency",
+  currency: "INR",
+  maximumFractionDigits: 0,
+});
 
 export default function AdminPricesPage() {
+  const [prices, setPrices] = useState<PriceOverviewData[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [error, setError] = useState("");
 
-  const filtered = priceData.filter(
-    (p) => search === "" || p.crop.toLowerCase().includes(search.toLowerCase())
-  );
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const response = await priceApi.overview();
+        setPrices(response.data);
+      } catch (loadError: unknown) {
+        setError(loadError instanceof Error ? loadError.message : "Failed to load price overview");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void load();
+  }, []);
+
+  const filtered = useMemo(() => prices.filter((entry) => {
+    if (search === "") return true;
+    const query = search.toLowerCase();
+    return entry.crop.toLowerCase().includes(query)
+      || entry.prices.some((price) => price.mandi.toLowerCase().includes(query));
+  }), [prices, search]);
+
+  const belowBaselineEntries = useMemo(() => filtered.filter((entry) => {
+    const baseline = entry.minPrice;
+    if (baseline === null || baseline === undefined) return false;
+    return entry.prices.some((price) => price.price < baseline);
+  }), [filtered]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-green-700" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -77,12 +64,22 @@ export default function AdminPricesPage() {
       <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 rounded-xl p-4 mb-6 flex items-start gap-3">
         <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
         <div>
-          <p className="text-sm font-medium text-amber-800 dark:text-amber-300">Price Anomaly Detected</p>
+          <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+            {belowBaselineEntries.length > 0 ? "Baseline Compliance Alert" : "Live Price Feed Active"}
+          </p>
           <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
-            Onion prices dropped &gt;7% across multiple mandis. Tomato prices surged &gt;15% in 3 mandis.
+            {belowBaselineEntries.length > 0
+              ? `${belowBaselineEntries.length} crop groups currently contain mandi prices below the configured minimum baseline.`
+              : `Showing ${filtered.length} crop groups from the live backend overview.`}
           </p>
         </div>
       </div>
+
+      {error ? (
+        <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/20 dark:text-red-300">
+          {error}
+        </div>
+      ) : null}
 
       {/* Search */}
       <div className="relative mb-6">
@@ -110,19 +107,28 @@ export default function AdminPricesPage() {
               <h3 className="text-base font-semibold text-neutral-900 dark:text-white">
                 {crop.crop} <span className="text-xs text-neutral-400 font-normal">per {crop.unit}</span>
               </h3>
+              <p className="mt-1 text-xs text-neutral-500">
+                Minimum baseline: {crop.minPrice !== null && crop.minPrice !== undefined ? currencyFormatter.format(crop.minPrice) : "Not configured"}
+              </p>
             </div>
             <div className="divide-y divide-[var(--border)]">
               {crop.prices.map((p) => {
                 const change = p.price - p.prevPrice;
                 const pct = ((change / p.prevPrice) * 100).toFixed(1);
                 const isUp = change >= 0;
+                const belowBaseline = crop.minPrice !== null && crop.minPrice !== undefined && p.price < crop.minPrice;
                 return (
                   <div key={p.mandi} className="flex items-center justify-between px-4 sm:px-5 py-3">
                     <span className="text-sm text-neutral-600 dark:text-neutral-400 flex items-center gap-1.5">
                       <MapPin className="w-3 h-3 text-neutral-400" /> {p.mandi}
                     </span>
                     <div className="flex items-center gap-4">
-                      <span className="text-sm font-bold text-neutral-900 dark:text-white">₹{p.price.toLocaleString()}</span>
+                      <div className="text-right">
+                        <span className="text-sm font-bold text-neutral-900 dark:text-white">₹{p.price.toLocaleString()}</span>
+                        {belowBaseline ? (
+                          <p className="text-[10px] text-red-500">Below baseline</p>
+                        ) : null}
+                      </div>
                       <span className={`inline-flex items-center gap-0.5 text-xs font-medium ${isUp ? "text-green-600" : "text-red-500"}`}>
                         {isUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                         {isUp ? "+" : ""}{pct}%
@@ -134,6 +140,11 @@ export default function AdminPricesPage() {
             </div>
           </motion.div>
         ))}
+        {filtered.length === 0 ? (
+          <div className="rounded-xl border border-[var(--border)] bg-white dark:bg-neutral-900 px-6 py-12 text-center text-sm text-neutral-500">
+            No crop groups match your search.
+          </div>
+        ) : null}
       </div>
     </div>
   );

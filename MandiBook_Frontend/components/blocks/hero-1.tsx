@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { ArrowRight, TrendingUp } from "lucide-react";
 import { motion } from "motion/react";
 
@@ -107,9 +108,11 @@ export function Hero1() {
             className="relative w-full"
           >
             <div className="relative w-full aspect-[4/3] sm:aspect-[4/3] lg:aspect-auto lg:min-h-[500px] rounded-2xl sm:rounded-3xl bg-neutral-100 dark:bg-neutral-900 overflow-hidden shadow-lg sm:shadow-2xl">
-              <img
+              <Image
                 src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=1740&auto=format&fit=crop"
                 alt="Indian mandi marketplace with farmers selling fresh produce"
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
                 className="absolute inset-0 w-full h-full object-cover"
               />
               {/* Gradient overlay */}

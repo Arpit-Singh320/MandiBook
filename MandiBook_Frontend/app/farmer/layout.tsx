@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -92,7 +93,7 @@ export default function FarmerLayout({ children }: { children: ReactNode }) {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-800">
-            <a href="/" className="flex items-center gap-2.5 no-underline">
+            <Link href="/" className="flex items-center gap-2.5 no-underline">
               <div className="w-9 h-9 rounded-xl bg-green-700 flex items-center justify-center">
                 <Wheat className="w-5 h-5 text-white" />
               </div>
@@ -104,7 +105,7 @@ export default function FarmerLayout({ children }: { children: ReactNode }) {
                   Farmer Portal
                 </span>
               </div>
-            </a>
+            </Link>
             <button
               onClick={() => setSidebarOpen(false)}
               className="lg:hidden p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800"

@@ -3,6 +3,7 @@ const Mandi = require('./Mandi');
 const TimeSlot = require('./TimeSlot');
 const Booking = require('./Booking');
 const CropPrice = require('./CropPrice');
+const CropCatalog = require('./CropCatalog');
 const Notification = require('./Notification');
 const Issue = require('./Issue');
 const AuditLog = require('./AuditLog');
@@ -37,6 +38,9 @@ Mandi.hasMany(CropPrice, { as: 'prices', foreignKey: 'mandiId' });
 // CropPrice <-> User (updatedBy)
 CropPrice.belongsTo(User, { as: 'updater', foreignKey: 'updatedBy', constraints: false });
 
+// CropCatalog <-> User (createdBy)
+CropCatalog.belongsTo(User, { as: 'creator', foreignKey: 'createdBy', constraints: false });
+
 // Notification <-> User
 Notification.belongsTo(User, { as: 'user', foreignKey: 'userId', constraints: false });
 User.hasMany(Notification, { as: 'notifications', foreignKey: 'userId', constraints: false });
@@ -60,6 +64,7 @@ module.exports = {
   TimeSlot,
   Booking,
   CropPrice,
+  CropCatalog,
   Notification,
   Issue,
   AuditLog,

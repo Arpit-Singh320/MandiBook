@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "motion/react";
 import { useEffect, useRef } from "react";
 
@@ -158,9 +159,11 @@ export default function Stats3() {
 
                 {/* Image layer */}
                 <div className="absolute inset-0">
-                  <img
+                  <Image
                     src="https://images.unsplash.com/photo-1595855759920-86582396756a?w=1200&h=1200&fit=crop&q=80"
                     alt="Indian farmer at mandi"
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 50vw"
                     className="w-full h-full object-cover"
                   />
                 </div>

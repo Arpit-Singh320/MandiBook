@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
 import { useState, useEffect } from "react";
 
@@ -96,9 +97,11 @@ export default function SocialProof5() {
                       activeIndex === index ? testimonial.color : undefined,
                   }}
                 >
-                  <img
+                  <Image
                     src={testimonial.avatar}
                     alt={testimonial.name}
+                    fill
+                    sizes="(max-width: 640px) 36px, (max-width: 1024px) 40px, 64px"
                     className="h-9 w-9 rounded-full object-cover sm:h-10 sm:w-10 lg:h-16 lg:w-16 grayscale"
                   />
                 </div>

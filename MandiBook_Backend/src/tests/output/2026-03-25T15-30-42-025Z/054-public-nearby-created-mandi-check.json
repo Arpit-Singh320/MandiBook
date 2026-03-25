@@ -1,0 +1,105 @@
+{
+  "label": "public-nearby-created-mandi-check",
+  "endpoint": "/mandis/nearby?lat=28.7183&lng=77.181&radius=25",
+  "method": "GET",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": null
+  },
+  "response": {
+    "ok": true,
+    "status": 200,
+    "data": {
+      "success": true,
+      "data": [
+        {
+          "id": "1640cfbc-3e8e-412e-8fa9-965e7d8bcaca",
+          "name": "Test Geo Mandi TST-642189",
+          "nameHi": "",
+          "code": "TST-642189",
+          "address": "Azadpur Mandi, GT Karnal Road",
+          "city": "Delhi",
+          "district": "North Delhi",
+          "state": "Delhi",
+          "pincode": "110033",
+          "lat": 28.7183,
+          "lng": 77.181,
+          "contactPhone": "01111111111",
+          "managerId": "1fe01a01-185f-4ece-9aa6-901206543595",
+          "managerIds": [
+            "1fe01a01-185f-4ece-9aa6-901206543595",
+            "036a8e56-0628-42c6-bdc2-605d40deae7b"
+          ],
+          "crops": [
+            "Wheat",
+            "Test Millet TST-642189"
+          ],
+          "operatingHoursOpen": "05:00",
+          "operatingHoursClose": "18:00",
+          "holidays": [],
+          "workingDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday"
+          ],
+          "isActive": true,
+          "rating": 0,
+          "createdAt": "2026-03-25T15:30:42.192Z",
+          "updatedAt": "2026-03-25T15:30:45.684Z",
+          "distance": 0,
+          "slotsToday": 0
+        },
+        {
+          "id": "fc719ce4-c987-4352-a9d6-19f1eb2725a1",
+          "name": "Azadpur Mandi",
+          "nameHi": "आज़ादपुर मंडी",
+          "code": "AZD-001",
+          "address": "Azadpur, North Delhi",
+          "city": "Delhi",
+          "district": "North Delhi",
+          "state": "Delhi",
+          "pincode": "110033",
+          "lat": 28.7041,
+          "lng": 77.1775,
+          "contactPhone": "011-27654321",
+          "managerId": "2be7bdec-bfb1-4363-8523-55f11d363f57",
+          "managerIds": [
+            "2be7bdec-bfb1-4363-8523-55f11d363f57"
+          ],
+          "crops": [
+            "Wheat",
+            "Rice",
+            "Tomato",
+            "Onion",
+            "Potato"
+          ],
+          "operatingHoursOpen": "05:00",
+          "operatingHoursClose": "18:00",
+          "holidays": [],
+          "workingDays": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday"
+          ],
+          "isActive": true,
+          "rating": 4.5,
+          "createdAt": "2026-03-25T06:34:35.356Z",
+          "updatedAt": "2026-03-25T15:30:42.240Z",
+          "distance": 1.6,
+          "slotsToday": 89
+        }
+      ]
+    }
+  },
+  "durationMs": 5,
+  "recordedAt": "2026-03-25T15:30:46.692Z"
+}

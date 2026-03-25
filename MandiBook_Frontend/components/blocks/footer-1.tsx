@@ -91,7 +91,7 @@ export default function Footer1() {
               {/* Small Text */}
               <div className="mt-auto">
                 <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                  India's digital mandi platform
+                  India&apos;s digital mandi platform
                 </p>
               </div>
             </motion.div>

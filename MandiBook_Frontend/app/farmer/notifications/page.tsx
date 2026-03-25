@@ -27,6 +27,13 @@ const getNotificationConfig = (type: string): NotificationConfig => {
   return typeConfig[type] ?? typeConfig.system!;
 };
 
+const formatTimestamp = (value: string) => new Intl.DateTimeFormat("en-IN", {
+  day: "numeric",
+  month: "short",
+  hour: "2-digit",
+  minute: "2-digit",
+}).format(new Date(value));
+
 export default function NotificationsPage() {
   const { token } = useAuth();
   const [items, setItems] = useState<NotificationData[]>([]);
@@ -61,16 +68,6 @@ export default function NotificationsPage() {
   if (loading) {
     return <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-green-700" /></div>;
   }
-
-  const timeAgo = (dateStr: string) => {
-    const diff = Date.now() - new Date(dateStr).getTime();
-    const mins = Math.floor(diff / 60000);
-    if (mins < 60) return `${mins} min ago`;
-    const hours = Math.floor(mins / 60);
-    if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
-    const days = Math.floor(hours / 24);
-    return `${days} day${days > 1 ? "s" : ""} ago`;
-  };
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -111,7 +108,7 @@ export default function NotificationsPage() {
                   {!notification.isRead && <Circle className="w-2 h-2 fill-[var(--primary)] text-[var(--primary)] shrink-0" />}
                 </div>
                 <p className="text-xs text-neutral-500 mt-0.5 line-clamp-2">{notification.message}</p>
-                <p className="text-[10px] text-neutral-400 mt-1">{timeAgo(notification.createdAt)}</p>
+                <p className="text-[10px] text-neutral-400 mt-1">{formatTimestamp(notification.createdAt)}</p>
               </div>
             </motion.div>
           );

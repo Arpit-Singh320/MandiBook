@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -86,7 +87,7 @@ export default function ManagerLayout({ children }: { children: ReactNode }) {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
-            <a href="/" className="flex items-center gap-2 no-underline">
+            <Link href="/" className="flex items-center gap-2 no-underline">
               <div className="w-8 h-8 rounded-lg bg-[var(--primary)] flex items-center justify-center">
                 <Wheat className="w-5 h-5 text-[var(--primary-foreground)]" />
               </div>
@@ -96,7 +97,7 @@ export default function ManagerLayout({ children }: { children: ReactNode }) {
               <span className="px-1.5 py-0.5 rounded bg-[var(--accent)] text-[var(--accent-foreground)] text-[10px] font-medium">
                 Manager
               </span>
-            </a>
+            </Link>
             <button
               onClick={() => setSidebarOpen(false)}
               className="lg:hidden p-1 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-900"

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { motion } from "motion/react";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { useTheme } from "next-themes";
@@ -275,10 +276,12 @@ function TestimonialCard({
         &quot;{testimonial.text}&quot;
       </p>
       <div className="flex items-center gap-3 mt-4">
-        <div className="w-10 h-10 rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden shrink-0">
-          <img
+        <div className="relative w-10 h-10 rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden shrink-0">
+          <Image
             src={testimonial.avatar}
             alt={testimonial.name}
+            fill
+            sizes="40px"
             className="w-full h-full object-cover"
           />
         </div>
