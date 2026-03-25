@@ -21,6 +21,7 @@ const notificationRoutes = require('./routes/notifications');
 const issueRoutes = require('./routes/issues');
 const auditLogRoutes = require('./routes/auditLogs');
 const dashboardRoutes = require('./routes/dashboard');
+const adminBootstrapRoutes = require('./routes/admin-bootstrap');
 
 const app = express();
 
@@ -89,6 +90,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/issues', issueRoutes);
 app.use('/api/audit-logs', auditLogRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/admin-bootstrap', adminBootstrapRoutes);
 
 // ─── 404 handler ────────────────────────────────────────────────────────────────
 app.use((req, res) => {
