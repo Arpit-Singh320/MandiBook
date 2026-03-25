@@ -4,31 +4,63 @@ const { User } = require('../models');
 
 const router = express.Router();
 
+// Debug endpoint to check admin user
+router.get('/check-admin/:email', async (req, res) => {
+  try {
+    const { email } = req.params;
+    const user = await User.scope('withPassword').findOne({
+      where: { email, role: 'admin' }
+    });
+
+    if (!user) {
+      return res.json({ success: false, message: 'Admin not found' });
+    }
+
+    res.json({
+      success: true,
+      admin: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        hasPassword: !!user.password,
+        passwordLength: user.password?.length
+      }
+    });
+  } catch (error) {
+    console.error('Check admin error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to check admin user'
+    });
+  }
+});
+
 // Temporary endpoint to create admin user
 // Remove this after creating admin in production
 router.post('/create-admin', async (req, res) => {
   try {
     const { email, password, name } = req.body;
-    
+
     if (!email || !password || !name) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Email, password, and name are required' 
+      return res.status(400).json({
+        success: false,
+        message: 'Email, password, and name are required'
       });
     }
 
     // Check if admin already exists
     const existingAdmin = await User.findOne({ where: { email } });
     if (existingAdmin) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Admin user already exists' 
+      return res.status(400).json({
+        success: false,
+        message: 'Admin user already exists'
       });
     }
 
     // Create admin user
     const hashedPassword = await bcrypt.hash(password, 10);
-    
+
     const admin = await User.create({
       name,
       role: 'admin',
@@ -40,8 +72,8 @@ router.post('/create-admin', async (req, res) => {
       profileComplete: true,
     });
 
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       message: 'Admin user created successfully',
       admin: {
         id: admin.id,
@@ -52,9 +84,9 @@ router.post('/create-admin', async (req, res) => {
     });
   } catch (error) {
     console.error('Create admin error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to create admin user' 
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create admin user'
     });
   }
 });
