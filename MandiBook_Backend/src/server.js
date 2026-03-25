@@ -25,8 +25,8 @@ const adminBootstrapRoutes = require('./routes/admin-bootstrap');
 
 const app = express();
 
-// Trust proxy for Railway deployment
-app.set('trust proxy', true);
+// Trust proxy for Railway deployment (specific to Railway's proxy)
+app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
 
 const allowedOrigins = [
   'http://localhost:3200',
