@@ -88,14 +88,12 @@ router.post('/create-admin', async (req, res) => {
       });
     }
 
-    // Create admin user
-    const hashedPassword = await bcrypt.hash(password, 10);
-
+    // Create admin user (User model will hash password automatically via beforeCreate hook)
     const admin = await User.create({
       name,
       role: 'admin',
       email,
-      password: hashedPassword,
+      password: password, // Plain text - User model will hash it
       language: 'en',
       department: 'Platform Operations',
       twoFactorEnabled: true,

@@ -25,7 +25,11 @@ const adminBootstrapRoutes = require('./routes/admin-bootstrap');
 
 const app = express();
 
+// Trust proxy for Railway deployment
+app.set('trust proxy', true);
+
 const allowedOrigins = [
+  'http://localhost:3200',
   'https://mandi-book-seven.vercel.app',
   ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map((origin) => origin.trim()).filter(Boolean) : []),
 ];
