@@ -36,6 +36,36 @@ router.get('/check-admin/:email', async (req, res) => {
   }
 });
 
+// Test password endpoint
+router.post('/test-password', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.scope('withPassword').findOne({
+      where: { email, role: 'admin' }
+    });
+
+    if (!user) {
+      return res.json({ success: false, message: 'Admin not found' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    res.json({
+      success: true,
+      email,
+      passwordProvided: !!password,
+      passwordMatch: isMatch,
+      passwordHash: user.password.substring(0, 20) + '...'
+    });
+  } catch (error) {
+    console.error('Test password error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to test password'
+    });
+  }
+});
+
 // Temporary endpoint to create admin user
 // Remove this after creating admin in production
 router.post('/create-admin', async (req, res) => {
