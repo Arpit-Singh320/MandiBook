@@ -66,6 +66,26 @@ router.post('/test-password', async (req, res) => {
   }
 });
 
+// Delete admin endpoint (for recreation)
+router.delete('/delete-admin/:email', async (req, res) => {
+  try {
+    const { email } = req.params;
+    const result = await User.destroy({ where: { email, role: 'admin' } });
+
+    if (result === 0) {
+      return res.json({ success: false, message: 'Admin not found' });
+    }
+
+    res.json({ success: true, message: 'Admin deleted successfully' });
+  } catch (error) {
+    console.error('Delete admin error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete admin user'
+    });
+  }
+});
+
 // Temporary endpoint to create admin user
 // Remove this after creating admin in production
 router.post('/create-admin', async (req, res) => {
