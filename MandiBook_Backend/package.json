@@ -7,6 +7,7 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "seed": "node src/seeders/seed.js",
+    "bootstrap:prod": "node src/seeders/bootstrap-production.js",
     "provision:test-users": "node src/scripts/provision-test-users.js",
     "test:api": "node src/tests/test-endpoints.js",
     "test:auth": "node src/tests/test-auth-contracts.js",
