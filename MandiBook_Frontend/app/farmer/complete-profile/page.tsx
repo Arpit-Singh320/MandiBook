@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
-import { Wheat, MapPin, Sprout, User as UserIcon, ArrowRight } from "lucide-react";
+import { Wheat, MapPin, Sprout, User as UserIcon, ArrowRight, Mail, Phone } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { ApiError } from "@/lib/api";
 
@@ -27,6 +27,8 @@ export default function CompleteProfilePage() {
   const { user, completeProfile } = useAuth();
 
   const [name, setName] = useState(user?.name || "");
+  const [phone, setPhone] = useState(user?.phone || "");
+  const [email, setEmail] = useState(user?.email || "");
   const [village, setVillage] = useState("");
   const [district, setDistrict] = useState("");
   const [state, setState] = useState("");
@@ -49,11 +51,21 @@ export default function CompleteProfilePage() {
       setError("Name is required");
       return;
     }
+    if (!phone.trim() || phone.trim().length !== 10) {
+      setError("A valid 10-digit phone number is required");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError("A valid email address is required");
+      return;
+    }
     setIsLoading(true);
     setError("");
     try {
       await completeProfile({
         name: name.trim(),
+        phone: phone.trim(),
+        email: email.trim(),
         village: village || undefined,
         district: district || undefined,
         state: state || undefined,
@@ -103,6 +115,39 @@ export default function CompleteProfilePage() {
               required
               className="w-full px-4 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-green-600"
             />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-neutral-900 dark:text-white mb-1.5">
+                <Phone className="w-4 h-4 inline mr-1.5" />Phone Number *
+              </label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, "");
+                  if (val.length <= 10) setPhone(val);
+                }}
+                placeholder="10-digit phone number"
+                required
+                maxLength={10}
+                className="w-full px-4 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-green-600"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-neutral-900 dark:text-white mb-1.5">
+                <Mail className="w-4 h-4 inline mr-1.5" />Email Address *
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                required
+                className="w-full px-4 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-green-600"
+              />
+            </div>
           </div>
 
           {/* Language */}
@@ -220,22 +265,13 @@ export default function CompleteProfilePage() {
 
           {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() => router.push("/farmer")}
-              className="flex-1 py-3 rounded-lg border border-neutral-300 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 font-medium hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
-            >
-              Skip for Now
-            </button>
-            <button
-              type="submit"
-              disabled={!name.trim() || isLoading}
-              className="flex-1 py-3 rounded-lg bg-green-700 text-white font-medium hover:bg-green-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {isLoading ? "Saving..." : <>Save & Continue <ArrowRight className="w-4 h-4" /></>}
-            </button>
-          </div>
+          <button
+            type="submit"
+            disabled={!name.trim() || phone.trim().length !== 10 || !email.trim() || isLoading}
+            className="w-full py-3 rounded-lg bg-green-700 text-white font-medium hover:bg-green-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {isLoading ? "Saving..." : <>Save & Continue <ArrowRight className="w-4 h-4" /></>}
+          </button>
         </form>
       </motion.div>
     </div>

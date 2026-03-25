@@ -9,7 +9,8 @@ import {
   type ReactNode,
 } from "react";
 import type { User, UserRole } from "@/lib/types";
-import { authApi, ApiError, type ProfileData } from "@/lib/api";
+import { authApi, ApiError, type AuthResponse, type ProfileData } from "@/lib/api";
+import { userApi } from "@/lib/data-api";
 
 const AUTH_STORAGE_KEY = "mandibook_auth";
 
@@ -26,15 +27,16 @@ interface AuthState {
   isLoading: boolean;
   token: string | null;
   tempAdminUserId: string | null;
+  tempAdminOtpRequestId: string | null;
 }
 
 interface AuthActions {
   requestFarmerOtp: (phone: string) => Promise<void>;
-  requestFarmerEmailOtp: (email: string) => Promise<void>;
+  requestFarmerEmailOtp: (email: string) => Promise<AuthResponse>;
   loginAsFarmer: (phone: string, otp: string) => Promise<void>;
-  loginAsFarmerEmail: (email: string, otp: string) => Promise<void>;
+  loginAsFarmerEmail: (email: string, otp: string, otpRequestId: string) => Promise<void>;
   loginAsManager: (email: string, password: string) => Promise<void>;
-  beginAdminLogin: (email: string, password: string) => Promise<void>;
+  beginAdminLogin: (email: string, password: string) => Promise<AuthResponse>;
   loginAsAdmin: (code2fa: string) => Promise<void>;
   completeProfile: (data: ProfileData) => Promise<void>;
   logout: () => Promise<void>;
@@ -106,6 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
     isLoading: true,
     token: null,
     tempAdminUserId: null,
+    tempAdminOtpRequestId: null,
   });
 
   useEffect(() => {
@@ -118,21 +121,34 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
         return;
       }
 
+      const parsed = JSON.parse(raw) as StoredAuth;
+
       try {
-        const parsed = JSON.parse(raw) as StoredAuth;
         const me = await authApi.me(parsed.token);
         if (!me.user) {
           clearPersistedAuth();
-          setState({ user: null, isAuthenticated: false, isLoading: false, token: null, tempAdminUserId: null });
+          setState({ user: null, isAuthenticated: false, isLoading: false, token: null, tempAdminUserId: null, tempAdminOtpRequestId: null });
           return;
         }
 
         const user = normalizeUser(me.user);
         persistAuth(parsed.token, user);
-        setState({ user, isAuthenticated: true, isLoading: false, token: parsed.token, tempAdminUserId: null });
-      } catch {
-        clearPersistedAuth();
-        setState({ user: null, isAuthenticated: false, isLoading: false, token: null, tempAdminUserId: null });
+        setState({ user, isAuthenticated: true, isLoading: false, token: parsed.token, tempAdminUserId: null, tempAdminOtpRequestId: null });
+      } catch (error) {
+        if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
+          clearPersistedAuth();
+          setState({ user: null, isAuthenticated: false, isLoading: false, token: null, tempAdminUserId: null, tempAdminOtpRequestId: null });
+          return;
+        }
+
+        setState({
+          user: parsed.user,
+          isAuthenticated: true,
+          isLoading: false,
+          token: parsed.token,
+          tempAdminUserId: null,
+          tempAdminOtpRequestId: null,
+        });
       }
     };
 
@@ -162,8 +178,9 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
   const requestFarmerEmailOtp = useCallback(async (email: string) => {
     setState((s) => ({ ...s, isLoading: true }));
     try {
-      await authApi.sendFarmerEmailOtp(email);
+      const response = await authApi.sendFarmerEmailOtp(email);
       setState((s) => ({ ...s, isLoading: false }));
+      return response;
     } catch (error) {
       setState((s) => ({ ...s, isLoading: false }));
       throw error;
@@ -179,23 +196,23 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
       }
       const user = normalizeUser(response.user);
       persistAuth(response.token, user);
-      setState({ user, isAuthenticated: true, isLoading: false, token: response.token, tempAdminUserId: null });
+      setState({ user, isAuthenticated: true, isLoading: false, token: response.token, tempAdminUserId: null, tempAdminOtpRequestId: null });
     } catch (error) {
       setState((s) => ({ ...s, isLoading: false }));
       throw error;
     }
   }, []);
 
-  const loginAsFarmerEmail = useCallback(async (email: string, otp: string) => {
+  const loginAsFarmerEmail = useCallback(async (email: string, otp: string, otpRequestId: string) => {
     setState((s) => ({ ...s, isLoading: true }));
     try {
-      const response = await authApi.verifyFarmerEmailOtp(email, otp);
+      const response = await authApi.verifyFarmerEmailOtp(email, otp, otpRequestId);
       if (!response.token || !response.user) {
         throw new ApiError("Login response is incomplete", 500, response);
       }
       const user = normalizeUser(response.user);
       persistAuth(response.token, user);
-      setState({ user, isAuthenticated: true, isLoading: false, token: response.token, tempAdminUserId: null });
+      setState({ user, isAuthenticated: true, isLoading: false, token: response.token, tempAdminUserId: null, tempAdminOtpRequestId: null });
     } catch (error) {
       setState((s) => ({ ...s, isLoading: false }));
       throw error;
@@ -212,7 +229,7 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
         }
         const user = normalizeUser(response.user);
         persistAuth(response.token, user);
-        setState({ user, isAuthenticated: true, isLoading: false, token: response.token, tempAdminUserId: null });
+        setState({ user, isAuthenticated: true, isLoading: false, token: response.token, tempAdminUserId: null, tempAdminOtpRequestId: null });
       } catch (error) {
         setState((s) => ({ ...s, isLoading: false }));
         throw error;
@@ -226,10 +243,16 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
       setState((s) => ({ ...s, isLoading: true }));
       try {
         const response = await authApi.adminLogin(email, password);
-        if (!response.tempUserId) {
+        if (!response.tempUserId || !response.otpRequestId) {
           throw new ApiError("2FA initialization failed", 500, response);
         }
-        setState((s) => ({ ...s, isLoading: false, tempAdminUserId: response.tempUserId ?? null }));
+        setState((s) => ({
+          ...s,
+          isLoading: false,
+          tempAdminUserId: response.tempUserId ?? null,
+          tempAdminOtpRequestId: response.otpRequestId ?? null,
+        }));
+        return response;
       } catch (error) {
         setState((s) => ({ ...s, isLoading: false }));
         throw error;
@@ -241,26 +264,26 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
   const loginAsAdmin = useCallback(async (code2fa: string) => {
     setState((s) => ({ ...s, isLoading: true }));
     try {
-      if (!state.tempAdminUserId) {
+      if (!state.tempAdminUserId || !state.tempAdminOtpRequestId) {
         throw new ApiError("Admin 2FA session not found", 400, null);
       }
-      const response = await authApi.adminVerify2FA(state.tempAdminUserId, code2fa);
+      const response = await authApi.adminVerify2FA(state.tempAdminUserId, state.tempAdminOtpRequestId, code2fa);
       if (!response.token || !response.user) {
         throw new ApiError("Login response is incomplete", 500, response);
       }
       const user = normalizeUser(response.user);
       persistAuth(response.token, user);
-      setState({ user, isAuthenticated: true, isLoading: false, token: response.token, tempAdminUserId: null });
+      setState({ user, isAuthenticated: true, isLoading: false, token: response.token, tempAdminUserId: null, tempAdminOtpRequestId: null });
     } catch (error) {
       setState((s) => ({ ...s, isLoading: false }));
       throw error;
     }
-  }, [state.tempAdminUserId]);
+  }, [state.tempAdminOtpRequestId, state.tempAdminUserId]);
 
   const logout = useCallback(async () => {
     const token = state.token;
     clearPersistedAuth();
-    setState({ user: null, isAuthenticated: false, isLoading: false, token: null, tempAdminUserId: null });
+    setState({ user: null, isAuthenticated: false, isLoading: false, token: null, tempAdminUserId: null, tempAdminOtpRequestId: null });
     if (!token) return;
     try {
       await authApi.logout(token);
@@ -285,15 +308,23 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
   }, [state.token]);
 
   const setLanguage = useCallback(async (lang: "en" | "hi") => {
-    setState((s) => {
-      if (!s.user) return s;
-      const updatedUser = { ...s.user, language: lang };
-      if (s.token) {
-        persistAuth(s.token, updatedUser);
-      }
-      return { ...s, user: updatedUser };
-    });
-  }, []);
+    if (!state.token || !state.user) {
+      setState((s) => {
+        if (!s.user) return s;
+        const updatedUser = { ...s.user, language: lang };
+        if (s.token) {
+          persistAuth(s.token, updatedUser);
+        }
+        return { ...s, user: updatedUser };
+      });
+      return;
+    }
+
+    const response = await userApi.updateProfile(state.token, { language: lang });
+    const user = normalizeUser(response.data);
+    persistAuth(state.token, user);
+    setState((s) => ({ ...s, user }));
+  }, [state.token, state.user]);
 
   return (
     <AuthContext.Provider

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import {
   MapPin,
@@ -19,6 +20,7 @@ type Step = 1 | 2 | 3 | 4;
 
 export default function BookSlotPage() {
   const { token } = useAuth();
+  const searchParams = useSearchParams();
   const [step, setStep] = useState<Step>(1);
   const [mandis, setMandis] = useState<MandiData[]>([]);
   const [slots, setSlots] = useState<SlotData[]>([]);
@@ -33,10 +35,19 @@ export default function BookSlotPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createdBooking, setCreatedBooking] = useState<BookingData | null>(null);
   const [error, setError] = useState("");
+  const requestedMandiId = searchParams.get("mandiId");
 
   useEffect(() => {
     mandiApi.list().then((res) => setMandis(res.data)).catch(() => setError("Failed to load mandis")).finally(() => setLoadingMandis(false));
   }, []);
+
+  useEffect(() => {
+    if (!requestedMandiId || mandis.length === 0 || selectedMandi) return;
+    const matchedMandi = mandis.find((mandi) => mandi.id === requestedMandiId);
+    if (!matchedMandi) return;
+    setSelectedMandi(matchedMandi.id);
+    setStep(2);
+  }, [mandis, requestedMandiId, selectedMandi]);
 
   useEffect(() => {
     if (!selectedMandi || !selectedDate) { setSlots([]); return; }
@@ -66,14 +77,15 @@ export default function BookSlotPage() {
     setIsSubmitting(true);
     setError("");
     try {
-      const res = await bookingApi.create(token, {
+      const payload = {
         mandiId: selectedMandi,
         slotId: selectedSlot,
         date: selectedDate,
         cropType: selectedCrop,
         estimatedQuantity: parseInt(quantity),
-        vehicleNumber: vehicleNumber || undefined,
-      });
+        ...(vehicleNumber ? { vehicleNumber } : {}),
+      };
+      const res = await bookingApi.create(token, payload);
       setCreatedBooking(res.data);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Booking failed");

@@ -138,6 +138,10 @@ router.get('/my', protect, authorize('farmer'), async (req, res, next) => {
 // GET /api/bookings/mandi/:mandiId?status=all&search=xxx&date=YYYY-MM-DD
 router.get('/mandi/:mandiId', protect, authorize('manager', 'admin'), async (req, res, next) => {
   try {
+    if (req.user.role === 'manager' && (!req.user.mandiId || req.user.mandiId !== req.params.mandiId)) {
+      return res.status(403).json({ success: false, message: 'You can only view bookings for your assigned mandi' });
+    }
+
     const { status, search, date, page = 1, limit = 50 } = req.query;
     const where = { mandiId: req.params.mandiId };
 
@@ -229,6 +233,9 @@ router.put('/:id/checkin', protect, authorize('manager'), async (req, res, next)
       include: [{ model: User, as: 'farmer', attributes: ['id', 'name'] }],
     });
     if (!booking) return res.status(404).json({ success: false, message: 'Booking not found' });
+    if (!req.user.mandiId || booking.mandiId !== req.user.mandiId) {
+      return res.status(403).json({ success: false, message: 'You can only check in bookings for your assigned mandi' });
+    }
 
     if (booking.status !== 'confirmed') {
       return res.status(400).json({ success: false, message: 'Only confirmed bookings can be checked in' });
@@ -260,6 +267,9 @@ router.put('/:id/complete', protect, authorize('manager'), async (req, res, next
   try {
     const booking = await Booking.findByPk(req.params.id);
     if (!booking) return res.status(404).json({ success: false, message: 'Booking not found' });
+    if (!req.user.mandiId || booking.mandiId !== req.user.mandiId) {
+      return res.status(403).json({ success: false, message: 'You can only complete bookings for your assigned mandi' });
+    }
 
     if (booking.status !== 'checked-in') {
       return res.status(400).json({ success: false, message: 'Only checked-in bookings can be completed' });

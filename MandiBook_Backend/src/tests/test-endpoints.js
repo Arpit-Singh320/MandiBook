@@ -3,7 +3,7 @@ require('dotenv').config();
 const BASE_URL = process.env.TEST_API_BASE_URL || `http://localhost:${process.env.PORT || 5001}/api`;
 const MANAGER_EMAIL = process.env.TEST_MANAGER_EMAIL || 'suresh@mandibook.in';
 const MANAGER_PASSWORD = process.env.TEST_MANAGER_PASSWORD || 'manager123';
-const ADMIN_EMAIL = process.env.TEST_ADMIN_EMAIL || 'admin@mandibook.in';
+const ADMIN_EMAIL = process.env.TEST_ADMIN_EMAIL || 'mandibook.admin@gmail.com';
 
 const results = [];
 

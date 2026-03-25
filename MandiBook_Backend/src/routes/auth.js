@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const { Op } = require('sequelize');
-const User = require('../models/User');
-const AuditLog = require('../models/AuditLog');
+const { User, AuditLog, OtpRequest } = require('../models');
 const generateToken = require('../utils/generateToken');
 const generateOTP = require('../utils/generateOTP');
 const { sendOTP, verifyOTP } = require('../config/twilio');
 const { sendEmailOTP } = require('../config/brevo');
 const { protect } = require('../middleware/auth');
+const { normalizeIdentifier, hashOtpCode, createOtpRequestId, isOtpDebugBypassEnabled } = require('../utils/otp-request');
 
 // ── Helper: build farmer user response payload ──────────────────────────────
 const farmerPayload = (user) => ({
@@ -30,6 +30,126 @@ const farmerPayload = (user) => ({
   priceAlertCrops: user.priceAlertCrops,
   createdAt: user.createdAt,
 });
+
+const OTP_EXPIRY_MS = 10 * 60 * 1000;
+const OTP_EXPIRY_SECONDS = Math.floor(OTP_EXPIRY_MS / 1000);
+const OTP_RESEND_AFTER_SECONDS = 30;
+const OTP_MAX_ATTEMPTS = 5;
+
+const issueOtpRequest = async ({ purpose, identifier, userId, recipientName, metadata = {} }) => {
+  const normalizedIdentifier = normalizeIdentifier(identifier);
+
+  await OtpRequest.update(
+    { status: 'cancelled', consumed: true, consumedAt: new Date() },
+    {
+      where: {
+        purpose,
+        identifier: normalizedIdentifier,
+        consumed: false,
+        status: { [Op.in]: ['created', 'sent'] },
+      },
+    }
+  );
+
+  const otp = generateOTP(6);
+  const requestId = createOtpRequestId(purpose === 'admin_email_2fa' ? 'admin_otp' : 'farmer_otp');
+
+  const otpRequest = await OtpRequest.create({
+    requestId,
+    purpose,
+    channel: 'email',
+    identifier: normalizedIdentifier,
+    userId: userId || null,
+    otpHash: hashOtpCode({ code: otp, requestId, purpose, identifier: normalizedIdentifier }),
+    expiresAt: new Date(Date.now() + OTP_EXPIRY_MS),
+    attempts: 0,
+    maxAttempts: OTP_MAX_ATTEMPTS,
+    resendCount: 0,
+    lastSentAt: new Date(),
+    consumed: false,
+    status: 'created',
+    deliveryProvider: 'brevo',
+    metadata,
+  });
+
+  let emailResult = { success: true, messageId: 'debug-bypass' };
+
+  if (!isOtpDebugBypassEnabled()) {
+    emailResult = await sendEmailOTP(normalizedIdentifier, recipientName, otp);
+  }
+
+  if (!emailResult.success) {
+    await otpRequest.update({ status: 'cancelled' });
+    return { success: false, error: emailResult.error };
+  }
+
+  await otpRequest.update({
+    status: 'sent',
+    deliveryReference: emailResult.messageId || null,
+  });
+
+  return {
+    success: true,
+    otpRequestId: otpRequest.requestId,
+    expiresInSeconds: OTP_EXPIRY_SECONDS,
+    resendAfterSeconds: OTP_RESEND_AFTER_SECONDS,
+    ...(isOtpDebugBypassEnabled() ? { debugOtp: otp } : {}),
+  };
+};
+
+const validateOtpRequest = async ({ otpRequestId, purpose, identifier, code, userId }) => {
+  const normalizedIdentifier = normalizeIdentifier(identifier);
+  const otpRequest = await OtpRequest.findOne({ where: { requestId: otpRequestId, purpose } });
+
+  if (!otpRequest) {
+    return { success: false, status: 400, message: 'Invalid OTP request' };
+  }
+
+  if (otpRequest.identifier !== normalizedIdentifier) {
+    return { success: false, status: 400, message: 'OTP request does not match this identifier' };
+  }
+
+  if (userId && otpRequest.userId && otpRequest.userId !== userId) {
+    return { success: false, status: 400, message: 'OTP request does not match this user' };
+  }
+
+  if (otpRequest.consumed || otpRequest.status === 'verified') {
+    return { success: false, status: 400, message: 'OTP has already been used' };
+  }
+
+  if (otpRequest.expiresAt < new Date()) {
+    await otpRequest.update({ status: 'expired' });
+    return { success: false, status: 400, message: 'OTP expired' };
+  }
+
+  if (otpRequest.status === 'blocked' || otpRequest.attempts >= otpRequest.maxAttempts) {
+    await otpRequest.update({ status: 'blocked' });
+    return { success: false, status: 429, message: 'Too many invalid attempts. Request a new OTP.' };
+  }
+
+  const isValid = otpRequest.otpHash === hashOtpCode({
+    code,
+    requestId: otpRequest.requestId,
+    purpose,
+    identifier: normalizedIdentifier,
+  });
+
+  if (!isValid) {
+    const attempts = otpRequest.attempts + 1;
+    await otpRequest.update({
+      attempts,
+      status: attempts >= otpRequest.maxAttempts ? 'blocked' : otpRequest.status,
+    });
+
+    return {
+      success: false,
+      status: attempts >= otpRequest.maxAttempts ? 429 : 400,
+      message: attempts >= otpRequest.maxAttempts ? 'Too many invalid attempts. Request a new OTP.' : 'Invalid OTP',
+    };
+  }
+
+  return { success: true, otpRequest };
+};
 
 // ─── Farmer: Send Phone OTP (Twilio) ─────────────────────────────────────────
 // POST /api/auth/farmer/send-otp
@@ -62,33 +182,40 @@ router.post('/farmer/send-email-otp', async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Valid email address is required' });
     }
 
-    const otp = generateOTP(6);
+    const normalizedEmail = normalizeIdentifier(email);
 
-    // Store OTP against existing user or temp — find or create minimal record
-    let user = await User.scope('withOtp').findOne({ where: { email, role: 'farmer' } });
+    let user = await User.findOne({ where: { email: normalizedEmail, role: 'farmer' } });
     if (!user) {
-      // Pre-register with minimal data; profile completion later
       user = await User.create({
         name: '',
         role: 'farmer',
-        email,
+        email: normalizedEmail,
         language: 'en',
         profileComplete: false,
       });
-      // re-fetch with OTP scope
-      user = await User.scope('withOtp').findByPk(user.id);
     }
 
-    user.emailOtp = otp;
-    user.emailOtpExpires = new Date(Date.now() + 10 * 60 * 1000);
-    await user.save();
+    const otpDispatch = await issueOtpRequest({
+      purpose: 'farmer_email_login',
+      identifier: normalizedEmail,
+      userId: user.id,
+      recipientName: user.name || 'Farmer',
+      metadata: { role: 'farmer' },
+    });
 
-    const emailResult = await sendEmailOTP(email, user.name || 'Farmer', otp);
-    if (!emailResult.success) {
-      return res.status(500).json({ success: false, message: 'Failed to send email OTP', error: emailResult.error });
+    if (!otpDispatch.success) {
+      return res.status(500).json({ success: false, message: 'Failed to send email OTP', error: otpDispatch.error });
     }
 
-    res.json({ success: true, message: 'OTP sent to email', method: 'email' });
+    res.json({
+      success: true,
+      message: 'OTP sent to email',
+      method: 'email',
+      otpRequestId: otpDispatch.otpRequestId,
+      expiresInSeconds: otpDispatch.expiresInSeconds,
+      resendAfterSeconds: otpDispatch.resendAfterSeconds,
+      ...(otpDispatch.debugOtp ? { debugOtp: otpDispatch.debugOtp } : {}),
+    });
   } catch (error) {
     next(error);
   }
@@ -129,7 +256,7 @@ router.post('/farmer/verify-otp', async (req, res, next) => {
     user.lastLoginAt = new Date();
     await user.save();
 
-    const token = generateToken(user.id, user.role);
+    const token = generateToken(user.id, user.role, user.tokenVersion);
 
     await AuditLog.create({
       userId: user.id,
@@ -159,38 +286,52 @@ router.post('/farmer/verify-otp', async (req, res, next) => {
 // POST /api/auth/farmer/verify-email-otp
 router.post('/farmer/verify-email-otp', async (req, res, next) => {
   try {
-    const { email, otp } = req.body;
-    if (!email || !otp) {
-      return res.status(400).json({ success: false, message: 'Email and OTP are required' });
+    const { email, otp, otpRequestId } = req.body;
+    if (!email || !otp || !otpRequestId) {
+      return res.status(400).json({ success: false, message: 'Email, OTP, and otpRequestId are required' });
     }
 
-    const user = await User.scope('withOtp').findOne({ where: { email, role: 'farmer' } });
+    const normalizedEmail = normalizeIdentifier(email);
+    const validation = await validateOtpRequest({
+      otpRequestId,
+      purpose: 'farmer_email_login',
+      identifier: normalizedEmail,
+      code: otp,
+    });
+
+    if (!validation.success) {
+      return res.status(validation.status).json({ success: false, message: validation.message });
+    }
+
+    let user = await User.findOne({ where: { email: normalizedEmail, role: 'farmer' } });
     if (!user) {
-      return res.status(400).json({ success: false, message: 'No pending verification for this email' });
-    }
-
-    if (!user.emailOtp || user.emailOtp !== otp) {
-      return res.status(400).json({ success: false, message: 'Invalid OTP' });
-    }
-
-    if (user.emailOtpExpires < new Date()) {
-      return res.status(400).json({ success: false, message: 'OTP expired' });
+      user = await User.create({
+        name: '',
+        role: 'farmer',
+        email: normalizedEmail,
+        language: 'en',
+        profileComplete: false,
+      });
     }
 
     const isNew = !user.name || user.name === '';
 
-    // Clear OTP and update login
-    user.emailOtp = null;
-    user.emailOtpExpires = null;
+    await validation.otpRequest.update({
+      consumed: true,
+      consumedAt: new Date(),
+      status: 'verified',
+      userId: user.id,
+    });
+
     user.lastLoginIp = req.ip;
     user.lastLoginAt = new Date();
     await user.save();
 
-    const token = generateToken(user.id, user.role);
+    const token = generateToken(user.id, user.role, user.tokenVersion);
 
     await AuditLog.create({
       userId: user.id,
-      userName: user.name || email,
+      userName: user.name || normalizedEmail,
       userRole: 'farmer',
       action: isNew ? 'Registered via email OTP' : 'Logged in via email OTP',
       entity: 'Farmer Portal',
@@ -216,13 +357,46 @@ router.post('/farmer/verify-email-otp', async (req, res, next) => {
 // PUT /api/auth/complete-profile
 router.put('/complete-profile', protect, async (req, res, next) => {
   try {
-    const { name, village, district, state, pincode, landHolding, farmSize, crops, preferredMandis, language } = req.body;
+    const { name, phone, email, village, district, state, pincode, landHolding, farmSize, crops, preferredMandis, language } = req.body;
 
     if (!name || !name.trim()) {
       return res.status(400).json({ success: false, message: 'Name is required' });
     }
 
+    const normalizedEmail = email ? normalizeIdentifier(email) : null;
+    const normalizedPhone = typeof phone === 'string' ? phone.replace(/\D/g, '') : null;
+
+    if (req.user.role === 'farmer') {
+      if (!req.user.phone && !normalizedPhone) {
+        return res.status(400).json({ success: false, message: 'Phone number is required to complete your profile' });
+      }
+
+      if (!req.user.email && !normalizedEmail) {
+        return res.status(400).json({ success: false, message: 'Email address is required to complete your profile' });
+      }
+    }
+
+    if (normalizedPhone && !/^\d{10}$/.test(normalizedPhone)) {
+      return res.status(400).json({ success: false, message: 'Valid 10-digit phone number is required' });
+    }
+
+    if (normalizedEmail) {
+      const existingEmailUser = await User.findOne({ where: { email: normalizedEmail, id: { [Op.ne]: req.user.id } } });
+      if (existingEmailUser) {
+        return res.status(400).json({ success: false, message: 'Email address is already linked to another account' });
+      }
+    }
+
+    if (normalizedPhone) {
+      const existingPhoneUser = await User.findOne({ where: { phone: normalizedPhone, id: { [Op.ne]: req.user.id } } });
+      if (existingPhoneUser) {
+        return res.status(400).json({ success: false, message: 'Phone number is already linked to another account' });
+      }
+    }
+
     const updates = { name: name.trim(), profileComplete: true };
+    if (normalizedPhone) updates.phone = normalizedPhone;
+    if (normalizedEmail) updates.email = normalizedEmail;
     if (village) updates.village = village;
     if (district) updates.district = district;
     if (state) updates.state = state;
@@ -267,7 +441,8 @@ router.post('/manager/login', async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Email and password are required' });
     }
 
-    const user = await User.scope('withPassword').findOne({ where: { email, role: 'manager' } });
+    const normalizedEmail = normalizeIdentifier(email);
+    const user = await User.scope('withPassword').findOne({ where: { email: normalizedEmail, role: 'manager' } });
     if (!user) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
@@ -282,7 +457,7 @@ router.post('/manager/login', async (req, res, next) => {
     user.lastLoginAt = new Date();
     await user.save();
 
-    const token = generateToken(user.id, user.role);
+    const token = generateToken(user.id, user.role, user.tokenVersion);
 
     await AuditLog.create({
       userId: user.id,
@@ -327,7 +502,8 @@ router.post('/admin/login', async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Email and password are required' });
     }
 
-    const user = await User.scope('withAll').findOne({ where: { email, role: 'admin' } });
+    const normalizedEmail = normalizeIdentifier(email);
+    const user = await User.scope('withPassword').findOne({ where: { email: normalizedEmail, role: 'admin' } });
     if (!user) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
@@ -337,15 +513,15 @@ router.post('/admin/login', async (req, res, next) => {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
-    // Generate and send 2FA code via Brevo
-    const otp = generateOTP(6);
-    user.emailOtp = otp;
-    user.emailOtpExpires = new Date(Date.now() + 10 * 60 * 1000);
-    await user.save();
+    const otpDispatch = await issueOtpRequest({
+      purpose: 'admin_email_2fa',
+      identifier: normalizedEmail,
+      userId: user.id,
+      recipientName: user.name,
+      metadata: { role: 'admin' },
+    });
 
-    const emailResult = await sendEmailOTP(user.email, user.name, otp);
-
-    if (!emailResult.success) {
+    if (!otpDispatch.success) {
       return res.status(500).json({ success: false, message: 'Failed to send 2FA code' });
     }
 
@@ -354,6 +530,10 @@ router.post('/admin/login', async (req, res, next) => {
       message: '2FA code sent to email',
       requires2FA: true,
       tempUserId: user.id,
+      otpRequestId: otpDispatch.otpRequestId,
+      expiresInSeconds: otpDispatch.expiresInSeconds,
+      resendAfterSeconds: otpDispatch.resendAfterSeconds,
+      ...(otpDispatch.debugOtp ? { debugOtp: otpDispatch.debugOtp } : {}),
     });
   } catch (error) {
     next(error);
@@ -364,29 +544,38 @@ router.post('/admin/login', async (req, res, next) => {
 // POST /api/auth/admin/verify-2fa
 router.post('/admin/verify-2fa', async (req, res, next) => {
   try {
-    const { tempUserId, code } = req.body;
-    if (!tempUserId || !code) {
-      return res.status(400).json({ success: false, message: 'User ID and 2FA code are required' });
+    const { tempUserId, otpRequestId, code } = req.body;
+    if (!tempUserId || !otpRequestId || !code) {
+      return res.status(400).json({ success: false, message: 'tempUserId, otpRequestId, and 2FA code are required' });
     }
 
-    const user = await User.scope('withOtp').findByPk(tempUserId);
+    const user = await User.findByPk(tempUserId);
     if (!user || user.role !== 'admin') {
       return res.status(401).json({ success: false, message: 'Invalid request' });
     }
 
-    if (!user.emailOtp || user.emailOtp !== code) {
-      return res.status(400).json({ success: false, message: 'Invalid 2FA code' });
+    const validation = await validateOtpRequest({
+      otpRequestId,
+      purpose: 'admin_email_2fa',
+      identifier: user.email,
+      code,
+      userId: user.id,
+    });
+
+    if (!validation.success) {
+      return res.status(validation.status).json({ success: false, message: validation.message });
     }
 
-    if (user.emailOtpExpires < new Date()) {
-      return res.status(400).json({ success: false, message: '2FA code expired' });
-    }
+    await validation.otpRequest.update({
+      consumed: true,
+      consumedAt: new Date(),
+      status: 'verified',
+      userId: user.id,
+    });
 
-    user.emailOtp = null;
-    user.emailOtpExpires = null;
     await user.save();
 
-    const token = generateToken(user.id, user.role);
+    const token = generateToken(user.id, user.role, user.tokenVersion);
 
     await AuditLog.create({
       userId: user.id,

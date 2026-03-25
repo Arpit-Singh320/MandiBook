@@ -12,6 +12,7 @@ import {
   XCircle,
   Clock,
   Loader2,
+  AlertCircle,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { bookingApi, type BookingData } from "@/lib/data-api";
@@ -26,6 +27,10 @@ const statusConfig: Record<string, { label: string; color: string; icon: typeof 
   cancelled: { label: "Cancelled", color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400", icon: XCircle },
 };
 
+const isCancelableStatus = (status: BookingData["status"]): status is "confirmed" | "pending" => {
+  return status === "confirmed" || status === "pending";
+};
+
 export default function FarmerBookingsPage() {
   const { token } = useAuth();
   const [bookings, setBookings] = useState<BookingData[]>([]);
@@ -33,14 +38,30 @@ export default function FarmerBookingsPage() {
   const [filter, setFilter] = useState<BookingStatus>("all");
   const [search, setSearch] = useState("");
   const [qrModal, setQrModal] = useState<string | null>(null);
+  const [pageError, setPageError] = useState("");
+  const [cancelingId, setCancelingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!token) return;
     bookingApi.myBookings(token)
       .then((res) => setBookings(res.data))
-      .catch(() => {})
+      .catch((error: unknown) => setPageError(error instanceof Error ? error.message : "Failed to load bookings"))
       .finally(() => setLoading(false));
   }, [token]);
+
+  const handleCancelBooking = async (bookingId: string) => {
+    if (!token) return;
+    setPageError("");
+    setCancelingId(bookingId);
+    try {
+      const response = await bookingApi.cancel(token, bookingId);
+      setBookings((prev) => prev.map((booking) => (booking.id === bookingId ? response.data : booking)));
+    } catch (error: unknown) {
+      setPageError(error instanceof Error ? error.message : "Failed to cancel booking");
+    } finally {
+      setCancelingId(null);
+    }
+  };
 
   const filtered = bookings.filter((b) => {
     const matchesFilter = filter === "all" || b.status === filter;
@@ -62,6 +83,13 @@ export default function FarmerBookingsPage() {
         <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white">My Bookings</h1>
         <p className="mt-1 text-neutral-600 dark:text-neutral-400">View and manage all your mandi slot bookings</p>
       </motion.div>
+
+      {pageError ? (
+        <div className="mb-4 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/20 dark:text-red-300">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+          <span>{pageError}</span>
+        </div>
+      ) : null}
 
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="relative flex-1">
@@ -92,7 +120,10 @@ export default function FarmerBookingsPage() {
 
       <div className="space-y-3">
         {filtered.map((booking, index) => {
-          const sc = statusConfig[booking.status] || statusConfig.pending;
+          const sc = statusConfig[booking.status] ?? statusConfig.pending;
+          if (!sc) {
+            return null;
+          }
           const StatusIcon = sc.icon;
           return (
             <motion.div key={booking.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}
@@ -116,6 +147,21 @@ export default function FarmerBookingsPage() {
                 <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{booking.timeSlot}</span>
                 <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{booking.cropType} · {booking.estimatedQuantity}Q</span>
               </div>
+              {booking.cancelReason ? (
+                <p className="mt-2 text-xs text-red-500 dark:text-red-400">Reason: {booking.cancelReason}</p>
+              ) : null}
+
+              {isCancelableStatus(booking.status) ? (
+                <div className="mt-4 flex justify-end">
+                  <button
+                    onClick={() => void handleCancelBooking(booking.id)}
+                    disabled={cancelingId === booking.id}
+                    className="rounded-lg border border-red-200 px-3 py-2 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-900/40 dark:text-red-400 dark:hover:bg-red-950/20"
+                  >
+                    {cancelingId === booking.id ? "Cancelling..." : "Cancel Booking"}
+                  </button>
+                </div>
+              ) : null}
             </motion.div>
           );
         })}

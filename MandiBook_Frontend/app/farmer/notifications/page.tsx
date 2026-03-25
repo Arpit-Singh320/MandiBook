@@ -21,6 +21,12 @@ const typeConfig: Record<string, { icon: typeof Bell; color: string }> = {
   system: { icon: Bell, color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" },
 };
 
+type NotificationConfig = { icon: typeof Bell; color: string };
+
+const getNotificationConfig = (type: string): NotificationConfig => {
+  return typeConfig[type] ?? typeConfig.system!;
+};
+
 export default function NotificationsPage() {
   const { token } = useAuth();
   const [items, setItems] = useState<NotificationData[]>([]);
@@ -85,7 +91,7 @@ export default function NotificationsPage() {
       <div className="space-y-2">
         {items.length === 0 && <div className="text-center py-12 text-neutral-500 text-sm">No notifications yet.</div>}
         {items.map((notification, index) => {
-          const config = typeConfig[notification.type] || typeConfig.system;
+          const config = getNotificationConfig(notification.type);
           const Icon = config.icon;
           return (
             <motion.div key={notification.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}

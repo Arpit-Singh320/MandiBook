@@ -16,6 +16,7 @@ export default function FarmerLoginPage() {
   const [method, setMethod] = useState<AuthMethod>("phone");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [emailOtpRequestId, setEmailOtpRequestId] = useState<string | null>(null);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -32,7 +33,11 @@ export default function FarmerLoginPage() {
         await requestFarmerOtp(phone);
       } else {
         if (!email) return;
-        await requestFarmerEmailOtp(email);
+        const response = await requestFarmerEmailOtp(email);
+        if (!response.otpRequestId) {
+          throw new ApiError("OTP request initialization failed", 500, response);
+        }
+        setEmailOtpRequestId(response.otpRequestId);
       }
       setStep("otp");
     } catch (err) {
@@ -67,13 +72,14 @@ export default function FarmerLoginPage() {
     setIsLoading(true);
     setError("");
     try {
-      let response: Awaited<ReturnType<typeof loginAsFarmer>>;
       if (method === "phone") {
-        response = await loginAsFarmer(phone, otpValue);
+        await loginAsFarmer(phone, otpValue);
       } else {
-        response = await loginAsFarmerEmail(email, otpValue);
+        if (!emailOtpRequestId) {
+          throw new ApiError("OTP request not found. Please request a new OTP.", 400, null);
+        }
+        await loginAsFarmerEmail(email, otpValue, emailOtpRequestId);
       }
-      // Redirect: new/incomplete profile → complete-profile, else → dashboard
       window.location.href = "/farmer";
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "OTP verification failed");
@@ -82,11 +88,20 @@ export default function FarmerLoginPage() {
     }
   };
 
-  const handleResend = () => {
-    if (method === "phone") {
-      void requestFarmerOtp(phone);
-    } else {
-      void requestFarmerEmailOtp(email);
+  const handleResend = async () => {
+    setError("");
+    try {
+      if (method === "phone") {
+        await requestFarmerOtp(phone);
+      } else {
+        const response = await requestFarmerEmailOtp(email);
+        if (!response.otpRequestId) {
+          throw new ApiError("OTP resend failed", 500, response);
+        }
+        setEmailOtpRequestId(response.otpRequestId);
+      }
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to resend OTP");
     }
   };
 
@@ -281,7 +296,7 @@ export default function FarmerLoginPage() {
               <div className="flex items-center justify-between text-sm">
                 <button
                   type="button"
-                  onClick={() => { setStep("input"); setOtp(["", "", "", "", "", ""]); setError(""); }}
+                  onClick={() => { setStep("input"); setOtp(["", "", "", "", "", ""]); setEmailOtpRequestId(null); setError(""); }}
                   className="text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white flex items-center gap-1"
                 >
                   <ArrowLeft className="w-3 h-3" /> Change {method === "phone" ? "Number" : "Email"}

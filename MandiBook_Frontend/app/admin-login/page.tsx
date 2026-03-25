@@ -95,7 +95,7 @@ export default function AdminLoginPage() {
             <p className="text-base text-neutral-600 dark:text-neutral-400">
               {step === "credentials"
                 ? "Sign in to the admin control panel"
-                : "Enter the 6-digit code from your authenticator app"}
+                : "Enter the 6-digit code sent to your email"}
             </p>
           </motion.div>
 
@@ -173,7 +173,7 @@ export default function AdminLoginPage() {
             >
               <div>
                 <label htmlFor="code-2fa" className="block text-sm font-medium text-neutral-900 dark:text-white mb-2">
-                  Authenticator Code
+                  Email Verification Code
                 </label>
                 <input
                   id="code-2fa"

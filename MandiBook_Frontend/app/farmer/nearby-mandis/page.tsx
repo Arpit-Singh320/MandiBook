@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { motion } from "motion/react";
 import {
   MapPin,
@@ -9,20 +10,85 @@ import {
   Star,
   ChevronRight,
   Loader2,
+  LocateFixed,
+  RefreshCw,
+  Navigation,
 } from "lucide-react";
 import { mandiApi, type MandiData } from "@/lib/data-api";
+
+const MapView = dynamic(() => import("./map-view"), {
+  ssr: false,
+  loading: () => <div className="h-[420px] rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 animate-pulse" />,
+});
 
 export default function NearbyMandisPage() {
   const [mandis, setMandis] = useState<MandiData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMandi, setSelectedMandi] = useState<string | null>(null);
+  const [isLocating, setIsLocating] = useState(false);
+  const [locationError, setLocationError] = useState("");
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+
+  const loadMandis = async (coords?: { lat: number; lng: number }) => {
+    setLoading(true);
+    setLocationError("");
+    try {
+      const response = coords ? await mandiApi.nearby({ ...coords, radius: 50 }) : await mandiApi.nearby();
+      setMandis(response.data);
+      setSelectedMandi((prev) => prev ?? response.data[0]?.id ?? null);
+    } catch {
+      setLocationError("Failed to load nearby mandis.");
+      setMandis([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const detectLocation = () => {
+    if (typeof window === "undefined" || !navigator.geolocation) {
+      setLocationError("Geolocation is not supported on this device.");
+      void loadMandis();
+      return;
+    }
+
+    setIsLocating(true);
+    setLocationError("");
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const coords = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+        setUserLocation(coords);
+        setIsLocating(false);
+        void loadMandis(coords);
+      },
+      () => {
+        setIsLocating(false);
+        setLocationError("We could not access your location, so showing all active mandis instead.");
+        void loadMandis();
+      },
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 5 * 60 * 1000 }
+    );
+  };
 
   useEffect(() => {
-    mandiApi.list()
-      .then((res) => setMandis(res.data))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    detectLocation();
   }, []);
+
+  const selectedMandiData = mandis.find((mandi) => mandi.id === selectedMandi) || null;
+
+  const distanceLabel = (mandi: MandiData) => {
+    if (typeof mandi.distance !== "number") return null;
+    return `${mandi.distance.toFixed(1)} km away`;
+  };
+
+  const slotsLabel = (mandi: MandiData) => {
+    if (typeof mandi.slotsToday !== "number") return null;
+    return `${mandi.slotsToday} slots available today`;
+  };
+
+  const bookSlotHref = (mandiId: string) => `/farmer/book-slot?mandiId=${mandiId}`;
 
   if (loading) {
     return <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-green-700" /></div>;
@@ -34,6 +100,56 @@ export default function NearbyMandisPage() {
         <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white">Nearby Mandis</h1>
         <p className="mt-1 text-neutral-600 dark:text-neutral-400">Find APMC mandis and book a slot</p>
       </motion.div>
+
+      <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between mb-6">
+        <div className="flex flex-wrap items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
+          {userLocation ? (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-400">
+              <Navigation className="w-4 h-4" /> Using your current location
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300">
+              <MapPin className="w-4 h-4" /> Showing all active mandis
+            </span>
+          )}
+          {locationError ? <span className="text-amber-600 dark:text-amber-400">{locationError}</span> : null}
+        </div>
+
+        <div className="flex gap-2">
+          <button
+            onClick={detectLocation}
+            disabled={isLocating}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 disabled:opacity-60"
+          >
+            {isLocating ? <Loader2 className="w-4 h-4 animate-spin" /> : <LocateFixed className="w-4 h-4" />} Use my location
+          </button>
+          <button
+            onClick={() => void loadMandis(userLocation || undefined)}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-green-700 hover:bg-green-800 text-white text-sm font-medium"
+          >
+            <RefreshCw className="w-4 h-4" /> Refresh
+          </button>
+        </div>
+      </div>
+
+      <div className="mb-6 overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+        <div className="h-[420px]">
+          <MapView
+            mandis={mandis.filter((mandi) => typeof mandi.lat === "number" && typeof mandi.lng === "number").map((mandi) => ({
+              id: mandi.id,
+              name: mandi.name,
+              address: `${mandi.address}, ${mandi.city}`,
+              lat: mandi.lat,
+              lng: mandi.lng,
+              distance: distanceLabel(mandi) || "Distance unavailable",
+              slotsToday: mandi.slotsToday || 0,
+            }))}
+            selectedMandi={selectedMandi}
+            onSelectMandi={setSelectedMandi}
+            userLocation={userLocation}
+          />
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {mandis.map((mandi, index) => (
@@ -68,6 +184,11 @@ export default function NearbyMandisPage() {
               <span className="flex items-center gap-1">
                 <Clock className="w-3 h-3" /> {mandi.operatingHoursOpen} - {mandi.operatingHoursClose}
               </span>
+              {distanceLabel(mandi) ? (
+                <span className="flex items-center gap-1">
+                  <Navigation className="w-3 h-3" /> {distanceLabel(mandi)}
+                </span>
+              ) : null}
             </div>
 
             <div className="flex flex-wrap gap-1.5 mb-3">
@@ -80,10 +201,13 @@ export default function NearbyMandisPage() {
             </div>
 
             <div className="flex items-center justify-between pt-3 border-t border-neutral-100 dark:border-neutral-800">
-              <span className={`text-xs font-medium ${mandi.isActive ? "text-green-700 dark:text-green-400" : "text-red-500"}`}>
-                {mandi.isActive ? "Open" : "Closed"}
-              </span>
-              <a href="/farmer/book-slot" onClick={(e) => e.stopPropagation()}
+              <div className="flex flex-col gap-1">
+                <span className={`text-xs font-medium ${mandi.isActive ? "text-green-700 dark:text-green-400" : "text-red-500"}`}>
+                  {mandi.isActive ? "Open" : "Closed"}
+                </span>
+                {slotsLabel(mandi) ? <span className="text-[11px] text-neutral-500">{slotsLabel(mandi)}</span> : null}
+              </div>
+              <a href={bookSlotHref(mandi.id)} onClick={(e) => e.stopPropagation()}
                 className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-green-700 hover:bg-green-800 text-white text-xs font-medium transition-colors no-underline">
                 Book Slot <ChevronRight className="w-3 h-3" />
               </a>
@@ -97,6 +221,9 @@ export default function NearbyMandisPage() {
                     <Phone className="w-3 h-3" /> <span>{mandi.contactPhone}</span>
                   </div>
                 )}
+                {selectedMandiData?.id === mandi.id && slotsLabel(mandi) ? (
+                  <p className="text-xs text-green-700 dark:text-green-400 mt-1">{slotsLabel(mandi)}</p>
+                ) : null}
                 <p className="text-xs text-neutral-500 mt-1">{mandi.state} — {mandi.pincode}</p>
               </motion.div>
             )}

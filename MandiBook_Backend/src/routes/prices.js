@@ -75,6 +75,9 @@ router.put('/:id', protect, authorize('manager'), async (req, res, next) => {
 
     const price = await CropPrice.findByPk(req.params.id);
     if (!price) return res.status(404).json({ success: false, message: 'Price entry not found' });
+    if (!req.user.mandiId || price.mandiId !== req.user.mandiId) {
+      return res.status(403).json({ success: false, message: 'You can only update prices for your assigned mandi' });
+    }
 
     await price.update({
       prevPrice: price.currentPrice,
@@ -110,6 +113,12 @@ router.post('/', protect, authorize('manager', 'admin'), async (req, res, next) 
     const { crop, mandiId, currentPrice, unit, category, cropHi } = req.body;
     if (!crop || !mandiId || !currentPrice) {
       return res.status(400).json({ success: false, message: 'Crop, mandiId, and currentPrice are required' });
+    }
+
+    if (req.user.role === 'manager') {
+      if (!req.user.mandiId || req.user.mandiId !== mandiId) {
+        return res.status(403).json({ success: false, message: 'You can only create prices for your assigned mandi' });
+      }
     }
 
     const existing = await CropPrice.findOne({ where: { crop, mandiId } });

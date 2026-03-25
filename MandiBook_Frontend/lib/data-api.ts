@@ -41,6 +41,9 @@ export interface MandiData {
   isActive: boolean;
   rating: number;
   managerId?: string;
+  distance?: number | null;
+  slotsToday?: number;
+  manager?: { id: string; name: string; email?: string; phone?: string };
 }
 
 export interface SlotData {
@@ -71,7 +74,11 @@ export interface BookingData {
   checkedInAt?: string;
   completedAt?: string;
   cancelledAt?: string;
+  cancelReason?: string;
   createdAt: string;
+  farmer?: { id: string; name: string; phone?: string };
+  mandi?: { id: string; name: string; city?: string; address?: string };
+  slot?: SlotData;
   Farmer?: { id: string; name: string; phone?: string };
   Mandi?: { id: string; name: string; city?: string };
   TimeSlot?: SlotData;
@@ -81,6 +88,7 @@ export interface CropPriceData {
   id: string;
   crop: string;
   cropHi?: string;
+  category?: string;
   unit: string;
   mandiId: string;
   currentPrice: number;
@@ -90,6 +98,7 @@ export interface CropPriceData {
   updatedBy?: string;
   createdAt: string;
   updatedAt: string;
+  mandi?: { id: string; name: string };
   Mandi?: { id: string; name: string };
 }
 
@@ -139,9 +148,11 @@ export interface AuditLogData {
 export interface UserData {
   id: string;
   name: string;
-  role: string;
+  role: "farmer" | "manager" | "admin";
   phone?: string;
   email?: string;
+  avatar?: string;
+  language: "en" | "hi";
   status: string;
   profileComplete: boolean;
   village?: string;
@@ -154,12 +165,21 @@ export interface UserData {
   mandiId?: string;
   designation?: string;
   managingSince?: string;
+  department?: string;
+  twoFactorEnabled?: boolean;
+  lastLoginAt?: string;
   createdAt: string;
 }
 
 export interface DashboardFarmerData {
   success: boolean;
   data: {
+    stats: {
+      activeBookings: number;
+      totalVisits: number;
+      avgPricePerQuintal: number;
+      qrScans: number;
+    };
     totalBookings: number;
     activeBookings: number;
     completedBookings: number;
@@ -174,6 +194,12 @@ export interface DashboardFarmerData {
 export interface DashboardManagerData {
   success: boolean;
   data: {
+    stats?: {
+      todayBookings: number;
+      activeFarmers: number;
+      avgWheatPrice: number;
+      availableSlots: number;
+    };
     todayBookings: number;
     checkedIn: number;
     pendingBookings: number;
@@ -188,6 +214,15 @@ export interface DashboardManagerData {
 export interface DashboardAdminData {
   success: boolean;
   data: {
+    stats?: {
+      totalMandis: number;
+      activeMandis: number;
+      totalFarmers: number;
+      totalManagers: number;
+      totalBookingsToday: number;
+      openIssues: number;
+      avgCropPrice: number;
+    };
     totalUsers: number;
     totalFarmers: number;
     totalManagers: number;
@@ -201,11 +236,55 @@ export interface DashboardAdminData {
   };
 }
 
+function normalizeBookingData(booking: BookingData): BookingData {
+  const mandi = booking.mandi ?? booking.Mandi;
+  const farmer = booking.farmer ?? booking.Farmer;
+  const slot = booking.slot ?? booking.TimeSlot;
+
+  return {
+    ...booking,
+    ...(mandi ? { mandi, Mandi: mandi } : {}),
+    ...(farmer ? { farmer, Farmer: farmer } : {}),
+    ...(slot ? { slot, TimeSlot: slot } : {}),
+  };
+}
+
+function normalizeCropPriceData(price: CropPriceData): CropPriceData {
+  const mandi = price.mandi ?? price.Mandi;
+  return {
+    ...price,
+    ...(mandi ? { mandi, Mandi: mandi } : {}),
+  };
+}
+
+function normalizeFarmerDashboardData(response: DashboardFarmerData): DashboardFarmerData {
+  const upcomingBookings = (response.data.upcomingBookings || []).map(normalizeBookingData);
+  return {
+    ...response,
+    data: {
+      ...response.data,
+      activeBookings: response.data.activeBookings ?? response.data.stats?.activeBookings ?? 0,
+      upcomingBookings,
+      recentBookings: (response.data.recentBookings || upcomingBookings).map(normalizeBookingData),
+      preferredMandis: response.data.preferredMandis || [],
+      favoriteCrops: response.data.favoriteCrops || [],
+    },
+  };
+}
+
 // ── API methods ──────────────────────────────────────────────────────────────
 
 export const mandiApi = {
   list() {
     return apiRequest<{ success: boolean; data: MandiData[] }>("/mandis");
+  },
+  nearby(params?: { lat?: number; lng?: number; radius?: number }) {
+    const qs = new URLSearchParams();
+    if (params?.lat !== undefined) qs.set("lat", params.lat.toString());
+    if (params?.lng !== undefined) qs.set("lng", params.lng.toString());
+    if (params?.radius !== undefined) qs.set("radius", params.radius.toString());
+    const query = qs.toString();
+    return apiRequest<{ success: boolean; data: MandiData[] }>(`/mandis/nearby${query ? `?${query}` : ""}`);
   },
   get(id: string) {
     return apiRequest<{ success: boolean; data: MandiData }>(`/mandis/${id}`);
@@ -247,48 +326,60 @@ export const bookingApi = {
   create(token: string, data: { mandiId: string; slotId: string; date: string; cropType: string; estimatedQuantity: number; vehicleNumber?: string }) {
     return apiRequest<{ success: boolean; data: BookingData }>("/bookings", {
       method: "POST", token, body: JSON.stringify(data),
-    });
+    }).then((response) => ({ ...response, data: normalizeBookingData(response.data) }));
   },
   myBookings(token: string, params?: { status?: string }) {
     const qs = params?.status ? `?status=${params.status}` : "";
-    return apiRequest<{ success: boolean; data: BookingData[] }>(`/bookings/my${qs}`, { token });
+    return apiRequest<{ success: boolean; data: BookingData[] }>(`/bookings/my${qs}`, { token }).then((response) => ({
+      ...response,
+      data: response.data.map(normalizeBookingData),
+    }));
   },
   mandiBookings(token: string, mandiId: string, params?: { date?: string; status?: string }) {
     const qs = new URLSearchParams();
     if (params?.date) qs.set("date", params.date);
     if (params?.status) qs.set("status", params.status);
     const q = qs.toString();
-    return apiRequest<{ success: boolean; data: BookingData[] }>(`/bookings/mandi/${mandiId}${q ? `?${q}` : ""}`, { token });
+    return apiRequest<{ success: boolean; data: BookingData[] }>(`/bookings/mandi/${mandiId}${q ? `?${q}` : ""}`, { token }).then((response) => ({
+      ...response,
+      data: response.data.map(normalizeBookingData),
+    }));
   },
   get(token: string, id: string) {
-    return apiRequest<{ success: boolean; data: BookingData }>(`/bookings/${id}`, { token });
+    return apiRequest<{ success: boolean; data: BookingData }>(`/bookings/${id}`, { token }).then((response) => ({
+      ...response,
+      data: normalizeBookingData(response.data),
+    }));
   },
   cancel(token: string, id: string) {
-    return apiRequest<{ success: boolean }>(`/bookings/${id}/cancel`, {
+    return apiRequest<{ success: boolean; data: BookingData }>(`/bookings/${id}/cancel`, {
       method: "PUT", token,
-    });
+    }).then((response) => ({ ...response, data: normalizeBookingData(response.data) }));
   },
   checkIn(token: string, id: string) {
     return apiRequest<{ success: boolean; data: BookingData }>(`/bookings/${id}/checkin`, {
       method: "PUT", token,
-    });
+    }).then((response) => ({ ...response, data: normalizeBookingData(response.data) }));
   },
   complete(token: string, id: string) {
     return apiRequest<{ success: boolean; data: BookingData }>(`/bookings/${id}/complete`, {
       method: "PUT", token,
-    });
+    }).then((response) => ({ ...response, data: normalizeBookingData(response.data) }));
   },
 };
 
 export const priceApi = {
   list(params?: { mandiId?: string }) {
     const qs = params?.mandiId ? `?mandiId=${params.mandiId}` : "";
-    return apiRequest<{ success: boolean; data: CropPriceData[] }>(`/prices${qs}`);
+    return apiRequest<{ success: boolean; data: CropPriceData[] }>(`/prices${qs}`).then((response) => ({
+      ...response,
+      data: response.data.map(normalizeCropPriceData),
+    }));
   },
   update(token: string, id: string, data: { currentPrice: number }) {
     return apiRequest<{ success: boolean; data: CropPriceData }>(`/prices/${id}`, {
       method: "PUT", token, body: JSON.stringify(data),
-    });
+    }).then((response) => ({ ...response, data: normalizeCropPriceData(response.data) }));
   },
 };
 
@@ -310,7 +401,7 @@ export const notificationApi = {
 
 export const dashboardApi = {
   farmer(token: string) {
-    return apiRequest<DashboardFarmerData>("/dashboard/farmer", { token });
+    return apiRequest<DashboardFarmerData>("/dashboard/farmer", { token }).then(normalizeFarmerDashboardData);
   },
   manager(token: string) {
     return apiRequest<DashboardManagerData>("/dashboard/manager", { token });

@@ -19,6 +19,10 @@ const protect = async (req, res, next) => {
       return res.status(401).json({ success: false, message: 'User not found' });
     }
 
+    if ((decoded.tokenVersion ?? 0) !== user.tokenVersion) {
+      return res.status(401).json({ success: false, message: 'Session expired. Please log in again.' });
+    }
+
     if (user.status === 'suspended') {
       return res.status(403).json({ success: false, message: 'Account suspended' });
     }

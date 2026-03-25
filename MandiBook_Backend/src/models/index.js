@@ -6,6 +6,7 @@ const CropPrice = require('./CropPrice');
 const Notification = require('./Notification');
 const Issue = require('./Issue');
 const AuditLog = require('./AuditLog');
+const OtpRequest = require('./OtpRequest');
 
 // ─── Associations ───────────────────────────────────────────────────────────────
 
@@ -49,6 +50,10 @@ Issue.belongsTo(Mandi, { as: 'mandi', foreignKey: 'mandiId', constraints: false 
 // AuditLog <-> User
 AuditLog.belongsTo(User, { as: 'user', foreignKey: 'userId', constraints: false });
 
+// OtpRequest <-> User
+OtpRequest.belongsTo(User, { as: 'user', foreignKey: 'userId', constraints: false });
+User.hasMany(OtpRequest, { as: 'otpRequests', foreignKey: 'userId', constraints: false });
+
 module.exports = {
   User,
   Mandi,
@@ -58,4 +63,5 @@ module.exports = {
   Notification,
   Issue,
   AuditLog,
+  OtpRequest,
 };

@@ -15,14 +15,25 @@ const seed = async () => {
     const admin = await User.create({
       name: 'Rajesh Kumar',
       role: 'admin',
-      email: 'arpit@compliledger.com',
+      email: 'mandibook.admin@gmail.com',
       password: 'admin123',
       language: 'en',
       department: 'Platform Operations',
       twoFactorEnabled: true,
       profileComplete: true,
     });
-    console.log('Admin created: admin@mandibook.in / admin123');
+
+    const admin2 = await User.create({
+      name: 'Arpit Singh',
+      role: 'admin',
+      email: 'arpit2005singh@gmail.com',
+      password: 'arpit123',
+      language: 'en',
+      department: 'Platform Operations',
+      twoFactorEnabled: true,
+      profileComplete: true,
+    });
+    console.log('2 Admins created with email verification enabled');
 
     // ─── Mandis ───────────────────────────────────────────────────────────────────
     const mandi1 = await Mandi.create({
@@ -284,8 +295,9 @@ const seed = async () => {
       { userId: manager1.id, type: 'system', title: 'New Booking', message: 'Ram Singh booked a slot for Wheat (50 quintals).' },
       { userId: manager2.id, type: 'system', title: 'Check-in Complete', message: 'Lakshmi Devi checked in for Onion delivery.' },
       { userId: admin.id, type: 'system', title: 'Platform Alert', message: '3 new farmer registrations today.' },
+      { userId: admin2.id, type: 'system', title: 'Platform Alert', message: 'Manager assignments synced successfully.' },
     ]);
-    console.log('6 notifications created');
+    console.log('7 notifications created');
 
     // ─── Sample Issues ────────────────────────────────────────────────────────────
     await Issue.bulkCreate([
@@ -297,15 +309,17 @@ const seed = async () => {
     // ─── Sample Audit Logs ────────────────────────────────────────────────────────
     await AuditLog.bulkCreate([
       { userId: admin.id, userName: 'Rajesh Kumar', userRole: 'admin', action: 'Platform initialized', entity: 'System', type: 'system', ipAddress: '127.0.0.1' },
+      { userId: admin2.id, userName: 'Arpit Singh', userRole: 'admin', action: 'Platform initialized', entity: 'System', type: 'system', ipAddress: '127.0.0.1' },
       { userId: admin.id, userName: 'Rajesh Kumar', userRole: 'admin', action: 'Registered new mandi', entity: 'Mandi', entityId: mandi1.id, details: 'Azadpur Mandi, Delhi', type: 'mandi', ipAddress: '127.0.0.1' },
       { userId: farmer1.id, userName: 'Ram Singh', userRole: 'farmer', action: 'Booking created', entity: 'Booking', entityId: booking1.id, details: 'BK-2026-03-22-1001 @ Azadpur Mandi', type: 'booking', ipAddress: '127.0.0.1' },
       { userId: manager1.id, userName: 'Suresh Yadav', userRole: 'manager', action: 'Updated Wheat price to ₹2200', entity: 'CropPrice', type: 'price', ipAddress: '127.0.0.1' },
     ]);
-    console.log('4 audit logs created');
+    console.log('5 audit logs created');
 
     console.log('\n✅ Seed completed successfully!\n');
     console.log('── Login Credentials ──');
-    console.log('Admin:   admin@mandibook.in / admin123 (+ 2FA via email)');
+    console.log('Admin:   mandibook.admin@gmail.com / admin123 (+ 2FA via email)');
+    console.log('Admin:   arpit2005singh@gmail.com / arpit123 (+ 2FA via email)');
     console.log('Manager: suresh@mandibook.in / manager123');
     console.log('Manager: priya@mandibook.in / manager123');
     console.log('Manager: ravi@mandibook.in / manager123');

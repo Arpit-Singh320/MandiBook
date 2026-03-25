@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { Op } = require('sequelize');
 const User = require('../models/User');
+const Mandi = require('../models/Mandi');
 const AuditLog = require('../models/AuditLog');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -61,7 +62,7 @@ router.get('/:id', protect, authorize('admin'), async (req, res, next) => {
 // PUT /api/users/profile
 router.put('/profile', protect, async (req, res, next) => {
   try {
-    const allowed = ['name', 'village', 'district', 'state', 'language', 'crops', 'priceAlertCrops', 'designation'];
+    const allowed = ['name', 'village', 'district', 'state', 'pincode', 'landHolding', 'farmSize', 'language', 'crops', 'preferredMandis', 'priceAlertCrops', 'designation'];
     const updates = {};
     for (const key of allowed) {
       if (req.body[key] !== undefined) updates[key] = req.body[key];
@@ -129,17 +130,31 @@ router.post('/manager', protect, authorize('admin'), async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Name, email, and password are required' });
     }
 
-    const existing = await User.findOne({ where: { email, role: 'manager' } });
+    const normalizedEmail = String(email).trim().toLowerCase();
+    let assignedMandi = null;
+    if (mandiId) {
+      assignedMandi = await Mandi.findByPk(mandiId);
+      if (!assignedMandi) {
+        return res.status(404).json({ success: false, message: 'Assigned mandi not found' });
+      }
+    }
+
+    const existing = await User.findOne({ where: { email: normalizedEmail, role: 'manager' } });
     if (existing) {
       return res.status(400).json({ success: false, message: 'Manager with this email already exists' });
     }
 
     const user = await User.create({
-      name, email, password, phone,
+      name, email: normalizedEmail, password, phone,
       role: 'manager',
       mandiId,
       designation,
+      profileComplete: true,
     });
+
+    if (assignedMandi) {
+      await assignedMandi.update({ managerId: user.id });
+    }
 
     await AuditLog.create({
       userId: req.user.id,

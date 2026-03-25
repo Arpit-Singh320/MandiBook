@@ -74,11 +74,17 @@ export interface AuthResponse {
   profileComplete?: boolean;
   requires2FA?: boolean;
   tempUserId?: string;
+  otpRequestId?: string;
+  expiresInSeconds?: number;
+  resendAfterSeconds?: number;
+  debugOtp?: string;
   method?: string;
 }
 
 export interface ProfileData {
   name: string;
+  phone?: string | undefined;
+  email?: string | undefined;
   village?: string | undefined;
   district?: string | undefined;
   state?: string | undefined;
@@ -109,10 +115,10 @@ export const authApi = {
       body: JSON.stringify({ phone, otp }),
     });
   },
-  verifyFarmerEmailOtp(email: string, otp: string) {
+  verifyFarmerEmailOtp(email: string, otp: string, otpRequestId: string) {
     return apiRequest<AuthResponse>("/auth/farmer/verify-email-otp", {
       method: "POST",
-      body: JSON.stringify({ email, otp }),
+      body: JSON.stringify({ email, otp, otpRequestId }),
     });
   },
   managerLogin(email: string, password: string) {
@@ -127,10 +133,10 @@ export const authApi = {
       body: JSON.stringify({ email, password }),
     });
   },
-  adminVerify2FA(tempUserId: string, code: string) {
+  adminVerify2FA(tempUserId: string, otpRequestId: string, code: string) {
     return apiRequest<AuthResponse>("/auth/admin/verify-2fa", {
       method: "POST",
-      body: JSON.stringify({ tempUserId, code }),
+      body: JSON.stringify({ tempUserId, otpRequestId, code }),
     });
   },
   me(token: string) {
