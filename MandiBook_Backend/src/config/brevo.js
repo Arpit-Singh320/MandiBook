@@ -6,8 +6,65 @@ apiKey.apiKey = process.env.BREVO_API_KEY;
 
 const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
 
+const getBrevoConfigError = () => {
+  if (!process.env.BREVO_API_KEY) {
+    return {
+      success: false,
+      error: 'Email OTP service is not configured',
+      code: 'brevo_api_key_missing',
+      statusCode: 503,
+    };
+  }
+
+  if (!process.env.BREVO_SENDER_EMAIL || !process.env.BREVO_SENDER_NAME) {
+    return {
+      success: false,
+      error: 'Email sender is not configured',
+      code: 'brevo_sender_missing',
+      statusCode: 503,
+    };
+  }
+
+  return null;
+};
+
+const mapBrevoError = (error) => {
+  const statusCode = error?.status || error?.response?.statusCode || error?.code || null;
+  const message = error?.response?.text || error?.message || 'Email delivery failed';
+
+  if (statusCode === 401 || /unauthorized/i.test(message)) {
+    return {
+      success: false,
+      error: 'Email OTP service credentials are invalid',
+      code: 'brevo_unauthorized',
+      statusCode: 503,
+    };
+  }
+
+  if (statusCode === 403 || /forbidden/i.test(message)) {
+    return {
+      success: false,
+      error: 'Email OTP service access is forbidden',
+      code: 'brevo_forbidden',
+      statusCode: 503,
+    };
+  }
+
+  return {
+    success: false,
+    error: message,
+    code: 'brevo_send_failed',
+    statusCode: 503,
+  };
+};
+
 const sendEmailOTP = async (toEmail, toName, otp) => {
   try {
+    const configError = getBrevoConfigError();
+    if (configError) {
+      return configError;
+    }
+
     const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
     sendSmtpEmail.sender = {
       name: process.env.BREVO_SENDER_NAME,
@@ -37,12 +94,17 @@ const sendEmailOTP = async (toEmail, toName, otp) => {
     return { success: true, messageId: result.messageId };
   } catch (error) {
     console.error('Brevo sendEmailOTP error:', error.message);
-    return { success: false, error: error.message };
+    return mapBrevoError(error);
   }
 };
 
 const sendEmail = async (toEmail, toName, subject, htmlContent) => {
   try {
+    const configError = getBrevoConfigError();
+    if (configError) {
+      return configError;
+    }
+
     const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
     sendSmtpEmail.sender = {
       name: process.env.BREVO_SENDER_NAME,
@@ -56,7 +118,7 @@ const sendEmail = async (toEmail, toName, subject, htmlContent) => {
     return { success: true, messageId: result.messageId };
   } catch (error) {
     console.error('Brevo sendEmail error:', error.message);
-    return { success: false, error: error.message };
+    return mapBrevoError(error);
   }
 };
 

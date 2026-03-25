@@ -30,7 +30,15 @@ async function apiRequest<T>(path: string, options: RequestOptions = {}): Promis
   });
 
   const text = await response.text();
-  const data = text ? (JSON.parse(text) as T & { message?: string }) : ({} as T & { message?: string });
+  let data = {} as T & { message?: string };
+
+  if (text) {
+    try {
+      data = JSON.parse(text) as T & { message?: string };
+    } catch {
+      data = { message: text } as T & { message?: string };
+    }
+  }
 
   if (!response.ok) {
     throw new ApiError((data as { message?: string }).message || "Request failed", response.status, data);
