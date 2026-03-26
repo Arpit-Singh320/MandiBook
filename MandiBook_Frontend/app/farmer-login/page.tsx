@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { ArrowLeft, Phone, Mail, ShieldCheck, Wheat, QrCode, CalendarCheck, TrendingUp } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { ApiError } from "@/lib/api";
 import { useTheme } from "next-themes";
@@ -21,8 +22,17 @@ export default function FarmerLoginPage() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const { requestFarmerOtp, requestFarmerEmailOtp, loginAsFarmer, loginAsFarmerEmail } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading, requestFarmerOtp, requestFarmerEmailOtp, loginAsFarmer, loginAsFarmerEmail } = useAuth();
   const { theme } = useTheme();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (isAuthenticated && user) {
+      const dest = user.role === "admin" ? "/admin" : user.role === "manager" ? "/manager" : "/farmer";
+      router.replace(dest);
+    }
+  }, [authLoading, isAuthenticated, user, router]);
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();

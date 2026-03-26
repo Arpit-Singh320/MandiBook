@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { motion } from "motion/react";
 import {
   CalendarCheck,
@@ -112,9 +113,9 @@ export default function FarmerDashboard() {
         >
           <div className="flex items-center justify-between p-4 sm:p-5 border-b border-[var(--border)]">
             <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">Recent Bookings</h2>
-            <a href="/farmer/bookings" className="text-sm text-[var(--primary)] font-medium flex items-center gap-1 no-underline hover:underline">
+            <Link href="/farmer/bookings" className="text-sm text-[var(--primary)] font-medium flex items-center gap-1 no-underline hover:underline">
               View all <ArrowRight className="w-3 h-3" />
-            </a>
+            </Link>
           </div>
           <div className="divide-y divide-[var(--border)]">
             {upcoming.length === 0 ? (
@@ -177,9 +178,9 @@ export default function FarmerDashboard() {
             ))}
           </div>
           <div className="p-4">
-            <a href="/farmer/book-slot" className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] text-sm font-medium hover:opacity-90 transition-all no-underline">
+            <Link href="/farmer/book-slot" className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] text-sm font-medium hover:opacity-90 transition-all no-underline">
               <CalendarCheck className="w-4 h-4" /> Book a New Slot
-            </a>
+            </Link>
           </div>
         </motion.div>
       </div>

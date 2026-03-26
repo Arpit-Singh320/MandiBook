@@ -86,12 +86,17 @@ const issueOtpRequest = async ({ purpose, identifier, userId, recipientName, met
   const debugBypassEnabled = isOtpDebugBypassEnabled();
 
   if (!debugBypassEnabled) {
+    console.log(`[OTP] Sending email OTP to ${normalizedIdentifier} for purpose=${purpose}`);
     emailResult = await sendEmailOTP(normalizedIdentifier, recipientName, otp);
+  } else {
+    console.log(`[OTP] Debug bypass enabled — skipping email delivery for ${normalizedIdentifier}`);
   }
 
   if (!emailResult.success) {
+    console.error(`[OTP] Email delivery failed for ${normalizedIdentifier}: ${emailResult.error} (${emailResult.code})`);
+
     if (isLocalOtpFallbackEnabled()) {
-      console.warn(`OTP email delivery failed for ${normalizedIdentifier}; using local fallback in ${process.env.NODE_ENV || 'development'} mode.`);
+      console.warn(`[OTP] Using local fallback — OTP code: ${otp} (dev only)`);
 
       await otpRequest.update({
         status: 'sent',
@@ -112,6 +117,8 @@ const issueOtpRequest = async ({ purpose, identifier, userId, recipientName, met
     await otpRequest.update({ status: 'cancelled' });
     return buildOtpDispatchError(emailResult);
   }
+
+  console.log(`[OTP] Email delivered to ${normalizedIdentifier} — messageId: ${emailResult.messageId}`);
 
   await otpRequest.update({
     status: 'sent',

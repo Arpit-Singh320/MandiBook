@@ -1,10 +1,11 @@
 const SibApiV3Sdk = require('sib-api-v3-sdk');
 
-const defaultClient = SibApiV3Sdk.ApiClient.instance;
-const apiKey = defaultClient.authentications['api-key'];
-apiKey.apiKey = process.env.BREVO_API_KEY;
-
-const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+// Read API key fresh on every call — avoids stale-key bugs after .env reload / server restart.
+const getApiInstance = () => {
+  const client = SibApiV3Sdk.ApiClient.instance;
+  client.authentications['api-key'].apiKey = process.env.BREVO_API_KEY;
+  return new SibApiV3Sdk.TransactionalEmailsApi();
+};
 
 const getBrevoConfigError = () => {
   if (!process.env.BREVO_API_KEY) {
@@ -90,10 +91,12 @@ const sendEmailOTP = async (toEmail, toName, otp) => {
       </html>
     `;
 
+    const apiInstance = getApiInstance();
     const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
+    console.log(`[Brevo] OTP email sent to ${toEmail} — messageId: ${result.messageId}`);
     return { success: true, messageId: result.messageId };
   } catch (error) {
-    console.error('Brevo sendEmailOTP error:', error.message);
+    console.error(`[Brevo] OTP email FAILED for ${toEmail}:`, error.message);
     return mapBrevoError(error);
   }
 };
@@ -114,10 +117,12 @@ const sendEmail = async (toEmail, toName, subject, htmlContent) => {
     sendSmtpEmail.subject = subject;
     sendSmtpEmail.htmlContent = htmlContent;
 
+    const apiInstance = getApiInstance();
     const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
+    console.log(`[Brevo] Email sent to ${toEmail} — messageId: ${result.messageId}`);
     return { success: true, messageId: result.messageId };
   } catch (error) {
-    console.error('Brevo sendEmail error:', error.message);
+    console.error(`[Brevo] Email FAILED for ${toEmail}:`, error.message);
     return mapBrevoError(error);
   }
 };

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { motion } from "motion/react";
 import {
   Building2,
@@ -189,12 +190,12 @@ export default function AdminDashboard() {
             <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
               Top Mandis
             </h2>
-            <a
+            <Link
               href="/admin/mandis"
               className="text-sm text-[var(--primary)] font-medium flex items-center gap-1 no-underline hover:underline"
             >
               View all <ArrowRight className="w-3 h-3" />
-            </a>
+            </Link>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">

@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { ArrowLeft, Eye, EyeOff, Wheat, BarChart3, CalendarClock, Users } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { ApiError } from "@/lib/api";
 import { useTheme } from "next-themes";
@@ -15,8 +16,17 @@ export default function ManagerLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const { loginAsManager } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading, loginAsManager } = useAuth();
   const { theme } = useTheme();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (isAuthenticated && user) {
+      const dest = user.role === "admin" ? "/admin" : user.role === "manager" ? "/manager" : "/farmer";
+      router.replace(dest);
+    }
+  }, [authLoading, isAuthenticated, user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,12 +134,6 @@ export default function ManagerLoginPage() {
               <div className="mt-1.5 flex justify-end">
                 <a href="#" className="text-xs text-amber-700 dark:text-amber-400 hover:underline">Forgot Password?</a>
               </div>
-            </div>
-
-            <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 p-3">
-              <p className="text-xs text-neutral-600 dark:text-neutral-400">
-                <strong>Test:</strong> Use a real seeded manager account like <code>suresh@mandibook.in</code> / <code>manager123</code>.
-              </p>
             </div>
 
             {error ? <p className="text-sm text-red-600 dark:text-red-400">{error}</p> : null}

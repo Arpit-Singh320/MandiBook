@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { ArrowLeft, Eye, EyeOff, ShieldCheck, Wheat, Shield, Globe, Activity } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { ApiError } from "@/lib/api";
 import { useTheme } from "next-themes";
@@ -19,8 +20,17 @@ export default function AdminLoginPage() {
   const [code2fa, setCode2fa] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const { beginAdminLogin, loginAsAdmin } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading, beginAdminLogin, loginAsAdmin } = useAuth();
   const { theme } = useTheme();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (isAuthenticated && user) {
+      const dest = user.role === "admin" ? "/admin" : user.role === "manager" ? "/manager" : "/farmer";
+      router.replace(dest);
+    }
+  }, [authLoading, isAuthenticated, user, router]);
 
   const handleCredentials = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -146,12 +156,6 @@ export default function AdminLoginPage() {
                     {showPassword ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
                   </button>
                 </div>
-              </div>
-
-              <div className="rounded-lg bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-3">
-                <p className="text-xs text-neutral-600 dark:text-neutral-400">
-                  <strong>Test:</strong> Use your real admin account. After credentials, enter the Brevo OTP sent to your email.
-                </p>
               </div>
 
               {error ? <p className="text-sm text-red-600 dark:text-red-400">{error}</p> : null}
