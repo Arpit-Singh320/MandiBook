@@ -12,7 +12,7 @@ const getBrevoConfigError = () => {
       success: false,
       error: 'Email OTP service is not configured',
       code: 'brevo_api_key_missing',
-      statusCode: 503,
+      statusCode: 500,
     };
   }
 
@@ -21,7 +21,7 @@ const getBrevoConfigError = () => {
       success: false,
       error: 'Email sender is not configured',
       code: 'brevo_sender_missing',
-      statusCode: 503,
+      statusCode: 500,
     };
   }
 
@@ -37,7 +37,7 @@ const mapBrevoError = (error) => {
       success: false,
       error: 'Email OTP service credentials are invalid',
       code: 'brevo_unauthorized',
-      statusCode: 503,
+      statusCode: 500,
     };
   }
 
@@ -46,7 +46,7 @@ const mapBrevoError = (error) => {
       success: false,
       error: 'Email OTP service access is forbidden',
       code: 'brevo_forbidden',
-      statusCode: 503,
+      statusCode: 500,
     };
   }
 
@@ -54,7 +54,7 @@ const mapBrevoError = (error) => {
     success: false,
     error: message,
     code: 'brevo_send_failed',
-    statusCode: 503,
+    statusCode: 500,
   };
 };
 

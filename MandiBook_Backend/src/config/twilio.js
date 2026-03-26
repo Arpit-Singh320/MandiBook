@@ -11,7 +11,7 @@ const getTwilioConfigError = () => {
       success: false,
       error: 'Phone OTP service is not configured',
       code: 'twilio_config_missing',
-      statusCode: 503,
+      statusCode: 500,
     };
   }
 
@@ -27,7 +27,7 @@ const mapTwilioError = (error) => {
       success: false,
       error: 'Phone OTP service credentials are invalid',
       code: 'twilio_unauthorized',
-      statusCode: 503,
+      statusCode: 500,
     };
   }
 
@@ -35,7 +35,7 @@ const mapTwilioError = (error) => {
     success: false,
     error: message,
     code: 'twilio_send_failed',
-    statusCode: 503,
+    statusCode: 500,
   };
 };
 

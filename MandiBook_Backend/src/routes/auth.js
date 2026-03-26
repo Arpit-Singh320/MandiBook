@@ -43,7 +43,7 @@ const buildOtpDispatchError = (emailResult) => ({
   error: emailResult.error || 'OTP delivery failed',
   message: emailResult.error || 'OTP delivery failed',
   code: emailResult.code || 'otp_delivery_failed',
-  statusCode: emailResult.statusCode || 503,
+  statusCode: emailResult.statusCode || 500,
 });
 
 const issueOtpRequest = async ({ purpose, identifier, userId, recipientName, metadata = {} }) => {
@@ -194,7 +194,7 @@ router.post('/farmer/send-otp', async (req, res, next) => {
     const result = await sendOTP(formattedPhone);
 
     if (!result.success) {
-      return res.status(result.statusCode || 503).json({
+      return res.status(result.statusCode || 500).json({
         success: false,
         message: result.error || 'Failed to send OTP',
         error: result.error,
@@ -239,7 +239,7 @@ router.post('/farmer/send-email-otp', async (req, res, next) => {
     });
 
     if (!otpDispatch.success) {
-      return res.status(otpDispatch.statusCode || 503).json({
+      return res.status(otpDispatch.statusCode || 500).json({
         success: false,
         message: otpDispatch.message || 'Failed to send email OTP',
         error: otpDispatch.error,
@@ -562,7 +562,7 @@ router.post('/admin/login', async (req, res, next) => {
     });
 
     if (!otpDispatch.success) {
-      return res.status(otpDispatch.statusCode || 503).json({
+      return res.status(otpDispatch.statusCode || 500).json({
         success: false,
         message: otpDispatch.message || 'Failed to send 2FA code',
         error: otpDispatch.error,
