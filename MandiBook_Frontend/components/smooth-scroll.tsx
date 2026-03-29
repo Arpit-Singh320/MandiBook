@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import Lenis from "lenis";
 import { features } from "@/lib/config";
 
@@ -19,8 +20,11 @@ const LENIS_OPTIONS = {
 };
 
 export function SmoothScroll({ children }: { children: ReactNode }): ReactNode {
+  const pathname = usePathname();
+
   useEffect(() => {
     if (!features.smoothScroll) return;
+    if (pathname.startsWith("/admin") || pathname.startsWith("/manager") || pathname.startsWith("/farmer")) return;
 
     // Check for reduced motion preference
     const prefersReducedMotion = window.matchMedia(
@@ -60,7 +64,7 @@ export function SmoothScroll({ children }: { children: ReactNode }): ReactNode {
       document.removeEventListener('click', handleAnchorClick);
       lenis.destroy();
     };
-  }, []);
+  }, [pathname]);
 
   return <>{children}</>;
 }

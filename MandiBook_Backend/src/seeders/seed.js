@@ -3,7 +3,14 @@ const { sequelize } = require('../config/db');
 const { User, Mandi, TimeSlot, Booking, CropPrice, Notification, Issue, AuditLog } = require('../models');
 
 if (process.env.MANDIBOOK_USE_LEGACY_SEED !== 'true') {
-  require('../scripts/provision-test-users');
+  const { provisionSeedData } = require('../scripts/provision-test-users');
+
+  provisionSeedData()
+    .then(() => process.exit(0))
+    .catch((error) => {
+      console.error('Seed failed:', error);
+      process.exit(1);
+    });
 } else {
 
 const seed = async () => {

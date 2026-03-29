@@ -1,5 +1,9 @@
 const DEFAULT_GEOCODER_URL = process.env.MANDIBOOK_GEOCODER_URL || 'https://nominatim.openstreetmap.org/search';
+const DEFAULT_LOCATIONIQ_URL = process.env.LOCATIONIQ_GEOCODER_URL || 'https://us1.locationiq.com/v1/search';
 const DEFAULT_USER_AGENT = process.env.MANDIBOOK_GEOCODER_USER_AGENT || 'MandiBook/1.0 (admin geocoding support)';
+const DEFAULT_COUNTRY_CODE = process.env.MANDIBOOK_GEOCODER_COUNTRY_CODE || 'in';
+const LOCATIONIQ_ACCESS_TOKEN = String(process.env.LOCATIONIQ_ACCESS_TOKEN || '').trim();
+const REQUEST_TIMEOUT_MS = Number(process.env.MANDIBOOK_GEOCODER_TIMEOUT_MS || 8000);
 
 class GeocodingError extends Error {
   constructor(message, statusCode = 400, details = null) {
@@ -36,33 +40,46 @@ const buildSearchQuery = (payload = {}) => {
     .join(', ');
 };
 
-async function geocodeAddress(query) {
-  const url = new URL(DEFAULT_GEOCODER_URL);
-  url.searchParams.set('q', query);
-  url.searchParams.set('format', 'jsonv2');
-  url.searchParams.set('limit', '1');
-  url.searchParams.set('addressdetails', '1');
+const buildSearchQueries = (payload = {}) => {
+  const candidates = [
+    [payload.name, payload.address, payload.city, payload.district, payload.state, payload.pincode, 'India'],
+    [payload.address, payload.city, payload.district, payload.state, payload.pincode, 'India'],
+    [payload.name, payload.city, payload.district, payload.state, payload.pincode, 'India'],
+    [payload.address, payload.city, payload.state, 'India'],
+    [payload.name, payload.address, payload.city, payload.state, 'India'],
+    [payload.name, payload.district, payload.state, 'India'],
+    [payload.city, payload.district, payload.state, payload.pincode, 'India'],
+  ];
 
-  const response = await fetch(url, {
-    headers: {
-      'User-Agent': DEFAULT_USER_AGENT,
-      Accept: 'application/json',
-      'Accept-Language': 'en',
-    },
-  });
+  return [...new Set(candidates.map((parts) => parts.map(normalizeText).filter(Boolean).join(', ')).filter(Boolean))];
+};
+
+const withTimeout = () => (typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function'
+  ? AbortSignal.timeout(REQUEST_TIMEOUT_MS)
+  : undefined);
+
+async function fetchJson(url, headers = {}) {
+  let response;
+
+  try {
+    response = await fetch(url, {
+      headers,
+      signal: withTimeout(),
+    });
+  } catch (error) {
+    throw new GeocodingError(`Geocoding request failed: ${error.message}`, 502);
+  }
 
   if (!response.ok) {
     throw new GeocodingError(`Geocoding service failed with status ${response.status}`, 502);
   }
 
-  const results = await response.json();
-  if (!Array.isArray(results) || results.length === 0) {
-    return null;
-  }
+  return response.json();
+}
 
-  const first = results[0];
-  const lat = Number(first.lat);
-  const lng = Number(first.lon);
+const parseCoordinates = (latValue, lngValue, displayName, query, source) => {
+  const lat = Number(latValue);
+  const lng = Number(lngValue);
 
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
     return null;
@@ -71,9 +88,87 @@ async function geocodeAddress(query) {
   return {
     lat,
     lng,
-    displayName: first.display_name || query,
-    source: 'nominatim',
+    displayName: displayName || query,
+    source,
   };
+};
+
+async function geocodeWithLocationIQ(query) {
+  if (!LOCATIONIQ_ACCESS_TOKEN) {
+    return null;
+  }
+
+  const url = new URL(DEFAULT_LOCATIONIQ_URL);
+  url.searchParams.set('key', LOCATIONIQ_ACCESS_TOKEN);
+  url.searchParams.set('q', query);
+  url.searchParams.set('format', 'json');
+  url.searchParams.set('limit', '1');
+  url.searchParams.set('addressdetails', '1');
+  url.searchParams.set('countrycodes', DEFAULT_COUNTRY_CODE);
+  url.searchParams.set('normalizecity', '1');
+
+  const results = await fetchJson(url, {
+    'User-Agent': DEFAULT_USER_AGENT,
+    Accept: 'application/json',
+    'Accept-Language': 'en',
+  });
+
+  if (!Array.isArray(results) || results.length === 0) {
+    return null;
+  }
+
+  const first = results[0];
+  return parseCoordinates(first.lat, first.lon, first.display_name, query, 'locationiq');
+}
+
+async function geocodeWithNominatim(query) {
+  const url = new URL(DEFAULT_GEOCODER_URL);
+  url.searchParams.set('q', query);
+  url.searchParams.set('format', 'jsonv2');
+  url.searchParams.set('limit', '1');
+  url.searchParams.set('addressdetails', '1');
+  url.searchParams.set('countrycodes', DEFAULT_COUNTRY_CODE);
+
+  const results = await fetchJson(url, {
+    'User-Agent': DEFAULT_USER_AGENT,
+    Accept: 'application/json',
+    'Accept-Language': 'en',
+  });
+
+  if (!Array.isArray(results) || results.length === 0) {
+    return null;
+  }
+
+  const first = results[0];
+  return parseCoordinates(first.lat, first.lon, first.display_name, query, 'nominatim');
+}
+
+async function geocodeAddress(query) {
+  let lastError = null;
+
+  try {
+    const locationIqResult = await geocodeWithLocationIQ(query);
+    if (locationIqResult) {
+      return locationIqResult;
+    }
+  } catch (error) {
+    lastError = error;
+  }
+
+  try {
+    const nominatimResult = await geocodeWithNominatim(query);
+    if (nominatimResult) {
+      return nominatimResult;
+    }
+  } catch (error) {
+    lastError = error;
+  }
+
+  if (lastError) {
+    throw lastError;
+  }
+
+  return null;
 }
 
 async function resolveCoordinatesForMandi(payload = {}) {
@@ -99,16 +194,34 @@ async function resolveCoordinatesForMandi(payload = {}) {
     };
   }
 
-  const query = buildSearchQuery(payload);
-  if (!query) {
+  const queries = buildSearchQueries(payload);
+  if (queries.length === 0) {
     return null;
   }
 
-  return geocodeAddress(query);
+  let lastError = null;
+
+  for (const query of queries) {
+    try {
+      const result = await geocodeAddress(query);
+      if (result) {
+        return result;
+      }
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  if (lastError) {
+    throw lastError;
+  }
+
+  return null;
 }
 
 module.exports = {
   GeocodingError,
   buildSearchQuery,
+  buildSearchQueries,
   resolveCoordinatesForMandi,
 };

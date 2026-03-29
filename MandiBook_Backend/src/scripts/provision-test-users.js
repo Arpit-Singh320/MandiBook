@@ -66,7 +66,7 @@ const TEST_FARMER = {
   pincode: '452001',
   landHolding: 3.5,
   farmSize: 'Medium (2-10 acres)',
-  crops: ['Wheat', 'Rice'],
+  crops: ['Wheat', 'Soybean', 'Onion'],
   preferredMandis: [],
   profileComplete: true,
   status: 'active',
@@ -341,41 +341,67 @@ const SEEDED_MANDIS = [
 ];
 
 const CROP_BASELINES = [
-  {
-    crop: 'Wheat',
-    cropHi: 'गेहूं',
-    category: 'cereal',
-    unit: 'quintal',
-    minPrice: 2200,
-  },
-  {
-    crop: 'Soybean',
-    cropHi: 'सोयाबीन',
-    category: 'oilseed',
-    unit: 'quintal',
-    minPrice: 4200,
-  },
-  {
-    crop: 'Onion',
-    cropHi: 'प्याज़',
-    category: 'vegetable',
-    unit: 'quintal',
-    minPrice: 1600,
-  },
-  {
-    crop: 'Potato',
-    cropHi: 'आलू',
-    category: 'vegetable',
-    unit: 'quintal',
-    minPrice: 1100,
-  },
-  {
-    crop: 'Garlic',
-    cropHi: 'लहसुन',
-    category: 'spice',
-    unit: 'quintal',
-    minPrice: 5200,
-  },
+  { crop: 'Soybean', cropHi: 'सोयाबीन', category: 'oilseed', unit: 'quintal', minPrice: 4200 },
+  { crop: 'Mustard', cropHi: 'सरसों', category: 'oilseed', unit: 'quintal', minPrice: 5100 },
+  { crop: 'Groundnut', cropHi: 'मूंगफली', category: 'oilseed', unit: 'quintal', minPrice: 4700 },
+  { crop: 'Linseed', cropHi: 'अलसी', category: 'oilseed', unit: 'quintal', minPrice: 5600 },
+  { crop: 'Sunflower', cropHi: 'सूरजमुखी', category: 'oilseed', unit: 'quintal', minPrice: 4700 },
+  { crop: 'Safflower', cropHi: 'कुसुम', category: 'oilseed', unit: 'quintal', minPrice: 4500 },
+  { crop: 'Sesame', cropHi: 'तिल', category: 'oilseed', unit: 'quintal', minPrice: 7600 },
+  { crop: 'Castor Seed', cropHi: 'अरंडी', category: 'oilseed', unit: 'quintal', minPrice: 5600 },
+  { crop: 'Niger Seed', cropHi: 'रामतिल', category: 'oilseed', unit: 'quintal', minPrice: 6200 },
+  { crop: 'Wheat', cropHi: 'गेहूं', category: 'cereal', unit: 'quintal', minPrice: 2200 },
+  { crop: 'Sharbati Wheat', cropHi: 'शरबती गेहूं', category: 'cereal', unit: 'quintal', minPrice: 2850 },
+  { crop: 'Rice (Paddy)', cropHi: 'धान', category: 'cereal', unit: 'quintal', minPrice: 2100 },
+  { crop: 'Basmati Rice', cropHi: 'बासमती धान', category: 'cereal', unit: 'quintal', minPrice: 3200 },
+  { crop: 'Maize', cropHi: 'मक्का', category: 'cereal', unit: 'quintal', minPrice: 1800 },
+  { crop: 'Jowar', cropHi: 'ज्वार', category: 'cereal', unit: 'quintal', minPrice: 2500 },
+  { crop: 'Bajra', cropHi: 'बाजरा', category: 'cereal', unit: 'quintal', minPrice: 2300 },
+  { crop: 'Barley', cropHi: 'जौ', category: 'cereal', unit: 'quintal', minPrice: 1900 },
+  { crop: 'Oats', cropHi: 'ओट्स', category: 'cereal', unit: 'quintal', minPrice: 2100 },
+  { crop: 'Kodo Millet', cropHi: 'कोदो', category: 'millet', unit: 'quintal', minPrice: 2600 },
+  { crop: 'Kutki Millet', cropHi: 'कुटकी', category: 'millet', unit: 'quintal', minPrice: 2800 },
+  { crop: 'Ragi', cropHi: 'रागी', category: 'millet', unit: 'quintal', minPrice: 2900 },
+  { crop: 'Gram', cropHi: 'चना', category: 'pulse', unit: 'quintal', minPrice: 4800 },
+  { crop: 'Kabuli Chana', cropHi: 'काबुली चना', category: 'pulse', unit: 'quintal', minPrice: 6100 },
+  { crop: 'Tur (Arhar)', cropHi: 'तुअर अरहर', category: 'pulse', unit: 'quintal', minPrice: 6200 },
+  { crop: 'Urad', cropHi: 'उड़द', category: 'pulse', unit: 'quintal', minPrice: 6200 },
+  { crop: 'Moong', cropHi: 'मूंग', category: 'pulse', unit: 'quintal', minPrice: 6400 },
+  { crop: 'Masoor', cropHi: 'मसूर', category: 'pulse', unit: 'quintal', minPrice: 5600 },
+  { crop: 'Field Pea', cropHi: 'मटर दाना', category: 'pulse', unit: 'quintal', minPrice: 3600 },
+  { crop: 'Green Peas', cropHi: 'हरी मटर', category: 'pulse', unit: 'quintal', minPrice: 2800 },
+  { crop: 'Lathyrus', cropHi: 'खेसारी', category: 'pulse', unit: 'quintal', minPrice: 3400 },
+  { crop: 'Cotton', cropHi: 'कपास', category: 'cash_crop', unit: 'quintal', minPrice: 6800 },
+  { crop: 'Sugarcane', cropHi: 'गन्ना', category: 'cash_crop', unit: 'quintal', minPrice: 320 },
+  { crop: 'Garlic', cropHi: 'लहसुन', category: 'spice', unit: 'quintal', minPrice: 5200 },
+  { crop: 'Coriander', cropHi: 'धनिया', category: 'spice', unit: 'quintal', minPrice: 6200 },
+  { crop: 'Cumin', cropHi: 'जीरा', category: 'spice', unit: 'quintal', minPrice: 12800 },
+  { crop: 'Fenugreek', cropHi: 'मेथी', category: 'spice', unit: 'quintal', minPrice: 5200 },
+  { crop: 'Fennel', cropHi: 'सौंफ', category: 'spice', unit: 'quintal', minPrice: 10800 },
+  { crop: 'Turmeric', cropHi: 'हल्दी', category: 'spice', unit: 'quintal', minPrice: 7600 },
+  { crop: 'Chilli', cropHi: 'मिर्च', category: 'spice', unit: 'quintal', minPrice: 8200 },
+  { crop: 'Ginger', cropHi: 'अदरक', category: 'spice', unit: 'quintal', minPrice: 3400 },
+  { crop: 'Ajwain', cropHi: 'अजवाइन', category: 'spice', unit: 'quintal', minPrice: 9600 },
+  { crop: 'Onion', cropHi: 'प्याज़', category: 'vegetable', unit: 'quintal', minPrice: 1600 },
+  { crop: 'Potato', cropHi: 'आलू', category: 'vegetable', unit: 'quintal', minPrice: 1100 },
+  { crop: 'Tomato', cropHi: 'टमाटर', category: 'vegetable', unit: 'quintal', minPrice: 1400 },
+  { crop: 'Brinjal', cropHi: 'बैंगन', category: 'vegetable', unit: 'quintal', minPrice: 1800 },
+  { crop: 'Okra', cropHi: 'भिंडी', category: 'vegetable', unit: 'quintal', minPrice: 2200 },
+  { crop: 'Cabbage', cropHi: 'पत्ता गोभी', category: 'vegetable', unit: 'quintal', minPrice: 900 },
+  { crop: 'Cauliflower', cropHi: 'फूल गोभी', category: 'vegetable', unit: 'quintal', minPrice: 1300 },
+  { crop: 'Bottle Gourd', cropHi: 'लौकी', category: 'vegetable', unit: 'quintal', minPrice: 1200 },
+  { crop: 'Ridge Gourd', cropHi: 'तोरई', category: 'vegetable', unit: 'quintal', minPrice: 1600 },
+  { crop: 'Bitter Gourd', cropHi: 'करेला', category: 'vegetable', unit: 'quintal', minPrice: 2400 },
+  { crop: 'Pumpkin', cropHi: 'कद्दू', category: 'vegetable', unit: 'quintal', minPrice: 900 },
+  { crop: 'Cucumber', cropHi: 'खीरा', category: 'vegetable', unit: 'quintal', minPrice: 1200 },
+  { crop: 'Spinach', cropHi: 'पालक', category: 'vegetable', unit: 'quintal', minPrice: 700 },
+  { crop: 'Banana', cropHi: 'केला', category: 'fruit', unit: 'quintal', minPrice: 900 },
+  { crop: 'Guava', cropHi: 'अमरूद', category: 'fruit', unit: 'quintal', minPrice: 1800 },
+  { crop: 'Mango', cropHi: 'आम', category: 'fruit', unit: 'quintal', minPrice: 2400 },
+  { crop: 'Papaya', cropHi: 'पपीता', category: 'fruit', unit: 'quintal', minPrice: 1200 },
+  { crop: 'Lemon', cropHi: 'नींबू', category: 'fruit', unit: 'quintal', minPrice: 2600 },
+  { crop: 'Orange', cropHi: 'संतरा', category: 'fruit', unit: 'quintal', minPrice: 2200 },
+  { crop: 'Pomegranate', cropHi: 'अनार', category: 'fruit', unit: 'quintal', minPrice: 4600 },
 ];
 
 const MOCK_MANDI_CODES = ['AZD-001', 'VSH-002', 'KYM-003', 'TST-642189'];
@@ -543,7 +569,7 @@ async function syncMandiManagerLinks(mandiId) {
 
 async function upsertUser({ role, email, ...payload }) {
   const normalizedEmail = normalizeEmail(email);
-  let user = await User.scope('withPassword').findOne({ where: { role, email: normalizedEmail } });
+  let user = await User.scope('withPassword').findOne({ where: { email: normalizedEmail } });
 
   if (!user) {
     user = await User.create({
@@ -683,83 +709,104 @@ async function pickManagerMandis() {
   return { preferred, fallback, all: mandis };
 }
 
-(async () => {
-  try {
+async function provisionSeedData({ syncDatabase = true } = {}) {
+  if (syncDatabase) {
     await sequelize.authenticate();
     await sequelize.sync();
-
-    await cleanupExistingMockData();
-
-    let primaryAdmin = null;
-    for (const adminPayload of TEST_ADMINS) {
-      const adminResult = await upsertUser(adminPayload);
-      if (!primaryAdmin) {
-        primaryAdmin = adminResult.user;
-      }
-      console.log(`${adminResult.created ? 'Created' : 'Updated'} admin: ${adminResult.user.email} / ${adminPayload.password}`);
-    }
-
-    const mandiResults = [];
-    for (const mandiPayload of SEEDED_MANDIS) {
-      const mandiResult = await upsertMandi(mandiPayload);
-      mandiResults.push(mandiResult.mandi);
-      console.log(`${mandiResult.created ? 'Created' : 'Updated'} mandi: ${mandiResult.mandi.name} (${mandiResult.mandi.code})`);
-    }
-
-    for (const catalogEntry of CROP_BASELINES) {
-      const result = await upsertCatalogEntry(catalogEntry, primaryAdmin.id);
-      console.log(`${result.created ? 'Created' : 'Updated'} crop baseline: ${result.catalogEntry.crop} @ min ₹${result.catalogEntry.minPrice}`);
-    }
-
-    for (const mandi of mandiResults) {
-      for (const priceEntry of SEEDED_MANDIS.find((m) => m.code === mandi.code).prices) {
-        const result = await upsertCropPrice(mandi, priceEntry, primaryAdmin.id);
-        console.log(`${result.created ? 'Created' : 'Updated'} crop price: ${result.price.crop} @ ₹${result.price.currentPrice} @ ${mandi.name}`);
-      }
-    }
-
-    const managerAssignments = [];
-    for (const managerPayload of TEST_MANAGERS) {
-      const managerResult = await upsertUser(managerPayload);
-      const assignedMandiConfig = SEEDED_MANDIS.find((mandi) => normalizeEmail(mandi.managerEmail) === managerResult.user.email);
-      const assignedMandi = mandiResults.find((mandi) => mandi.code === assignedMandiConfig?.code);
-      if (!assignedMandi || !assignedMandiConfig) {
-        throw new Error(`Unable to find configured seeded mandi for manager ${managerResult.user.email}`);
-      }
-      managerResult.user.mandiId = assignedMandi.id;
-      managerResult.user.designation = assignedMandiConfig.managerDesignation;
-      if (!managerResult.user.managingSince) {
-        managerResult.user.managingSince = new Date();
-      }
-      await managerResult.user.save();
-      await syncMandiManagerLinks(assignedMandi.id);
-      managerAssignments.push({
-        email: managerResult.user.email,
-        password: managerPayload.password,
-        mandi: assignedMandi.name,
-      });
-      console.log(`${managerResult.created ? 'Created' : 'Updated'} manager: ${managerResult.user.email} / ${managerPayload.password} -> ${assignedMandi.name}`);
-    }
-
-    const farmerPayload = {
-      ...TEST_FARMER,
-      preferredMandis: mandiResults.map((mandi) => mandi.id),
-    };
-    const farmerResult = await upsertUser(farmerPayload);
-    console.log(`${farmerResult.created ? 'Created' : 'Updated'} farmer: ${farmerResult.user.email} (OTP login, no password endpoint)`);
-
-    console.log('\nProvisioning complete.');
-    TEST_ADMINS.forEach((adminPayload) => {
-      console.log(`Admin login: ${adminPayload.email} / ${adminPayload.password}`);
-    });
-    managerAssignments.forEach((assignment) => {
-      console.log(`Manager login: ${assignment.email} / ${assignment.password} @ ${assignment.mandi}`);
-    });
-    console.log(`Farmer OTP email login: ${TEST_FARMER.email}`);
-
-    process.exit(0);
-  } catch (error) {
-    console.error('\nProvisioning failed:\n', error);
-    process.exit(1);
   }
-})();
+
+  await cleanupExistingMockData();
+
+  let primaryAdmin = null;
+  for (const adminPayload of TEST_ADMINS) {
+    const adminResult = await upsertUser(adminPayload);
+    if (!primaryAdmin) {
+      primaryAdmin = adminResult.user;
+    }
+    console.log(`${adminResult.created ? 'Created' : 'Updated'} admin: ${adminResult.user.email} / ${adminPayload.password}`);
+  }
+
+  const mandiResults = [];
+  for (const mandiPayload of SEEDED_MANDIS) {
+    const mandiResult = await upsertMandi(mandiPayload);
+    mandiResults.push(mandiResult.mandi);
+    console.log(`${mandiResult.created ? 'Created' : 'Updated'} mandi: ${mandiResult.mandi.name} (${mandiResult.mandi.code})`);
+  }
+
+  for (const catalogEntry of CROP_BASELINES) {
+    const result = await upsertCatalogEntry(catalogEntry, primaryAdmin.id);
+    console.log(`${result.created ? 'Created' : 'Updated'} crop baseline: ${result.catalogEntry.crop} @ min ₹${result.catalogEntry.minPrice}`);
+  }
+
+  for (const mandi of mandiResults) {
+    for (const priceEntry of SEEDED_MANDIS.find((m) => m.code === mandi.code).prices) {
+      const result = await upsertCropPrice(mandi, priceEntry, primaryAdmin.id);
+      console.log(`${result.created ? 'Created' : 'Updated'} crop price: ${result.price.crop} @ ₹${result.price.currentPrice} @ ${mandi.name}`);
+    }
+  }
+
+  const managerAssignments = [];
+  for (const managerPayload of TEST_MANAGERS) {
+    const managerResult = await upsertUser(managerPayload);
+    const assignedMandiConfig = SEEDED_MANDIS.find((mandi) => normalizeEmail(mandi.managerEmail) === managerResult.user.email);
+    const assignedMandi = mandiResults.find((mandi) => mandi.code === assignedMandiConfig?.code);
+    if (!assignedMandi || !assignedMandiConfig) {
+      throw new Error(`Unable to find configured seeded mandi for manager ${managerResult.user.email}`);
+    }
+    managerResult.user.mandiId = assignedMandi.id;
+    managerResult.user.designation = assignedMandiConfig.managerDesignation;
+    if (!managerResult.user.managingSince) {
+      managerResult.user.managingSince = new Date();
+    }
+    await managerResult.user.save();
+    await syncMandiManagerLinks(assignedMandi.id);
+    managerAssignments.push({
+      email: managerResult.user.email,
+      password: managerPayload.password,
+      mandi: assignedMandi.name,
+    });
+    console.log(`${managerResult.created ? 'Created' : 'Updated'} manager: ${managerResult.user.email} / ${managerPayload.password} -> ${assignedMandi.name}`);
+  }
+
+  const farmerPayload = {
+    ...TEST_FARMER,
+    preferredMandis: mandiResults.map((mandi) => mandi.id),
+  };
+  const farmerResult = await upsertUser(farmerPayload);
+  console.log(`${farmerResult.created ? 'Created' : 'Updated'} farmer: ${farmerResult.user.email} (OTP login, no password endpoint)`);
+
+  console.log('\nProvisioning complete.');
+  TEST_ADMINS.forEach((adminPayload) => {
+    console.log(`Admin login: ${adminPayload.email} / ${adminPayload.password}`);
+  });
+  managerAssignments.forEach((assignment) => {
+    console.log(`Manager login: ${assignment.email} / ${assignment.password} @ ${assignment.mandi}`);
+  });
+  console.log(`Farmer OTP email login: ${TEST_FARMER.email}`);
+
+  return {
+    admins: TEST_ADMINS.length,
+    mandis: mandiResults.length,
+    cropCatalog: CROP_BASELINES.length,
+    managers: managerAssignments.length,
+    farmer: farmerResult.user.email,
+  };
+}
+
+if (require.main === module) {
+  provisionSeedData()
+    .then(() => process.exit(0))
+    .catch((error) => {
+      console.error('\nProvisioning failed:\n', error);
+      process.exit(1);
+    });
+}
+
+module.exports = {
+  provisionSeedData,
+  TEST_ADMINS,
+  TEST_MANAGERS,
+  TEST_FARMER,
+  SEEDED_MANDIS,
+  CROP_BASELINES,
+};
