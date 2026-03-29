@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
-import { TrendingUp, TrendingDown, Edit3, Save, X, History, Plus, AlertCircle, Loader2 } from "lucide-react";
+import { TrendingUp, TrendingDown, Edit3, Save, X, History, Plus, AlertCircle, Loader2, Trash2 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { priceApi, type CropCatalogData, type CropPriceData } from "@/lib/data-api";
 
@@ -35,27 +35,29 @@ export default function PriceManagementPage() {
   const [error, setError] = useState("");
   const [savingId, setSavingId] = useState<string | null>(null);
 
-  useEffect(() => {
+  const loadPrices = useCallback(async () => {
     const mandiId = user?.mandiId;
     if (!mandiId) return;
 
-    const load = async () => {
-      try {
-        const [priceResponse, catalogResponse] = await Promise.all([
-          priceApi.list({ mandiId }),
-          priceApi.catalog({ active: true }),
-        ]);
-        setPrices(priceResponse.data);
-        setCatalog(catalogResponse.data);
-      } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : "Failed to load prices");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    void load();
+    try {
+      setLoading(true);
+      const [priceResponse, catalogResponse] = await Promise.all([
+        priceApi.list({ mandiId }),
+        priceApi.catalog({ active: true }),
+      ]);
+      setPrices(priceResponse.data);
+      setCatalog(catalogResponse.data);
+      setError("");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to load prices");
+    } finally {
+      setLoading(false);
+    }
   }, [user?.mandiId]);
+
+  useEffect(() => {
+    void loadPrices();
+  }, [loadPrices]);
 
   const catalogMap = useMemo(
     () => new Map(catalog.map((entry) => [entry.crop.toLowerCase(), entry])),
@@ -79,12 +81,34 @@ export default function PriceManagementPage() {
 
     try {
       setSavingId(id);
+      setError("");
       const response = await priceApi.update(token, id, { currentPrice: value });
       setPrices((prev) => prev.map((p) => (p.id === id ? response.data : p)));
       setEditingId(null);
       setEditValue("");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to update price");
+    } finally {
+      setSavingId(null);
+    }
+  };
+
+  const deleteCropPrice = async (price: CropPriceData) => {
+    if (!token) return;
+    const confirmed = window.confirm(`Delete the live mandi price for ${price.crop}? This will notify impacted farmers${user?.role === "admin" ? " and managers" : ""}.`);
+    if (!confirmed) return;
+
+    try {
+      setSavingId(price.id);
+      setError("");
+      await priceApi.delete(token, price.id);
+      setPrices((prev) => prev.filter((entry) => entry.id !== price.id));
+      if (editingId === price.id) {
+        setEditingId(null);
+        setEditValue("");
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to delete price");
     } finally {
       setSavingId(null);
     }
@@ -103,6 +127,7 @@ export default function PriceManagementPage() {
 
     try {
       setSavingId("new");
+      setError("");
       const response = await priceApi.create(token, {
         crop: selectedCrop,
         mandiId,
@@ -273,13 +298,24 @@ export default function PriceManagementPage() {
                         </button>
                       </div>
                     ) : (
-                      <button
-                        type="button"
-                        onClick={() => startEdit(price)}
-                        className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                      >
-                        <Edit3 className="w-4 h-4 text-neutral-500" />
-                      </button>
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          type="button"
+                          onClick={() => startEdit(price)}
+                          disabled={savingId === price.id}
+                          className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors disabled:opacity-50"
+                        >
+                          <Edit3 className="w-4 h-4 text-neutral-500" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void deleteCropPrice(price)}
+                          disabled={savingId === price.id}
+                          className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors disabled:opacity-50"
+                        >
+                          {savingId === price.id ? <Loader2 className="w-4 h-4 animate-spin text-red-500" /> : <Trash2 className="w-4 h-4 text-red-500" />}
+                        </button>
+                      </div>
                     )}
                   </td>
                 </tr>
@@ -334,8 +370,11 @@ export default function PriceManagementPage() {
                     <span className="text-xs text-neutral-500">{formatRelativeDate(price.updatedAt)}</span>
                     <div className="flex items-center gap-2">
                       <span className="text-lg font-bold text-neutral-900 dark:text-white">{currencyFormatter.format(price.currentPrice)}</span>
-                      <button type="button" onClick={() => startEdit(price)} className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800">
+                      <button type="button" onClick={() => startEdit(price)} disabled={savingId === price.id} className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-50">
                         <Edit3 className="w-4 h-4 text-neutral-500" />
+                      </button>
+                      <button type="button" onClick={() => void deleteCropPrice(price)} disabled={savingId === price.id} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 disabled:opacity-50">
+                        {savingId === price.id ? <Loader2 className="w-4 h-4 animate-spin text-red-500" /> : <Trash2 className="w-4 h-4 text-red-500" />}
                       </button>
                     </div>
                   </>

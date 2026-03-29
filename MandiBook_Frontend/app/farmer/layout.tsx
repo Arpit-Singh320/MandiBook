@@ -86,11 +86,11 @@ export default function FarmerLayout({ children }: { children: ReactNode }) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-neutral-900 border-r border-neutral-200 dark:border-neutral-800 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:z-auto ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 shrink-0 bg-white dark:bg-neutral-900 border-r border-neutral-200 dark:border-neutral-800 transform transition-transform duration-300 ease-in-out lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 lg:self-start ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex flex-col h-full">
+        <div className="flex h-full min-h-0 flex-col">
           {/* Logo */}
           <div className="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-800">
             <Link href="/" className="flex items-center gap-2.5 no-underline">
@@ -115,7 +115,7 @@ export default function FarmerLayout({ children }: { children: ReactNode }) {
           </div>
 
           {/* Nav Items */}
-          <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
+          <nav className="min-h-0 flex-1 overflow-y-auto p-3 space-y-0.5">
             {farmerNavItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;

@@ -1,0 +1,22 @@
+{
+  "label": "public-nearby-mandis",
+  "endpoint": "/mandis/nearby?lat=28.7041&lng=77.1025&radius=50",
+  "method": "GET",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": null
+  },
+  "response": {
+    "ok": false,
+    "status": 429,
+    "data": {
+      "success": false,
+      "message": "Too many requests, please try again later"
+    }
+  },
+  "durationMs": 6,
+  "recordedAt": "2026-03-29T11:27:36.379Z"
+}

@@ -3,6 +3,14 @@ const router = express.Router();
 const { Op } = require('sequelize');
 const { CropPrice, CropCatalog, Mandi, AuditLog } = require('../models');
 const { protect, authorize } = require('../middleware/auth');
+const {
+  notifyFarmersAboutPriceChange,
+  notifyFarmersAboutPriceRemoval,
+  notifyManagersAboutCatalogChange,
+  notifyManagersAboutCatalogDeletion,
+  notifyManagersAboutAdminPriceChange,
+  notifyManagersAboutAdminPriceRemoval,
+} = require('../utils/price-notifications');
 
 const normalizeCropName = (value) => String(value).trim();
 
@@ -20,6 +28,22 @@ const ensurePriceAtOrAboveMinimum = (price, minPrice) => Number(price) >= Number
 const formatCatalogBaseline = (minPrice, maxPrice) => maxPrice !== undefined && maxPrice !== null
   ? `min ₹${minPrice}, max ₹${maxPrice}`
   : `min ₹${minPrice}`;
+
+const removeCropFromMandiIfUnused = async (mandiId, crop) => {
+  const mandi = await Mandi.findByPk(mandiId);
+  if (!mandi) return;
+
+  const remaining = await CropPrice.count({
+    where: {
+      mandiId,
+      crop: { [Op.iLike]: crop },
+    },
+  });
+
+  if (remaining === 0 && Array.isArray(mandi.crops) && mandi.crops.includes(crop)) {
+    await mandi.update({ crops: mandi.crops.filter((entry) => entry !== crop) });
+  }
+};
 
 // ─── Crop catalog (Admin-managed baselines) ─────────────────────────────────────
 // GET /api/prices/catalog
@@ -79,6 +103,14 @@ router.post('/catalog', protect, authorize('admin'), async (req, res, next) => {
       details: `${catalogEntry.crop} (${formatCatalogBaseline(catalogEntry.minPrice, catalogEntry.maxPrice)})`,
       type: 'price',
       ipAddress: req.ip,
+    });
+
+    await notifyManagersAboutCatalogChange({
+      crop: catalogEntry.crop,
+      baselineMinPrice: catalogEntry.minPrice,
+      baselineMaxPrice: catalogEntry.maxPrice,
+      actionLabel: 'added baseline for',
+      actorName: req.user.name,
     });
 
     res.status(201).json({ success: true, data: catalogEntry, message: 'Crop catalog entry created' });
@@ -151,7 +183,67 @@ router.put('/catalog/:id', protect, authorize('admin'), async (req, res, next) =
       ipAddress: req.ip,
     });
 
+    await notifyManagersAboutCatalogChange({
+      crop: catalogEntry.crop,
+      baselineMinPrice: catalogEntry.minPrice,
+      baselineMaxPrice: catalogEntry.maxPrice,
+      actionLabel: 'updated baseline for',
+      actorName: req.user.name,
+    });
+
     res.json({ success: true, data: catalogEntry, message: 'Crop catalog entry updated' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// DELETE /api/prices/catalog/:id
+router.delete('/catalog/:id', protect, authorize('admin'), async (req, res, next) => {
+  try {
+    const catalogEntry = await CropCatalog.findByPk(req.params.id);
+    if (!catalogEntry) {
+      return res.status(404).json({ success: false, message: 'Crop catalog entry not found' });
+    }
+
+    const affectedPrices = await CropPrice.findAll({
+      where: {
+        crop: { [Op.iLike]: catalogEntry.crop },
+      },
+      include: [{ model: Mandi, as: 'mandi', attributes: ['id', 'name'] }],
+    });
+
+    const affectedMandiIds = Array.from(new Set(affectedPrices.map((price) => price.mandiId).filter(Boolean)));
+
+    await CropPrice.destroy({
+      where: {
+        crop: { [Op.iLike]: catalogEntry.crop },
+      },
+    });
+
+    for (const mandiId of affectedMandiIds) {
+      await removeCropFromMandiIfUnused(mandiId, catalogEntry.crop);
+    }
+
+    await AuditLog.create({
+      userId: req.user.id,
+      userName: req.user.name,
+      userRole: 'admin',
+      action: 'Deleted crop catalog entry',
+      entity: 'CropCatalog',
+      entityId: catalogEntry.id,
+      details: catalogEntry.crop,
+      type: 'price',
+      ipAddress: req.ip,
+    });
+
+    await catalogEntry.destroy();
+
+    await notifyManagersAboutCatalogDeletion({
+      crop: catalogEntry.crop,
+      actorName: req.user.name,
+    });
+
+    res.json({ success: true, message: 'Crop catalog entry deleted' });
   } catch (error) {
     next(error);
   }
@@ -258,6 +350,8 @@ router.put('/:id', protect, authorize('manager', 'admin'), async (req, res, next
 
     const price = await CropPrice.findByPk(req.params.id);
     if (!price) return res.status(404).json({ success: false, message: 'Price entry not found' });
+    const mandi = await Mandi.findByPk(price.mandiId);
+    if (!mandi) return res.status(404).json({ success: false, message: 'Assigned mandi not found' });
     if (req.user.role === 'manager' && (!req.user.mandiId || price.mandiId !== req.user.mandiId)) {
       return res.status(403).json({ success: false, message: 'You can only update prices for your assigned mandi' });
     }
@@ -265,6 +359,7 @@ router.put('/:id', protect, authorize('manager', 'admin'), async (req, res, next
     const catalogEntry = await findCatalogEntryByCrop(price.crop);
     const minPrice = catalogEntry?.minPrice ?? price.minPrice;
     const maxPrice = catalogEntry?.maxPrice ?? price.maxPrice;
+    const previousPrice = price.currentPrice;
 
     if (minPrice !== undefined && minPrice !== null && !ensurePriceAtOrAboveMinimum(currentPrice, minPrice)) {
       return res.status(400).json({ success: false, message: `Price for ${price.crop} must be at least ₹${minPrice}` });
@@ -292,6 +387,24 @@ router.put('/:id', protect, authorize('manager', 'admin'), async (req, res, next
       type: 'price',
       ipAddress: req.ip,
     });
+
+    await notifyFarmersAboutPriceChange({
+      mandi,
+      crop: price.crop,
+      previousPrice,
+      currentPrice: price.currentPrice,
+      actorName: req.user.name,
+    });
+
+    if (req.user.role === 'admin') {
+      await notifyManagersAboutAdminPriceChange({
+        mandi,
+        crop: price.crop,
+        previousPrice,
+        currentPrice: price.currentPrice,
+        actorName: req.user.name,
+      });
+    }
 
     const json = price.toJSON();
     json.changePercent = price.getChangePercent();
@@ -365,7 +478,76 @@ router.post('/', protect, authorize('manager', 'admin'), async (req, res, next) 
       ipAddress: req.ip,
     });
 
+    await notifyFarmersAboutPriceChange({
+      mandi,
+      crop: price.crop,
+      previousPrice: price.prevPrice,
+      currentPrice: price.currentPrice,
+      actorName: req.user.name,
+    });
+
+    if (req.user.role === 'admin') {
+      await notifyManagersAboutAdminPriceChange({
+        mandi,
+        crop: price.crop,
+        previousPrice: price.prevPrice,
+        currentPrice: price.currentPrice,
+        actorName: req.user.name,
+      });
+    }
+
     res.status(201).json({ success: true, data: price, message: 'Price entry created' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// DELETE /api/prices/:id
+router.delete('/:id', protect, authorize('manager', 'admin'), async (req, res, next) => {
+  try {
+    const price = await CropPrice.findByPk(req.params.id);
+    if (!price) return res.status(404).json({ success: false, message: 'Price entry not found' });
+
+    const mandi = await Mandi.findByPk(price.mandiId);
+    if (!mandi) return res.status(404).json({ success: false, message: 'Assigned mandi not found' });
+
+    if (req.user.role === 'manager' && (!req.user.mandiId || req.user.mandiId !== price.mandiId)) {
+      return res.status(403).json({ success: false, message: 'You can only delete prices for your assigned mandi' });
+    }
+
+    const crop = price.crop;
+    const priceId = price.id;
+
+    await price.destroy();
+    await removeCropFromMandiIfUnused(mandi.id, crop);
+
+    await AuditLog.create({
+      userId: req.user.id,
+      userName: req.user.name,
+      userRole: req.user.role,
+      action: `Deleted ${crop} price entry`,
+      entity: 'CropPrice',
+      entityId: priceId,
+      details: `${crop} @ mandiId ${mandi.id}`,
+      type: 'price',
+      ipAddress: req.ip,
+    });
+
+    await notifyFarmersAboutPriceRemoval({
+      mandi,
+      crop,
+      actorName: req.user.name,
+    });
+
+    if (req.user.role === 'admin') {
+      await notifyManagersAboutAdminPriceRemoval({
+        mandi,
+        crop,
+        actorName: req.user.name,
+      });
+    }
+
+    res.json({ success: true, message: 'Price entry deleted' });
   } catch (error) {
     next(error);
   }

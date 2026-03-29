@@ -22,6 +22,18 @@ const currencyFormatter = new Intl.NumberFormat("en-IN", {
   maximumFractionDigits: 0,
 });
 
+function downloadManagerReport(report: ManagerReportData["data"]) {
+  const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
+  const objectUrl = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = objectUrl;
+  link.download = `manager-report-${report.mandiInfo.code || report.mandiInfo.name || "mandi"}.json`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(objectUrl);
+}
+
 export default function ManagerReportsPage() {
   const { token } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -85,7 +97,11 @@ export default function ManagerReportsPage() {
           <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white">Reports</h1>
           <p className="mt-1 text-neutral-600 dark:text-neutral-400">Weekly performance overview — {report.mandiInfo.name}</p>
         </div>
-        <button type="button" className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-[var(--border)] text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors">
+        <button
+          type="button"
+          onClick={() => downloadManagerReport(report)}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-[var(--border)] text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors"
+        >
           <Download className="w-4 h-4" /> Export
         </button>
       </motion.div>

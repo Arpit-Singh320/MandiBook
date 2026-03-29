@@ -17,6 +17,8 @@ import { useAuth } from "@/lib/auth-context";
 import { mandiApi, slotApi, bookingApi, type MandiData, type SlotData, type BookingData } from "@/lib/data-api";
 import { BookingPassCard } from "@/components/booking-pass-card";
 
+const hasQrCodeImage = (value?: string) => typeof value === "string" && value.startsWith("data:image/") && value.length > 32;
+
 type Step = 1 | 2 | 3 | 4;
 
 export default function BookSlotPage() {
@@ -121,7 +123,7 @@ export default function BookSlotPage() {
           <p className="text-neutral-600 dark:text-neutral-400 mb-2">Your slot has been booked successfully.</p>
           <p className="text-xs text-neutral-500 font-mono mb-6">{createdBooking.bookingNumber}</p>
 
-          {createdBooking.qrCodeData && createdBooking.qrCodeData !== "data:image/png;base64,placeholder" ? (
+          {hasQrCodeImage(createdBooking.qrCodeData) ? (
             <div className="mb-6 text-left">
               <BookingPassCard booking={createdBooking} language={user?.language || "en"} compact />
             </div>

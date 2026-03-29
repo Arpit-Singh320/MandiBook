@@ -16,6 +16,8 @@ import {
 import { useAuth } from "@/lib/auth-context";
 import { dashboardApi, mandiApi, type BookingData, type MandiData } from "@/lib/data-api";
 
+const hasQrCodeImage = (value?: string) => typeof value === "string" && value.startsWith("data:image/") && value.length > 32;
+
 export default function FarmerDashboard() {
   const { user, token } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -141,7 +143,7 @@ export default function FarmerDashboard() {
                       {booking.date} · {booking.timeSlot} · {booking.cropType}
                     </p>
                   </div>
-                  {booking.qrCodeData && booking.qrCodeData !== "data:image/png;base64,placeholder" && (
+                  {hasQrCodeImage(booking.qrCodeData) && (
                     <div className="shrink-0 ml-4 p-2 rounded-lg bg-[var(--secondary)]">
                       <QrCode className="w-5 h-5 text-[var(--primary)]" />
                     </div>

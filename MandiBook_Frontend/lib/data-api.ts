@@ -481,6 +481,16 @@ export const mandiApi = {
       method: "PUT", token,
     });
   },
+  create(token: string, data: Partial<MandiData>) {
+    return apiRequest<{ success: boolean; data: MandiData; message?: string }>("/mandis", {
+      method: "POST", token, body: JSON.stringify(data),
+    });
+  },
+  update(token: string, id: string, data: Partial<MandiData>) {
+    return apiRequest<{ success: boolean; data: MandiData; message?: string }>(`/mandis/${id}`, {
+      method: "PUT", token, body: JSON.stringify(data),
+    });
+  },
 };
 
 export const slotApi = {
@@ -578,6 +588,11 @@ export const priceApi = {
       method: "PUT", token, body: JSON.stringify(data),
     }).then((response) => ({ ...response, data: normalizeCropPriceData(response.data) }));
   },
+  delete(token: string, id: string) {
+    return apiRequest<{ success: boolean; message: string }>(`/prices/${id}`, {
+      method: "DELETE", token,
+    });
+  },
   catalog(params?: { active?: boolean }) {
     const qs = new URLSearchParams();
     if (params?.active !== undefined) qs.set("active", String(params.active));
@@ -592,6 +607,11 @@ export const priceApi = {
   updateCatalog(token: string, id: string, data: Partial<CropCatalogData>) {
     return apiRequest<{ success: boolean; data: CropCatalogData }>(`/prices/catalog/${id}`, {
       method: "PUT", token, body: JSON.stringify(data),
+    });
+  },
+  deleteCatalog(token: string, id: string) {
+    return apiRequest<{ success: boolean; message: string }>(`/prices/catalog/${id}`, {
+      method: "DELETE", token,
     });
   },
 };
@@ -685,7 +705,22 @@ export const userApi = {
     });
   },
   updateProfile(token: string, data: Record<string, unknown>) {
-    return apiRequest<{ success: boolean; data: UserData }>('/users/profile', {
+    return apiRequest<{ success: boolean; data: UserData }>("/users/profile", {
+      method: "PUT", token, body: JSON.stringify(data),
+    });
+  },
+  createManager(token: string, data: { name: string; email: string; password: string; phone?: string; mandiId?: string; designation?: string }) {
+    return apiRequest<{ success: boolean; data: UserData; message: string }>("/users/manager", {
+      method: "POST", token, body: JSON.stringify(data),
+    });
+  },
+  createAdmin(token: string, data: { name: string; email: string; password: string; phone?: string; department?: string; twoFactorEnabled?: boolean }) {
+    return apiRequest<{ success: boolean; data: UserData; message: string }>("/users/admin", {
+      method: "POST", token, body: JSON.stringify(data),
+    });
+  },
+  assignManager(token: string, id: string, data: { mandiId?: string; designation?: string }) {
+    return apiRequest<{ success: boolean; data: UserData; message: string }>(`/users/manager/${id}/assignment`, {
       method: "PUT", token, body: JSON.stringify(data),
     });
   },

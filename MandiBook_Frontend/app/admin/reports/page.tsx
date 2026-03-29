@@ -15,6 +15,15 @@ import {
 import { useAuth } from "@/lib/auth-context";
 import { dashboardApi, type AdminReportData } from "@/lib/data-api";
 
+type DownloadableReport = {
+  name: string;
+  description: string;
+  format: string;
+  lastGenerated: string;
+  payload: unknown;
+  fileName: string;
+};
+
 export default function AdminReportsPage() {
   const { token } = useAuth();
   const [report, setReport] = useState<AdminReportData["data"] | null>(null);
@@ -48,7 +57,7 @@ export default function AdminReportsPage() {
     ];
   }, [report]);
 
-  const availableReports = useMemo(() => {
+  const availableReports = useMemo<DownloadableReport[]>(() => {
     if (!report) return [];
     return [
       {
@@ -56,27 +65,47 @@ export default function AdminReportsPage() {
         description: report.bookingStatusBreakdown.map((entry) => `${entry.status}: ${entry.count}`).join(" · ") || "No booking status data available",
         format: "Live API",
         lastGenerated: report.recentActivity[0]?.createdAt || new Date().toISOString(),
+        payload: report.bookingStatusBreakdown,
+        fileName: "booking-status-breakdown.json",
       },
       {
         name: "Manager Distribution by Mandi",
         description: `${report.managerDistribution.length} mandis currently have assigned managers in the report output`,
         format: "Live API",
         lastGenerated: report.recentActivity[0]?.createdAt || new Date().toISOString(),
+        payload: report.managerDistribution,
+        fileName: "manager-distribution-by-mandi.json",
       },
       {
         name: "Crop Coverage Summary",
         description: `${report.cropCoverage.filter((entry) => entry.priceCount > 0).length} mandis currently have live crop prices configured`,
         format: "Live API",
         lastGenerated: report.recentActivity[0]?.createdAt || new Date().toISOString(),
+        payload: report.cropCoverage,
+        fileName: "crop-coverage-summary.json",
       },
       {
         name: "Recent Activity Feed",
         description: `${report.recentActivity.length} latest audit events included for admin review`,
         format: "Live API",
         lastGenerated: report.recentActivity[0]?.createdAt || new Date().toISOString(),
+        payload: report.recentActivity,
+        fileName: "recent-activity-feed.json",
       },
     ];
   }, [report]);
+
+  const handleDownload = (downloadableReport: DownloadableReport) => {
+    const blob = new Blob([JSON.stringify(downloadableReport.payload, null, 2)], { type: "application/json" });
+    const objectUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = objectUrl;
+    link.download = downloadableReport.fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(objectUrl);
+  };
 
   const formatGeneratedAt = (value: string) => new Intl.DateTimeFormat("en-IN", {
     day: "numeric",
@@ -157,7 +186,11 @@ export default function AdminReportsPage() {
                   <p className="text-[10px] text-neutral-400 mt-1">Last generated: {formatGeneratedAt(report.lastGenerated)} · {report.format}</p>
                 </div>
               </div>
-              <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--border)] text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors shrink-0 self-start sm:self-center" disabled>
+              <button
+                type="button"
+                onClick={() => handleDownload(report)}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--border)] text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors shrink-0 self-start sm:self-center"
+              >
                 <Download className="w-4 h-4" /> Download
               </button>
             </motion.div>

@@ -6,13 +6,13 @@ const buildUniquePhone = (seed = '') => {
 };
 
 const BASE_URL = process.env.TEST_API_BASE_URL || `http://localhost:${process.env.PORT || 5001}/api`;
-const MANAGER_EMAIL = process.env.TEST_MANAGER_EMAIL || 'suresh@mandibook.in';
-const MANAGER_PASSWORD = process.env.TEST_MANAGER_PASSWORD || 'manager123';
+const MANAGER_EMAIL = process.env.TEST_MANAGER_EMAIL || 'arpit2005singh@gmail.com';
+const MANAGER_PASSWORD = process.env.TEST_MANAGER_PASSWORD || 'arpit123';
 const ADMIN_EMAIL = process.env.TEST_ADMIN_EMAIL || 'mandibook.admin@gmail.com';
 const ADMIN_PASSWORD = process.env.TEST_ADMIN_PASSWORD || 'admin123';
-const FARMER_EMAIL = process.env.TEST_FARMER_EMAIL || 'otp.farmer@example.com';
-const FARMER_PHONE = process.env.TEST_FARMER_PHONE || buildUniquePhone(FARMER_EMAIL);
-const FARMER_NAME = process.env.TEST_FARMER_NAME || 'OTP Test Farmer';
+const FARMER_EMAIL = process.env.TEST_FARMER_EMAIL || 'arpit@compliledger.com';
+const FARMER_PHONE = process.env.TEST_FARMER_PHONE || '9444444444';
+const FARMER_NAME = process.env.TEST_FARMER_NAME || 'Arpit Farmer';
 const FARMER_OTP = process.env.TEST_FARMER_EMAIL_OTP || null;
 const ADMIN_OTP = process.env.TEST_ADMIN_2FA_CODE || null;
 
@@ -53,8 +53,7 @@ function getOtpFromResponse(response, fallbackOtp) {
 async function loginAdminWithFallbacks() {
   const candidates = [
     { email: ADMIN_EMAIL, password: ADMIN_PASSWORD },
-    { email: 'arpit2005singh@gmail.com', password: 'arpit123' },
-    { email: 'arpit@compliledger.com', password: 'admin123' },
+    { email: 'ayushyogi400@gmail.com', password: 'ayush123' },
     { email: 'admin@mandibook.in', password: 'admin123' },
   ];
 

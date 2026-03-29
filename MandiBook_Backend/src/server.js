@@ -30,6 +30,7 @@ app.set('trust proxy', process.env.NODE_ENV === 'production' ? 1 : false);
 
 const allowedOrigins = [
   'http://localhost:3200',
+  'http://127.0.0.1:3200',
   'https://mandi-book-seven.vercel.app',
   ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map((origin) => origin.trim()).filter(Boolean) : []),
 ];

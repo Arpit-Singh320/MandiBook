@@ -1,20 +1,33 @@
 require('dotenv').config();
 
 const { sequelize } = require('../config/db');
-const { User, Mandi, CropCatalog, CropPrice } = require('../models');
+const { User, Mandi, TimeSlot, Booking, CropCatalog, CropPrice, Notification, Issue, AuditLog } = require('../models');
 const { Op } = require('sequelize');
 
-const TEST_ADMIN = {
-  name: 'MandiBook Admin',
-  role: 'admin',
-  email: 'mandibook.admin@gmail.com',
-  password: 'admin123',
-  language: 'en',
-  department: 'Platform Operations',
-  twoFactorEnabled: true,
-  profileComplete: true,
-  status: 'active',
-};
+const TEST_ADMINS = [
+  {
+    name: 'MandiBook Admin',
+    role: 'admin',
+    email: 'mandibook.admin@gmail.com',
+    password: 'admin123',
+    language: 'en',
+    department: 'Platform Operations',
+    twoFactorEnabled: true,
+    profileComplete: true,
+    status: 'active',
+  },
+  {
+    name: 'Ayush Yogi',
+    role: 'admin',
+    email: 'ayushyogi400@gmail.com',
+    password: 'ayush123',
+    language: 'en',
+    department: 'Platform Operations',
+    twoFactorEnabled: true,
+    profileComplete: true,
+    status: 'active',
+  },
+];
 
 const TEST_MANAGERS = [
   {
@@ -59,7 +72,7 @@ const TEST_FARMER = {
   status: 'active',
 };
 
-const INDORE_MANDIS = [
+const SEEDED_MANDIS = [
   {
     code: 'IND-CHHAWNI-452001',
     name: 'Indore mandi',
@@ -135,6 +148,196 @@ const INDORE_MANDIS = [
       },
     ],
   },
+  {
+    code: 'UJN-AGAR-456006',
+    name: 'Krishi Upaj Mandi Samiti, Ujjain',
+    nameHi: 'कृषि उपज मंडी समिति, उज्जैन',
+    address: 'Agar Road, Krishi Upaj Mandi, Ujjain',
+    city: 'Ujjain',
+    district: 'Ujjain',
+    state: 'Madhya Pradesh',
+    pincode: '456006',
+    lat: 23.1896,
+    lng: 75.8011,
+    contactPhone: '07342550001',
+    operatingHoursOpen: '05:00',
+    operatingHoursClose: '18:00',
+    workingDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
+    prices: [
+      {
+        crop: 'Wheat',
+        currentPrice: 2430,
+        prevPrice: 2360,
+      },
+      {
+        crop: 'Soybean',
+        currentPrice: 4610,
+        prevPrice: 4540,
+      },
+      {
+        crop: 'Onion',
+        currentPrice: 1820,
+        prevPrice: 1780,
+      },
+      {
+        crop: 'Potato',
+        currentPrice: 1280,
+        prevPrice: 1230,
+      },
+    ],
+  },
+  {
+    code: 'MHD-456443',
+    name: 'Krishi Upaj Mandi, Mahidpur',
+    nameHi: 'कृषि उपज मंडी, महिदपुर',
+    address: 'Mahidpur, Ujjain District, Madhya Pradesh',
+    city: 'Mahidpur',
+    district: 'Ujjain',
+    state: 'Madhya Pradesh',
+    pincode: '456443',
+    lat: 23.4878,
+    lng: 75.6565,
+    contactPhone: '07355550001',
+    operatingHoursOpen: '05:00',
+    operatingHoursClose: '18:00',
+    workingDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
+    prices: [
+      {
+        crop: 'Wheat',
+        currentPrice: 2370,
+        prevPrice: 2310,
+      },
+      {
+        crop: 'Soybean',
+        currentPrice: 4520,
+        prevPrice: 4460,
+      },
+      {
+        crop: 'Garlic',
+        currentPrice: 6020,
+        prevPrice: 5940,
+      },
+      {
+        crop: 'Onion',
+        currentPrice: 1710,
+        prevPrice: 1660,
+      },
+    ],
+  },
+  {
+    code: 'DWS-MAKSI-455001',
+    name: 'Krishi Upaj Mandi Samiti, Dewas',
+    nameHi: 'कृषि उपज मंडी समिति, देवास',
+    address: 'Maksi Road, Anaj Mandi (Near Shivom Toll Kata), Dewas',
+    city: 'Dewas',
+    district: 'Dewas',
+    state: 'Madhya Pradesh',
+    pincode: '455001',
+    lat: 22.9717,
+    lng: 76.0587,
+    contactPhone: '07272550001',
+    operatingHoursOpen: '05:00',
+    operatingHoursClose: '18:00',
+    workingDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
+    prices: [
+      {
+        crop: 'Wheat',
+        currentPrice: 2410,
+        prevPrice: 2350,
+      },
+      {
+        crop: 'Soybean',
+        currentPrice: 4660,
+        prevPrice: 4580,
+      },
+      {
+        crop: 'Potato',
+        currentPrice: 1290,
+        prevPrice: 1250,
+      },
+      {
+        crop: 'Onion',
+        currentPrice: 1790,
+        prevPrice: 1720,
+      },
+    ],
+  },
+  {
+    code: 'DHR-JETAPUR-454001',
+    name: 'Krishi Upaj Mandi, Dhar',
+    nameHi: 'कृषि उपज मंडी, धार',
+    address: 'Navin Mandi Jetapur, Dhar',
+    city: 'Dhar',
+    district: 'Dhar',
+    state: 'Madhya Pradesh',
+    pincode: '454001',
+    lat: 22.6013,
+    lng: 75.3025,
+    contactPhone: '07292550001',
+    operatingHoursOpen: '05:00',
+    operatingHoursClose: '18:00',
+    workingDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
+    prices: [
+      {
+        crop: 'Wheat',
+        currentPrice: 2380,
+        prevPrice: 2325,
+      },
+      {
+        crop: 'Soybean',
+        currentPrice: 4590,
+        prevPrice: 4510,
+      },
+      {
+        crop: 'Garlic',
+        currentPrice: 6110,
+        prevPrice: 6040,
+      },
+      {
+        crop: 'Onion',
+        currentPrice: 1740,
+        prevPrice: 1695,
+      },
+    ],
+  },
+  {
+    code: 'BDN-454660',
+    name: 'Krishi Upaj Mandi, Badnawar',
+    nameHi: 'कृषि उपज मंडी, बदनावर',
+    address: 'Badnawar, District Dhar, Madhya Pradesh',
+    city: 'Badnawar',
+    district: 'Dhar',
+    state: 'Madhya Pradesh',
+    pincode: '454660',
+    lat: 23.0217,
+    lng: 75.2327,
+    contactPhone: '07295550001',
+    operatingHoursOpen: '05:00',
+    operatingHoursClose: '18:00',
+    workingDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
+    prices: [
+      {
+        crop: 'Wheat',
+        currentPrice: 2360,
+        prevPrice: 2300,
+      },
+      {
+        crop: 'Soybean',
+        currentPrice: 4550,
+        prevPrice: 4480,
+      },
+      {
+        crop: 'Potato',
+        currentPrice: 1260,
+        prevPrice: 1215,
+      },
+      {
+        crop: 'Garlic',
+        currentPrice: 5980,
+        prevPrice: 5900,
+      },
+    ],
+  },
 ];
 
 const CROP_BASELINES = [
@@ -175,7 +378,150 @@ const CROP_BASELINES = [
   },
 ];
 
+const MOCK_MANDI_CODES = ['AZD-001', 'VSH-002', 'KYM-003', 'TST-642189'];
+const MOCK_USER_EMAILS = [
+  'arpit2005singh@gmail.com',
+  'suresh@mandibook.in',
+  'priya@mandibook.in',
+  'ravi@mandibook.in',
+  'ram.singh@example.com',
+  'lakshmi.devi@example.com',
+  'otp.farmer@example.com',
+];
+const MOCK_USER_PHONES = ['9111111111', '9222222222', '9333333333', '9571845422'];
+const ALLOWED_CROPS = new Set(CROP_BASELINES.map((entry) => entry.crop.toLowerCase()));
+
 const normalizeEmail = (email) => String(email).trim().toLowerCase();
+
+async function cleanupExistingMockData() {
+  const mockMandis = await Mandi.findAll({
+    where: {
+      [Op.or]: [
+        { code: { [Op.in]: MOCK_MANDI_CODES } },
+        { code: { [Op.like]: 'TST-%' } },
+        { name: { [Op.iLike]: 'Test Geo Mandi%' } },
+      ],
+    },
+    attributes: ['id', 'code'],
+  });
+  const mockMandiIds = mockMandis.map((mandi) => mandi.id);
+
+  const userCandidates = await User.findAll({
+    where: {
+      [Op.or]: [
+        { email: { [Op.in]: MOCK_USER_EMAILS.map(normalizeEmail) } },
+        { phone: { [Op.in]: MOCK_USER_PHONES } },
+      ],
+    },
+    attributes: ['id', 'email', 'phone'],
+  });
+
+  const mockUserIds = userCandidates
+    .filter((user) => {
+      const email = user.email ? normalizeEmail(user.email) : '';
+      if (MOCK_USER_EMAILS.map(normalizeEmail).includes(email)) {
+        return true;
+      }
+
+      if (MOCK_USER_PHONES.includes(user.phone || '')) {
+        return email !== normalizeEmail(TEST_FARMER.email) && user.phone !== TEST_FARMER.phone;
+      }
+
+      return false;
+    })
+    .map((user) => user.id);
+
+  if (mockUserIds.length > 0) {
+    await Notification.destroy({
+      where: {
+        userId: { [Op.in]: mockUserIds },
+      },
+    });
+  }
+
+  if (mockUserIds.length > 0 || mockMandiIds.length > 0) {
+    await Booking.destroy({
+      where: {
+        [Op.or]: [
+          ...(mockUserIds.length > 0 ? [{ farmerId: { [Op.in]: mockUserIds } }] : []),
+          ...(mockMandiIds.length > 0 ? [{ mandiId: { [Op.in]: mockMandiIds } }] : []),
+        ],
+      },
+    });
+  }
+
+  if (mockMandiIds.length > 0) {
+    await TimeSlot.destroy({
+      where: {
+        mandiId: { [Op.in]: mockMandiIds },
+      },
+    });
+
+    await CropPrice.destroy({
+      where: {
+        mandiId: { [Op.in]: mockMandiIds },
+      },
+    });
+  }
+
+  const existingCropPrices = await CropPrice.findAll({ attributes: ['id', 'crop', 'mandiId'] });
+  const obsoleteCropPriceIds = existingCropPrices
+    .filter((entry) => !ALLOWED_CROPS.has(String(entry.crop || '').trim().toLowerCase()))
+    .map((entry) => entry.id);
+
+  if (obsoleteCropPriceIds.length > 0) {
+    await CropPrice.destroy({ where: { id: { [Op.in]: obsoleteCropPriceIds } } });
+  }
+
+  if (mockUserIds.length > 0 || mockMandiIds.length > 0) {
+    await Issue.destroy({
+      where: {
+        [Op.or]: [
+          ...(mockUserIds.length > 0 ? [{ reporterId: { [Op.in]: mockUserIds } }] : []),
+          ...(mockMandiIds.length > 0 ? [{ mandiId: { [Op.in]: mockMandiIds } }] : []),
+        ],
+      },
+    });
+  }
+
+  if (mockUserIds.length > 0 || mockMandiIds.length > 0) {
+    await AuditLog.destroy({
+      where: {
+        [Op.or]: [
+          ...(mockUserIds.length > 0 ? [{ userId: { [Op.in]: mockUserIds } }] : []),
+          ...(mockMandiIds.length > 0 ? [{ entity: 'Mandi', entityId: { [Op.in]: mockMandiIds } }] : []),
+        ],
+      },
+    });
+  }
+
+  if (mockUserIds.length > 0) {
+    await User.destroy({ where: { id: { [Op.in]: mockUserIds } } });
+  }
+
+  if (mockMandiIds.length > 0) {
+    await Mandi.destroy({ where: { id: { [Op.in]: mockMandiIds } } });
+  }
+
+  const existingCatalogEntries = await CropCatalog.findAll({ attributes: ['id', 'crop'] });
+  const obsoleteCatalogIds = existingCatalogEntries
+    .filter((entry) => !ALLOWED_CROPS.has(String(entry.crop || '').trim().toLowerCase()))
+    .map((entry) => entry.id);
+
+  if (obsoleteCatalogIds.length > 0) {
+    await CropCatalog.destroy({ where: { id: { [Op.in]: obsoleteCatalogIds } } });
+  }
+
+  const mandis = await Mandi.findAll({ attributes: ['id', 'crops'] });
+  for (const mandi of mandis) {
+    const filteredCrops = Array.from(
+      new Set((mandi.crops || []).filter((crop) => ALLOWED_CROPS.has(String(crop || '').trim().toLowerCase())))
+    );
+    if (filteredCrops.length !== (mandi.crops || []).length) {
+      await mandi.update({ crops: filteredCrops });
+    }
+  }
+}
 
 async function syncMandiManagerLinks(mandiId) {
   if (!mandiId) return;
@@ -248,7 +594,7 @@ async function upsertMandi(payload) {
     operatingHoursClose: payload.operatingHoursClose,
     workingDays: payload.workingDays,
     isActive: true,
-    crops: Array.from(new Set([...(mandi.crops || []), ...payload.prices.map((entry) => entry.crop)])),
+    crops: payload.prices.map((entry) => entry.crop),
   });
 
   return { mandi, created: false };
@@ -342,24 +688,32 @@ async function pickManagerMandis() {
     await sequelize.authenticate();
     await sequelize.sync();
 
-    const adminResult = await upsertUser(TEST_ADMIN);
-    console.log(`${adminResult.created ? 'Created' : 'Updated'} admin: ${adminResult.user.email} / ${TEST_ADMIN.password}`);
+    await cleanupExistingMockData();
+
+    let primaryAdmin = null;
+    for (const adminPayload of TEST_ADMINS) {
+      const adminResult = await upsertUser(adminPayload);
+      if (!primaryAdmin) {
+        primaryAdmin = adminResult.user;
+      }
+      console.log(`${adminResult.created ? 'Created' : 'Updated'} admin: ${adminResult.user.email} / ${adminPayload.password}`);
+    }
 
     const mandiResults = [];
-    for (const mandiPayload of INDORE_MANDIS) {
+    for (const mandiPayload of SEEDED_MANDIS) {
       const mandiResult = await upsertMandi(mandiPayload);
       mandiResults.push(mandiResult.mandi);
       console.log(`${mandiResult.created ? 'Created' : 'Updated'} mandi: ${mandiResult.mandi.name} (${mandiResult.mandi.code})`);
     }
 
     for (const catalogEntry of CROP_BASELINES) {
-      const result = await upsertCatalogEntry(catalogEntry, adminResult.user.id);
+      const result = await upsertCatalogEntry(catalogEntry, primaryAdmin.id);
       console.log(`${result.created ? 'Created' : 'Updated'} crop baseline: ${result.catalogEntry.crop} @ min ₹${result.catalogEntry.minPrice}`);
     }
 
     for (const mandi of mandiResults) {
-      for (const priceEntry of INDORE_MANDIS.find((m) => m.code === mandi.code).prices) {
-        const result = await upsertCropPrice(mandi, priceEntry, adminResult.user.id);
+      for (const priceEntry of SEEDED_MANDIS.find((m) => m.code === mandi.code).prices) {
+        const result = await upsertCropPrice(mandi, priceEntry, primaryAdmin.id);
         console.log(`${result.created ? 'Created' : 'Updated'} crop price: ${result.price.crop} @ ₹${result.price.currentPrice} @ ${mandi.name}`);
       }
     }
@@ -367,10 +721,10 @@ async function pickManagerMandis() {
     const managerAssignments = [];
     for (const managerPayload of TEST_MANAGERS) {
       const managerResult = await upsertUser(managerPayload);
-      const assignedMandiConfig = INDORE_MANDIS.find((mandi) => normalizeEmail(mandi.managerEmail) === managerResult.user.email);
+      const assignedMandiConfig = SEEDED_MANDIS.find((mandi) => normalizeEmail(mandi.managerEmail) === managerResult.user.email);
       const assignedMandi = mandiResults.find((mandi) => mandi.code === assignedMandiConfig?.code);
       if (!assignedMandi || !assignedMandiConfig) {
-        throw new Error(`Unable to find configured Indore mandi for manager ${managerResult.user.email}`);
+        throw new Error(`Unable to find configured seeded mandi for manager ${managerResult.user.email}`);
       }
       managerResult.user.mandiId = assignedMandi.id;
       managerResult.user.designation = assignedMandiConfig.managerDesignation;
@@ -395,7 +749,9 @@ async function pickManagerMandis() {
     console.log(`${farmerResult.created ? 'Created' : 'Updated'} farmer: ${farmerResult.user.email} (OTP login, no password endpoint)`);
 
     console.log('\nProvisioning complete.');
-    console.log(`Admin login: ${TEST_ADMIN.email} / ${TEST_ADMIN.password}`);
+    TEST_ADMINS.forEach((adminPayload) => {
+      console.log(`Admin login: ${adminPayload.email} / ${adminPayload.password}`);
+    });
     managerAssignments.forEach((assignment) => {
       console.log(`Manager login: ${assignment.email} / ${assignment.password} @ ${assignment.mandi}`);
     });

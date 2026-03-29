@@ -21,6 +21,8 @@ const MapView = dynamic(() => import("./map-view"), {
   loading: () => <div className="h-[420px] rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 animate-pulse" />,
 });
 
+const DISCOVERY_RADIUS_KM = 250;
+
 export default function NearbyMandisPage() {
   const [mandis, setMandis] = useState<MandiData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +35,7 @@ export default function NearbyMandisPage() {
     setLoading(true);
     setLocationError("");
     try {
-      const response = coords ? await mandiApi.nearby({ ...coords, radius: 50 }) : await mandiApi.nearby();
+      const response = coords ? await mandiApi.nearby({ ...coords, radius: DISCOVERY_RADIUS_KM }) : await mandiApi.nearby();
       setMandis(response.data);
       setSelectedMandi((prev) => prev ?? response.data[0]?.id ?? null);
     } catch {

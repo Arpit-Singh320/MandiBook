@@ -1,0 +1,25 @@
+{
+  "label": "admin-login-start",
+  "endpoint": "/auth/admin/login",
+  "method": "POST",
+  "attempt": 1,
+  "request": {
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "email": "mandibook.admin@gmail.com",
+      "password": "admin123"
+    }
+  },
+  "response": {
+    "ok": false,
+    "status": 429,
+    "data": {
+      "success": false,
+      "message": "Too many requests, please try again later"
+    }
+  },
+  "durationMs": 7,
+  "recordedAt": "2026-03-29T11:27:36.401Z"
+}

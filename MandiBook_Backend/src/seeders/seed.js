@@ -2,6 +2,10 @@ require('dotenv').config();
 const { sequelize } = require('../config/db');
 const { User, Mandi, TimeSlot, Booking, CropPrice, Notification, Issue, AuditLog } = require('../models');
 
+if (process.env.MANDIBOOK_USE_LEGACY_SEED !== 'true') {
+  require('../scripts/provision-test-users');
+} else {
+
 const seed = async () => {
   try {
     await sequelize.authenticate();
@@ -335,3 +339,5 @@ const seed = async () => {
 };
 
 seed();
+
+}

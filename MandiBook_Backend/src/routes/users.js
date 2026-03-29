@@ -4,11 +4,48 @@ const { Op } = require('sequelize');
 const User = require('../models/User');
 const Mandi = require('../models/Mandi');
 const AuditLog = require('../models/AuditLog');
+const { sendEmail } = require('../config/brevo');
 const { protect, authorize } = require('../middleware/auth');
 
 const MAX_MANAGERS_PER_MANDI = 3;
 
 const normalizeEmail = (value) => String(value).trim().toLowerCase();
+
+const sendCredentialsEmail = async ({ email, name, password, role, mandiName }) => {
+  if (!email || !password) return;
+
+  const portalLabel = role === 'admin' ? 'Admin Portal' : 'Manager Portal';
+  const roleLabel = role === 'admin' ? 'admin' : 'mandi manager';
+  const scopeText = role === 'manager' && mandiName
+    ? `You have been assigned to ${mandiName}.`
+    : 'Your account is ready to use.';
+
+  try {
+    await sendEmail(
+      email,
+      name || 'MandiBook User',
+      `MandiBook — Your ${portalLabel} credentials`,
+      `
+        <html>
+          <body style="font-family: Arial, sans-serif; background: #f9fafb; padding: 24px;">
+            <div style="max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 12px; padding: 24px; border: 1px solid #e5e7eb;">
+              <h2 style="margin: 0 0 12px; color: #166534;">Welcome to MandiBook</h2>
+              <p style="margin: 0 0 12px; color: #374151;">Hello ${name || 'User'},</p>
+              <p style="margin: 0 0 12px; color: #374151;">A new ${roleLabel} account has been created for you. ${scopeText}</p>
+              <div style="padding: 16px; background: #f0fdf4; border-radius: 10px; border: 1px solid #bbf7d0; margin: 16px 0;">
+                <p style="margin: 0; color: #166534;"><strong>Email:</strong> ${email}</p>
+                <p style="margin: 8px 0 0; color: #166534;"><strong>Password:</strong> ${password}</p>
+              </div>
+              <p style="margin: 0; color: #6b7280; font-size: 13px;">Please sign in and change your password after your first login.</p>
+            </div>
+          </body>
+        </html>
+      `,
+    );
+  } catch (error) {
+    console.error(`[Users] Failed to send credentials email to ${email}:`, error.message);
+  }
+};
 
 const syncMandiManagerLinks = async (mandiId) => {
   if (!mandiId) return [];
@@ -170,9 +207,9 @@ router.post('/manager', protect, authorize('admin'), async (req, res, next) => {
       }
     }
 
-    const existing = await User.findOne({ where: { email: normalizedEmail, role: 'manager' } });
+    const existing = await User.findOne({ where: { email: normalizedEmail } });
     if (existing) {
-      return res.status(400).json({ success: false, message: 'Manager with this email already exists' });
+      return res.status(400).json({ success: false, message: 'A user with this email already exists' });
     }
 
     const user = await User.create({
@@ -186,6 +223,14 @@ router.post('/manager', protect, authorize('admin'), async (req, res, next) => {
     if (assignedMandi) {
       await syncMandiManagerLinks(assignedMandi.id);
     }
+
+    await sendCredentialsEmail({
+      email: user.email,
+      name: user.name,
+      password,
+      role: 'manager',
+      mandiName: assignedMandi?.name,
+    });
 
     await AuditLog.create({
       userId: req.user.id,
@@ -203,6 +248,62 @@ router.post('/manager', protect, authorize('admin'), async (req, res, next) => {
       success: true,
       data: { id: user.id, name: user.name, email: user.email, role: user.role, mandiId: user.mandiId, designation: user.designation },
       message: 'Manager created',
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ─── Create admin (Admin) ─────────────────────────────────────────────────────
+// POST /api/users/admin
+router.post('/admin', protect, authorize('admin'), async (req, res, next) => {
+  try {
+    const { name, email, password, phone, department, twoFactorEnabled } = req.body;
+    if (!name || !email || !password) {
+      return res.status(400).json({ success: false, message: 'Name, email, and password are required' });
+    }
+
+    const normalizedEmail = normalizeEmail(email);
+
+    const existing = await User.findOne({ where: { email: normalizedEmail } });
+    if (existing) {
+      return res.status(400).json({ success: false, message: 'A user with this email already exists' });
+    }
+
+    const user = await User.create({
+      name,
+      email: normalizedEmail,
+      password,
+      phone,
+      role: 'admin',
+      department: department || 'Platform Operations',
+      twoFactorEnabled: twoFactorEnabled !== undefined ? Boolean(twoFactorEnabled) : true,
+      profileComplete: true,
+    });
+
+    await sendCredentialsEmail({
+      email: user.email,
+      name: user.name,
+      password,
+      role: 'admin',
+    });
+
+    await AuditLog.create({
+      userId: req.user.id,
+      userName: req.user.name,
+      userRole: 'admin',
+      action: 'Created admin account',
+      entity: 'User',
+      entityId: user.id,
+      details: `${name} — ${email}`,
+      type: 'user',
+      ipAddress: req.ip,
+    });
+
+    res.status(201).json({
+      success: true,
+      data: { id: user.id, name: user.name, email: user.email, role: user.role, phone: user.phone, department: user.department, twoFactorEnabled: user.twoFactorEnabled },
+      message: 'Admin created',
     });
   } catch (error) {
     next(error);
